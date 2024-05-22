@@ -8,4 +8,5 @@ type Audience struct {
 	ToPay     float64 `json:"toPay,omitempty" bson:"toPay,omitempty"`
 	Paid      float64 `json:"paid,omitempty" bson:"paid,omitempty"`
 	ToReceive float64 `json:"toReceive,omitempty" bson:"toReceive,omitempty"`
+	UserID    string  `json:"userID" bson:"userID"`
 }

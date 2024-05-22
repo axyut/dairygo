@@ -23,7 +23,7 @@ func IndexCss() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<style type=\"text/css\">\n\t\tp {\n\t\t\tfont-family: sans-serif;\n\t\t}\n\t\tbutton {\n\t\t\tbackground-color: black;\n\t\t}\n\t</style>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<style type=\"text/css\">\n\t\tp {\n\t\t\tfont-family: sans-serif;\n\t\t}\n\t\tbutton {\n\t\t\tbackground-color: green;\n\t\t}\n\t</style>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

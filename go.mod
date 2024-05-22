@@ -6,7 +6,6 @@ require (
 	github.com/a-h/templ v0.2.680
 	github.com/joho/godotenv v1.5.1
 	go.mongodb.org/mongo-driver v1.15.0
-	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842
 )
 
 require (

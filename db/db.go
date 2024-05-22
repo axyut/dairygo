@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
+
+	// "time"
 
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,9 +14,18 @@ import (
 )
 
 type Mongo struct {
-	client *mongo.Client
-	db     *mongo.Database
+	Client *mongo.Client
+	DB     *mongo.Database
 }
+type Collection *mongo.Collection
+type Collections struct {
+	Users        Collection
+	Goods        Collection
+	Audiences    Collection
+	Transactions Collection
+}
+
+var Ctx = context.TODO()
 
 func NewMongo() (*Mongo, error) {
 	var dbName, uri string = "dairyDB", "mongodb://localhost:27017/"
@@ -32,31 +42,53 @@ func NewMongo() (*Mongo, error) {
 		uri = uri + dbName
 
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(Ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
 	}
 	// Check the connection
-	if err := client.Ping(ctx, nil); err != nil {
+	if err := client.Ping(Ctx, nil); err != nil {
 		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
 	}
 	fmt.Println("Connected to MongoDB! ", dbName)
 	defer func() {
-		if err := client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
+
 	}()
 	database := client.Database(dbName)
-	return &Mongo{db: database}, nil
+
+	return &Mongo{Client: client, DB: database}, nil
 }
 
-func (m *Mongo) GetDB() *mongo.Database {
-	return m.db
+func (m *Mongo) Close(ctx context.Context) error {
+	if err := m.Client.Disconnect(ctx); err != nil {
+		return fmt.Errorf("failed to disconnect from MongoDB: %w", err)
+	}
+	// cancel()
+	return nil
 }
 
-func (m *Mongo) Disconnect(ctx context.Context) error {
-	return m.client.Disconnect(ctx)
+func GetCollections(ctx context.Context, m *mongo.Database) *Collections {
+	return &Collections{
+		Users:        m.Collection("users"),
+		Goods:        m.Collection("goods"),
+		Audiences:    m.Collection("audiences"),
+		Transactions: m.Collection("transactions"),
+	}
+}
+
+func GetUserColl(ctx context.Context, m *mongo.Database) Collection {
+	return GetCollections(ctx, m).Users
+}
+
+func GetAudienceColl(ctx context.Context, m *mongo.Database) Collection {
+	return GetCollections(ctx, m).Audiences
+}
+
+func GetGoodsColl(ctx context.Context, m *mongo.Database) Collection {
+	return GetCollections(ctx, m).Goods
+}
+
+func GetTransactionColl(ctx context.Context, m *mongo.Database) Collection {
+	return GetCollections(ctx, m).Transactions
 }
