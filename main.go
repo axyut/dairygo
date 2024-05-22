@@ -13,9 +13,12 @@ import (
 )
 
 func main() {
-	db := db.NewDb()
+	mongo, err := db.NewMongo()
+	if err != nil {
+		panic(err)
+	}
 	logg := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	services.GlobalService(logg, db)
+	services.NewService(logg, mongo)
 
 	component := client.Index()
 	http.Handle("/", templ.Handler(component))

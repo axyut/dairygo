@@ -6,6 +6,11 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-func GlobalService(log *slog.Logger, cs *db.MyDb) string {
-	return "Global Service Usage"
+type Service struct {
+	Log *slog.Logger
+	db  *db.Mongo
+}
+
+func NewService(log *slog.Logger, db *db.Mongo) *Service {
+	return &Service{log, db}
 }

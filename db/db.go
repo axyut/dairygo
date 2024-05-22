@@ -2,30 +2,34 @@ package db
 
 import (
 	"context"
-	// "encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
 	"github.com/joho/godotenv"
-	// "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type MyDb struct {
-	db *mongo.Database
+type Mongo struct {
+	client *mongo.Client
+	db     *mongo.Database
 }
 
-func NewDb() *MyDb {
+func NewMongo() (*Mongo, error) {
 	var dbName, uri string = "dairyDB", "mongodb://localhost:27017/"
 	if err := godotenv.Load(); err != nil {
 		log.Println("Set your 'MONGODB_URI' environment variable. " + "No .env file found\nUsing the default 'mongodb://localhost:27017'")
 		uri = uri + dbName
 	} else {
 		dbName = os.Getenv("DB_NAME")
-		uri = os.Getenv("MONGODB_URI") + dbName
+		uri = os.Getenv("MONGODB_URI")
+		if uri == "" || dbName == "" {
+			uri = "mongodb://localhost:27017/"
+			dbName = "dairyDB"
+		}
+		uri = uri + dbName
 
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -33,75 +37,26 @@ func NewDb() *MyDb {
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
-		panic(err)
-	} else {
-		fmt.Println("Connected to MongoDB! ", dbName)
+		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
 	}
-
+	// Check the connection
+	if err := client.Ping(ctx, nil); err != nil {
+		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
+	}
+	fmt.Println("Connected to MongoDB! ", dbName)
 	defer func() {
 		if err := client.Disconnect(ctx); err != nil {
 			panic(err)
 		}
 	}()
-	// validator := bson.M{
-	// 	"bsonType": "object",
-	// 	"required": []string{"phone", "name"},
-	// 	"properties": bson.M{
-	// 		"phone": bson.M{
-	// 			"bsonType":    "string",
-	// 			"description": "must be a string and is required",
-	// 		},
-	// 		"name": bson.M{
-	// 			"bsonType":    "string",
-	// 			"description": "the endpoint IP address",
-	// 		},
-	// 	},
-	// }
-	db := client.Database(dbName)
-	return &MyDb{db}
-	// collection := db.Collection("numbers")
-	// insertCommand := bson.D{{"insert", "numbers"}}
-	// command := bson.D{{"validate", insertCommand}}
+	database := client.Database(dbName)
+	return &Mongo{db: database}, nil
+}
 
-	// bson.D{{
-	// 	collMod: "contacts",
-	// 	validator: { $jsonSchema: {
-	// 		bsonType: "object",
-	// 		required: [ "name" ],
-	// 		properties: {
-	// 			phone: {
-	// 				bsonType: "string",
-	// 				description: "phone must be a string and is required"
-	// 			},
-	// 			name: {
-	// 				bsonType: "string",
-	// 				description: "name must be a string and is required"
-	// 			}
-	// 		}
-	// 	} },
-	// 	validationLevel: "strict"
-	// }}
+func (m *Mongo) GetDB() *mongo.Database {
+	return m.db
+}
 
-	// res, err := collection.InsertOne(ctx, bson.D{{"name", "pi"}, {"value", 3.14159}})
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// id := res.InsertedID
-	// fmt.Println(res, id)
-	// var result bson.M
-	// err = coll.FindOne(context.TODO(), bson.D{{"title", title}}).
-	// 	Decode(&result)
-	// if err == mongo.ErrNoDocuments {
-	// 	fmt.Printf("No document was found with the title %s\n", title)
-	// 	return
-	// }
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// jsonData, err := json.MarshalIndent(result, "", "    ")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Printf("%s\n", jsonData)
+func (m *Mongo) Disconnect(ctx context.Context) error {
+	return m.client.Disconnect(ctx)
 }
