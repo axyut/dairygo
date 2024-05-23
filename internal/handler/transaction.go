@@ -3,26 +3,26 @@ package handler
 import (
 	"net/http"
 
-	"github.com/axyut/dairygo/service"
+	"github.com/axyut/dairygo/internal/service"
 )
 
-type AudienceHandler struct {
+type TransactionHandler struct {
 	global *service.Service
-	srv    *service.AudienceService
+	srv    *service.TransactionService
 }
 
-func (h *AudienceHandler) GetAudience(w http.ResponseWriter, r *http.Request) {
+func (h *TransactionHandler) GetTransaction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	user_id := r.URL.Query().Get("user_id")
-	if user_id == "" {
+	transID := r.URL.Query().Get("id")
+	if transID == "" {
 		http.Error(w, "Empty Fields!", http.StatusBadRequest)
 	}
-	err := h.srv.GetAudience(user_id)
+	err := h.srv.GetTransaction(transID)
 	if err != nil {
 		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
 	}

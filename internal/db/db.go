@@ -3,14 +3,13 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
+	"log/slog"
+	"time"
 
-	// "time"
-
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/axyut/dairygo/internal/config"
 )
 
 type Mongo struct {
@@ -25,23 +24,10 @@ type Collections struct {
 	Transactions Collection
 }
 
-var Ctx = context.TODO()
+var Ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 
-func NewMongo() (*Mongo, error) {
-	var dbName, uri string = "dairyDB", "mongodb://localhost:27017/"
-	if err := godotenv.Load(); err != nil {
-		log.Println("Set your 'MONGODB_URI' environment variable. " + "No .env file found\nUsing the default 'mongodb://localhost:27017'")
-		uri = uri + dbName
-	} else {
-		dbName = os.Getenv("DB_NAME")
-		uri = os.Getenv("MONGODB_URI")
-		if uri == "" || dbName == "" {
-			uri = "mongodb://localhost:27017/"
-			dbName = "dairyDB"
-		}
-		uri = uri + dbName
-
-	}
+func NewMongo(conf config.Config, logger *slog.Logger) (*Mongo, error) {
+	var dbName, uri string = conf.DB_NAME, conf.DB_URI
 
 	client, err := mongo.Connect(Ctx, options.Client().ApplyURI(uri))
 	if err != nil {
@@ -51,10 +37,7 @@ func NewMongo() (*Mongo, error) {
 	if err := client.Ping(Ctx, nil); err != nil {
 		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
 	}
-	fmt.Println("Connected to MongoDB! ", dbName)
-	defer func() {
-
-	}()
+	logger.Info("Connected to MongoDB", slog.String("DB_NAME", dbName))
 	database := client.Database(dbName)
 
 	return &Mongo{Client: client, DB: database}, nil
@@ -64,7 +47,7 @@ func (m *Mongo) Close(ctx context.Context) error {
 	if err := m.Client.Disconnect(ctx); err != nil {
 		return fmt.Errorf("failed to disconnect from MongoDB: %w", err)
 	}
-	// cancel()
+	cancel()
 	return nil
 }
 

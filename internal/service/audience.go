@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/axyut/dairygo/db"
+	"github.com/axyut/dairygo/internal/db"
 	"go.mongodb.org/mongo-driver/bson"
 )
 

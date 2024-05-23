@@ -1,31 +1,33 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/a-h/templ"
 	client "github.com/axyut/dairygo/client"
-	"github.com/axyut/dairygo/service"
+	"github.com/axyut/dairygo/internal/service"
 )
 
 type Handler struct {
 	srv                *service.Service
+	logger             *slog.Logger
 	AudienceHandler    *AudienceHandler
 	GoodsHandler       *GoodsHandler
 	TransactionHandler *TransactionHandler
 	UserHandler        *UserHandler
 }
 
-func NewHandler(srv *service.Service) *Handler {
+func NewHandler(srv *service.Service, logger *slog.Logger) *Handler {
 	audienceHandler := &AudienceHandler{srv, srv.AudienceService}
 	goodsHandler := &GoodsHandler{srv, srv.GoodsService}
 	transactionHandler := &TransactionHandler{srv, srv.TransactionService}
 	userHandler := &UserHandler{srv, srv.UserService}
-	return &Handler{srv, audienceHandler, goodsHandler, transactionHandler, userHandler}
+	return &Handler{srv, logger, audienceHandler, goodsHandler, transactionHandler, userHandler}
 }
 
-func RootHandler(srv *service.Service) {
-	h := NewHandler(srv)
+func RootHandler(srv *service.Service, logger *slog.Logger) *Handler {
+	h := NewHandler(srv, logger)
 
 	// Templ Handler
 	homePage := client.Index()
@@ -43,4 +45,6 @@ func RootHandler(srv *service.Service) {
 
 	// Transaction
 	http.HandleFunc("/api/transaction", h.TransactionHandler.GetTransaction)
+
+	return h
 }

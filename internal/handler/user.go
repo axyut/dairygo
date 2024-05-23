@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/axyut/dairygo/service"
+	"github.com/axyut/dairygo/internal/service"
 )
 
 type UserHandler struct {
