@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -24,17 +23,15 @@ type Collections struct {
 	Transactions Collection
 }
 
-var Ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-
-func NewMongo(conf config.Config, logger *slog.Logger) (*Mongo, error) {
+func NewMongo(ctx context.Context, conf config.Config, logger *slog.Logger) (*Mongo, error) {
 	var dbName, uri string = conf.DB_NAME, conf.DB_URI
 
-	client, err := mongo.Connect(Ctx, options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
 	}
 	// Check the connection
-	if err := client.Ping(Ctx, nil); err != nil {
+	if err := client.Ping(ctx, nil); err != nil {
 		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
 	}
 	logger.Info("Connected to MongoDB", slog.String("DB_NAME", dbName))
@@ -47,7 +44,6 @@ func (m *Mongo) Close(ctx context.Context) error {
 	if err := m.Client.Disconnect(ctx); err != nil {
 		return fmt.Errorf("failed to disconnect from MongoDB: %w", err)
 	}
-	cancel()
 	return nil
 }
 

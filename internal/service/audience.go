@@ -9,15 +9,13 @@ import (
 )
 
 type AudienceService struct {
-	global     *db.Collections
+	service    *Service
 	collection db.Collection
-	ctx        context.Context
 }
 
-func (s *AudienceService) NewAudience(name string, contact string, userID string, email string, toPay float64, toReceive float64, paid float64) error {
+func (s *AudienceService) NewAudience(ctx context.Context, name string, contact string, userID string, email string, toPay float64, toReceive float64, paid float64) error {
 	audience := *s.collection
-	// goods := *s.global.Goods
-	res, err := audience.InsertOne(s.ctx, bson.M{
+	res, err := audience.InsertOne(ctx, bson.M{
 		"name":      name,
 		"contact":   contact,
 		"email":     email,
@@ -34,9 +32,9 @@ func (s *AudienceService) NewAudience(name string, contact string, userID string
 	return nil
 }
 
-func (s *AudienceService) GetAudience(UserID string) error {
+func (s *AudienceService) GetAudience(ctx context.Context, UserID string) error {
 	audience := *s.collection
-	res, err := audience.Find(s.ctx, bson.M{"userID": UserID})
+	res, err := audience.Find(ctx, bson.M{"userID": UserID})
 	if err != nil {
 		fmt.Println(err)
 		return err

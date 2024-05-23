@@ -7,8 +7,8 @@ import (
 )
 
 type AudienceHandler struct {
-	global *service.Service
-	srv    *service.AudienceService
+	h   *Handler
+	srv *service.AudienceService
 }
 
 func (h *AudienceHandler) GetAudience(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +22,7 @@ func (h *AudienceHandler) GetAudience(w http.ResponseWriter, r *http.Request) {
 	if user_id == "" {
 		http.Error(w, "Empty Fields!", http.StatusBadRequest)
 	}
-	err := h.srv.GetAudience(user_id)
+	err := h.srv.GetAudience(h.h.ctx, user_id)
 	if err != nil {
 		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
 	}

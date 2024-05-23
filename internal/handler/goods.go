@@ -7,8 +7,8 @@ import (
 )
 
 type GoodsHandler struct {
-	global *service.Service
-	srv    *service.GoodsService
+	h   *Handler
+	srv *service.GoodsService
 }
 
 func (h *GoodsHandler) GetGoods(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +22,7 @@ func (h *GoodsHandler) GetGoods(w http.ResponseWriter, r *http.Request) {
 	if goodID == "" {
 		http.Error(w, "Empty Fields!", http.StatusBadRequest)
 	}
-	err := h.srv.GetGoods(goodID)
+	err := h.srv.GetGoods(h.h.ctx, goodID)
 	if err != nil {
 		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
 	}

@@ -9,14 +9,13 @@ import (
 )
 
 type GoodsService struct {
-	global     *db.Collections
+	service    *Service
 	collection db.Collection
-	ctx        context.Context
 }
 
-func (s *GoodsService) NewGoods(name string, price float64, quantity int) error {
+func (s *GoodsService) NewGoods(ctx context.Context, name string, price float64, quantity int) error {
 	goods := *s.collection
-	res, err := goods.InsertOne(s.ctx, bson.M{
+	res, err := goods.InsertOne(ctx, bson.M{
 		"name":     name,
 		"price":    price,
 		"quantity": quantity,
@@ -29,9 +28,9 @@ func (s *GoodsService) NewGoods(name string, price float64, quantity int) error 
 	return nil
 }
 
-func (s *GoodsService) GetGoods(name string) error {
+func (s *GoodsService) GetGoods(ctx context.Context, name string) error {
 	goods := *s.collection
-	res, err := goods.Find(s.ctx, bson.M{"name": name})
+	res, err := goods.Find(ctx, bson.M{"name": name})
 	if err != nil {
 		fmt.Println(err)
 		return err

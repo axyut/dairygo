@@ -7,8 +7,8 @@ import (
 )
 
 type TransactionHandler struct {
-	global *service.Service
-	srv    *service.TransactionService
+	h   *Handler
+	srv *service.TransactionService
 }
 
 func (h *TransactionHandler) GetTransaction(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +22,7 @@ func (h *TransactionHandler) GetTransaction(w http.ResponseWriter, r *http.Reque
 	if transID == "" {
 		http.Error(w, "Empty Fields!", http.StatusBadRequest)
 	}
-	err := h.srv.GetTransaction(transID)
+	err := h.srv.GetTransaction(h.h.ctx, transID)
 	if err != nil {
 		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
 	}

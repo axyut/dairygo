@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 
@@ -10,6 +11,7 @@ import (
 )
 
 type Handler struct {
+	ctx                context.Context
 	srv                *service.Service
 	logger             *slog.Logger
 	AudienceHandler    *AudienceHandler
@@ -18,22 +20,25 @@ type Handler struct {
 	UserHandler        *UserHandler
 }
 
-func NewHandler(srv *service.Service, logger *slog.Logger) *Handler {
-	audienceHandler := &AudienceHandler{srv, srv.AudienceService}
-	goodsHandler := &GoodsHandler{srv, srv.GoodsService}
-	transactionHandler := &TransactionHandler{srv, srv.TransactionService}
-	userHandler := &UserHandler{srv, srv.UserService}
-	return &Handler{srv, logger, audienceHandler, goodsHandler, transactionHandler, userHandler}
+func NewHandler(ctx context.Context, srv *service.Service, logger *slog.Logger) *Handler {
+	h := &Handler{ctx: ctx, srv: srv, logger: logger}
+
+	h.AudienceHandler = &AudienceHandler{h, srv.AudienceService}
+	h.GoodsHandler = &GoodsHandler{h, srv.GoodsService}
+	h.TransactionHandler = &TransactionHandler{h, srv.TransactionService}
+	h.UserHandler = &UserHandler{h, srv.UserService}
+
+	return h
 }
 
-func RootHandler(srv *service.Service, logger *slog.Logger) *Handler {
-	h := NewHandler(srv, logger)
+func RootHandler(ctx context.Context, srv *service.Service, logger *slog.Logger) *Handler {
+
+	h := NewHandler(ctx, srv, logger)
 
 	// Templ Handler
 	homePage := client.Index()
 	http.Handle("/", templ.Handler(homePage))
 
-	// API Handler
 	// User
 	http.HandleFunc("/api/user", h.UserHandler.CreateUser)
 
@@ -45,6 +50,8 @@ func RootHandler(srv *service.Service, logger *slog.Logger) *Handler {
 
 	// Transaction
 	http.HandleFunc("/api/transaction", h.TransactionHandler.GetTransaction)
+
+	// calculate
 
 	return h
 }

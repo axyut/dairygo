@@ -10,7 +10,6 @@ import (
 type Service struct {
 	mongo              *db.Mongo
 	Collections        *db.Collections
-	Ctx                context.Context
 	logger             *slog.Logger
 	UserService        *UserService
 	AudienceService    *AudienceService
@@ -18,11 +17,19 @@ type Service struct {
 	TransactionService *TransactionService
 }
 
-func NewService(mongo *db.Mongo, logger *slog.Logger) *Service {
-	global := db.GetCollections(db.Ctx, mongo.DB)
-	userSrv := &UserService{global, db.GetUserColl(db.Ctx, mongo.DB), db.Ctx}
-	audSrv := &AudienceService{global, db.GetAudienceColl(db.Ctx, mongo.DB), db.Ctx}
-	goodsSrv := &GoodsService{global, db.GetGoodsColl(db.Ctx, mongo.DB), db.Ctx}
-	transSrv := &TransactionService{global, db.GetTransactionColl(db.Ctx, mongo.DB), db.Ctx}
-	return &Service{mongo, global, db.Ctx, logger, userSrv, audSrv, goodsSrv, transSrv}
+func NewService(ctx context.Context, mongo *db.Mongo, logger *slog.Logger) *Service {
+	global := db.GetCollections(ctx, mongo.DB)
+
+	service := &Service{
+		mongo:       mongo,
+		Collections: global,
+		logger:      logger,
+	}
+
+	service.UserService = &UserService{service: service, collection: db.GetUserColl(ctx, mongo.DB)}
+	service.AudienceService = &AudienceService{service: service, collection: db.GetAudienceColl(ctx, mongo.DB)}
+	service.GoodsService = &GoodsService{service: service, collection: db.GetGoodsColl(ctx, mongo.DB)}
+	service.TransactionService = &TransactionService{service: service, collection: db.GetTransactionColl(ctx, mongo.DB)}
+
+	return service
 }

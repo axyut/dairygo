@@ -9,14 +9,13 @@ import (
 )
 
 type TransactionService struct {
-	global     *db.Collections
+	service    *Service
 	collection db.Collection
-	ctx        context.Context
 }
 
-func (s *TransactionService) NewTransaction(userID string, goodsID string, quantity int) error {
+func (s *TransactionService) NewTransaction(ctx context.Context, userID string, goodsID string, quantity int) error {
 	transaction := *s.collection
-	res, err := transaction.InsertOne(s.ctx, bson.M{
+	res, err := transaction.InsertOne(ctx, bson.M{
 		"userID":   userID,
 		"goodsID":  goodsID,
 		"quantity": quantity,
@@ -29,9 +28,9 @@ func (s *TransactionService) NewTransaction(userID string, goodsID string, quant
 	return nil
 }
 
-func (s *TransactionService) GetTransaction(userID string) error {
+func (s *TransactionService) GetTransaction(ctx context.Context, userID string) error {
 	transaction := *s.collection
-	res, err := transaction.Find(s.ctx, bson.M{"userID": userID})
+	res, err := transaction.Find(ctx, bson.M{"userID": userID})
 	if err != nil {
 		fmt.Println(err)
 		return err
