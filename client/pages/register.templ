@@ -1,0 +1,49 @@
+package pages
+
+import "github.com/axyut/dairygo/client/components"
+
+templ RegisterPage() {
+	<div  hx-ext="response-targets">
+		<h1>
+			Register an account
+		</h1>
+		<form
+			hx-post="/register"
+			hx-trigger="submit"
+			hx-target="#register-error"
+			hx-swap="afterbegin"
+		>
+			<div id="register-error"></div>
+			<div>
+				<label for="email">Your email</label>
+				<input type="text" name="email" id="email" placeholder="name@company.com" required=""/>
+			</div>			
+			<div>
+				<label for="username">Your username</label>
+				<input type="text" name="username" id="username" placeholder="unique name" required=""/>
+			</div>
+			<div>
+				<label for="password">Password</label>
+				<input type="password" name="password" id="password" placeholder="••••••••" required=""/>
+			</div>
+			<button class="simpleButton" type="submit">
+				Register
+			</button>
+			<p>
+				Already have an account?
+				<a href="/login">Login</a>
+			</p>
+		</form>
+	</div>
+}
+
+templ RegisterSuccess() {
+	<h1>Registration successful</h1>
+	<p>Go to <a href="login">login</a></p>
+}
+
+
+templ RegisterError(msg string) {
+	    @components.Toast("Registration Error!" + msg)
+
+}

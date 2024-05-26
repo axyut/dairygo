@@ -1,0 +1,57 @@
+package pages
+
+import "github.com/axyut/dairygo/client/components"
+
+templ Login() {
+	<div  hx-ext="response-targets">
+		<h1>
+			Sign in to your account
+		</h1>
+        
+		<form
+			hx-post="/login"
+			hx-target="#response_success"
+			hx-target-4*="#response_error"
+			hx-target-error="#error"
+			hx-swap="afterbegin"
+		>
+        <div id="response_error"></div>
+		<div id="error"></div>
+		<div id="response_success"></div>
+			<div>
+				<label for="email">Your email or Username</label>
+				<input
+					type="text"
+					name="email_username"
+					id="email"
+					placeholder="name@company.com OR username"
+					required=""
+					autocomplete="email"
+				/>
+			</div>
+			<div>
+				<label for="password">Password</label>
+				<input
+					type="password"
+					name="password"
+					id="password"
+					placeholder="••••••••"
+					required=""
+					autocomplete="current-password"
+				/>
+			</div>
+			<button class="simpleButton" type="submit" >
+				Sign in
+			</button>
+			<p>
+				Don’t have an account yet?
+				<a href="/register">Register</a>
+			</p>
+		</form>
+	</div>
+}
+
+templ LoginError(msg string) {
+	// <p>Login Error! {msg}</p>
+    @components.Toast("Login Error!" + msg)
+}	

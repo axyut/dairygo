@@ -40,3 +40,34 @@ func (s *UserService) NewUser(ctx context.Context, name string, email string, pa
 	s.service.logger.Info("User Created")
 	return nil
 }
+
+func (s *UserService) GetUser(ctx context.Context, email string) error {
+	user := *s.collection
+	var result types.User
+	err := user.FindOne(ctx, bson.M{"email": email}).Decode(&result)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	s.service.logger.Info("User Found")
+	return nil
+}
+
+func (s *UserService) LoginUser(ctx context.Context, email_username string, password string) error {
+	user := *s.collection
+	var result types.User
+	err := user.FindOne(ctx, bson.M{"email": email_username}).Decode(&result)
+	if err != nil {
+		err := user.FindOne(ctx, bson.M{"username": email_username}).Decode(&result)
+		if err != nil {
+			s.service.logger.Error("User not found")
+			return err
+		}
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(password))
+	if err != nil {
+		s.service.logger.Error("Password not matched")
+		return err
+	}
+	return nil
+}

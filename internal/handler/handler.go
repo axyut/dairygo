@@ -5,8 +5,6 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/a-h/templ"
-	client "github.com/axyut/dairygo/client"
 	"github.com/axyut/dairygo/internal/service"
 )
 
@@ -18,6 +16,7 @@ type Handler struct {
 	GoodsHandler       *GoodsHandler
 	TransactionHandler *TransactionHandler
 	UserHandler        *UserHandler
+	HomeHandler        *HomeHandler
 }
 
 func NewHandler(ctx context.Context, srv *service.Service, logger *slog.Logger) *Handler {
@@ -27,6 +26,7 @@ func NewHandler(ctx context.Context, srv *service.Service, logger *slog.Logger) 
 	h.GoodsHandler = &GoodsHandler{h, srv.GoodsService}
 	h.TransactionHandler = &TransactionHandler{h, srv.TransactionService}
 	h.UserHandler = &UserHandler{h, srv.UserService}
+	h.HomeHandler = &HomeHandler{h}
 
 	return h
 }
@@ -36,11 +36,11 @@ func RootHandler(ctx context.Context, srv *service.Service, logger *slog.Logger)
 	h := NewHandler(ctx, srv, logger)
 
 	// Templ Handler
-	homePage := client.Index()
-	http.Handle("/", templ.Handler(homePage))
+	http.HandleFunc("/", h.HomeHandler.GetHome)
 
 	// User
-	http.HandleFunc("/api/user", h.UserHandler.CreateUser)
+	http.HandleFunc("/register", h.UserHandler.CreateUser)
+	http.HandleFunc("/login", h.UserHandler.LoginUser)
 
 	// Audience
 	http.HandleFunc("/api/audience", h.AudienceHandler.GetAudience)
