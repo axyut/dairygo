@@ -1,29 +1,31 @@
 package components
 
+import "github.com/axyut/dairygo/internal/middleware"
+
 templ Nav() {
-	<nav >
-		<div >
-			<ol >
-				<li>
+	<nav>
+		<div class="navContainer">
+			<ol class="nav-ol-left">
+				<li class="nav-list">
 					<a  href="/">Home</a>
 				</li>
-				<li>
+				<li class="nav-list">
 					<a  href="/about">About</a>
 				</li>
 			</ol>
-			<ol >
-				// if middleware.GetUser(ctx) != nil {
-					<li>
-						<button  hx-post="/logout">Logout</button>
+			<ol  class="nav-ol-right">
+				if middleware.GetUser(ctx) != "" {
+					<li class="nav-list">
+						<a hx-get="/logout" hx-swap="none">Logout</a>
 					</li>
-				// } else {
-					<li>
+				} else {
+					<li class="nav-list">
 						<a  href="/register">Register</a>
 					</li>
-					<li>
+					<li class="nav-list">
 						<a  href="/login">Login</a>
 					</li>
-				// }
+				}
 			</ol>
 		</div>
 	</nav>

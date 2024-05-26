@@ -3,12 +3,13 @@ package pages
 import "github.com/axyut/dairygo/client/components"
 
 templ Login() {
-	<div  hx-ext="response-targets">
+	<div class="formPage"  hx-ext="response-targets">
 		<h1>
 			Sign in to your account
 		</h1>
         
 		<form
+			class="formContainer"
 			hx-post="/login"
 			hx-target="#response_success"
 			hx-target-4*="#response_error"
@@ -19,29 +20,31 @@ templ Login() {
 		<div id="error"></div>
 		<div id="response_success"></div>
 			<div>
-				<label for="email">Your email or Username</label>
+				// <label for="email">Your email or Username</label>
 				<input
 					type="text"
 					name="email_username"
 					id="email"
-					placeholder="name@company.com OR username"
+					placeholder="email OR username"
 					required=""
 					autocomplete="email"
+					class="simpleInput"
 				/>
 			</div>
 			<div>
-				<label for="password">Password</label>
+				// <label for="password">Password</label>
 				<input
 					type="password"
 					name="password"
 					id="password"
-					placeholder="••••••••"
+					placeholder="password"
 					required=""
+					class="simpleInput"
 					autocomplete="current-password"
 				/>
 			</div>
 			<button class="simpleButton" type="submit" >
-				Sign in
+				Log in
 			</button>
 			<p>
 				Don’t have an account yet?

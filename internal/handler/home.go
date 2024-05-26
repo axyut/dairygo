@@ -17,6 +17,11 @@ func (h *HomeHandler) GetHome(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	home := pages.GuestIndex()
-	client.Layout(home, "DairyGo").Render(h.h.ctx, w)
+	user := h.h.UserHandler.GetUser(w, r)
+	home := pages.Index(user)
+	client.Layout(home, "DairyGo").Render(r.Context(), w)
+}
+
+func (h *HomeHandler) NotFound(w http.ResponseWriter, r *http.Request) {
+	pages.NotFound().Render(r.Context(), w)
 }

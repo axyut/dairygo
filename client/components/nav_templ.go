@@ -10,6 +10,8 @@ import "context"
 import "io"
 import "bytes"
 
+import "github.com/axyut/dairygo/internal/middleware"
+
 func Nav() templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
@@ -23,7 +25,22 @@ func Nav() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<nav><div><ol><li><a href=\"/\">Home</a></li><li><a href=\"/about\">About</a></li></ol><ol><li><button hx-post=\"/logout\">Logout</button></li><li><a href=\"/register\">Register</a></li><li><a href=\"/login\">Login</a></li></ol></div></nav>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<nav><div class=\"navContainer\"><ol class=\"nav-ol-left\"><li class=\"nav-list\"><a href=\"/\">Home</a></li><li class=\"nav-list\"><a href=\"/about\">About</a></li></ol><ol class=\"nav-ol-right\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if middleware.GetUser(ctx) != "" {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<li class=\"nav-list\"><a hx-get=\"/logout\" hx-swap=\"none\">Logout</a></li>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<li class=\"nav-list\"><a href=\"/register\">Register</a></li><li class=\"nav-list\"><a href=\"/login\">Login</a></li>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</ol></div></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

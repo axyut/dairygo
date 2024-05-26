@@ -1,20 +1,16 @@
 package pages
 
-// import "github.com/axyut/dairygo/client/components"
+import "github.com/axyut/dairygo/internal/types"
+import "github.com/axyut/dairygo/client/components"
 
 
-templ Index(email string) {
-	// @components.Nav()
 
-		<div>
-			Welcome {email}
-		</div>
-}
-
-templ GuestIndex() {
-	// @components.Nav()
+templ Index(user types.User) {
 
 		<div>
-			Welcome guest
+			Welcome {user.UserName}
+			<h2>Profile</h2>
+			@components.GetUser(user)
+			<h2>Dashboard</h2>
 		</div>
 }

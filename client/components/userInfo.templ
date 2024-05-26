@@ -1,0 +1,11 @@
+package components
+
+import "github.com/axyut/dairygo/internal/types"
+
+templ GetUser(user types.User){
+    <div>
+        <h1>{user.UserName}</h1>
+        <h2>{user.Email}</h2>
+    </div>
+
+}

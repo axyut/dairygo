@@ -3,11 +3,12 @@ package pages
 import "github.com/axyut/dairygo/client/components"
 
 templ RegisterPage() {
-	<div  hx-ext="response-targets">
+	<div class="formPage"  hx-ext="response-targets">
 		<h1>
 			Register an account
 		</h1>
 		<form
+		class="formContainer"
 			hx-post="/register"
 			hx-trigger="submit"
 			hx-target="#register-error"
@@ -15,16 +16,23 @@ templ RegisterPage() {
 		>
 			<div id="register-error"></div>
 			<div>
-				<label for="email">Your email</label>
-				<input type="text" name="email" id="email" placeholder="name@company.com" required=""/>
+				// <label for="email">Email</label>
+				<input type="text" name="email" id="email" placeholder="Email" required=""
+					class="simpleInput"
+				
+				/>
 			</div>			
 			<div>
-				<label for="username">Your username</label>
-				<input type="text" name="username" id="username" placeholder="unique name" required=""/>
+				// <label for="username">Username</label>
+				<input type="text" name="username" id="username" placeholder="Username" required=""
+					class="simpleInput"
+				/>
 			</div>
 			<div>
-				<label for="password">Password</label>
-				<input type="password" name="password" id="password" placeholder="••••••••" required=""/>
+				// <label for="password">Password</label>
+				<input type="password" name="password" id="password" placeholder="Password" required=""
+					class="simpleInput"
+				/>
 			</div>
 			<button class="simpleButton" type="submit">
 				Register

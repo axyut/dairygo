@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -26,13 +25,13 @@ func main() {
 		panic(err)
 	}
 	srv := service.NewService(ctx, mongo, logger)
-	handler.RootHandler(ctx, srv, logger)
+	server := handler.RootHandler(ctx, conf, srv, logger)
 
 	killSig := make(chan os.Signal, 1)
 	signal.Notify(killSig, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		http.ListenAndServe(fmt.Sprintf(":%s", conf.PORT), nil)
+		server.ListenAndServe()
 
 		if errors.Is(err, http.ErrServerClosed) {
 			logger.Info("Server shutdown complete")

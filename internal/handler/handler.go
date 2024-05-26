@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/axyut/dairygo/internal/config"
+	m "github.com/axyut/dairygo/internal/middleware"
 	"github.com/axyut/dairygo/internal/service"
 )
 
@@ -31,27 +33,25 @@ func NewHandler(ctx context.Context, srv *service.Service, logger *slog.Logger) 
 	return h
 }
 
-func RootHandler(ctx context.Context, srv *service.Service, logger *slog.Logger) *Handler {
+func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, logger *slog.Logger) *http.Server {
 
 	h := NewHandler(ctx, srv, logger)
+	router := http.NewServeMux()
+	chained := m.Chain(m.Logging, m.Auth)
 
-	// Templ Handler
-	http.HandleFunc("/", h.HomeHandler.GetHome)
-
-	// User
-	http.HandleFunc("/register", h.UserHandler.CreateUser)
-	http.HandleFunc("/login", h.UserHandler.LoginUser)
-
-	// Audience
-	http.HandleFunc("/api/audience", h.AudienceHandler.GetAudience)
-
-	// Goods
-	http.HandleFunc("/api/goods", h.GoodsHandler.GetGoods)
-
-	// Transaction
-	http.HandleFunc("/api/transaction", h.TransactionHandler.GetTransaction)
-
+	router.HandleFunc("/", h.HomeHandler.GetHome)
+	router.HandleFunc("/register", h.UserHandler.CreateUser)
+	router.HandleFunc("/login", h.UserHandler.LoginUser)
+	router.HandleFunc("/logout", h.UserHandler.LogoutUser)
+	router.HandleFunc("/api/audience", h.AudienceHandler.GetAudience)
+	router.HandleFunc("/api/goods", h.GoodsHandler.GetGoods)
+	router.HandleFunc("/api/transaction", h.TransactionHandler.GetTransaction)
 	// calculate
+	// unavailable all other routes
 
-	return h
+	server := &http.Server{
+		Addr:    ":" + conf.PORT,
+		Handler: chained(router),
+	}
+	return server
 }

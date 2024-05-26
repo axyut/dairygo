@@ -1,11 +1,16 @@
 package handler
 
 import (
+	"encoding/base64"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/axyut/dairygo/client"
 	"github.com/axyut/dairygo/client/pages"
 	"github.com/axyut/dairygo/internal/service"
+	"github.com/axyut/dairygo/internal/types"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserHandler struct {
@@ -14,7 +19,6 @@ type UserHandler struct {
 }
 
 func (user *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	user.h.logger.Info("UserHandler.CreateUser", "Method", r.Method)
 
 	if r.Method == "GET" {
 		w.WriteHeader(http.StatusOK)
@@ -32,28 +36,25 @@ func (user *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		username = r.FormValue("username")
 		email = r.FormValue("email")
 		password = r.FormValue("password")
+
 		if username == "" || email == "" || password == "" {
-			// send error template
-			// http.Error(w, "Empty Fields!", http.StatusBadRequest)
 			w.WriteHeader(http.StatusBadRequest)
 			pages.RegisterError("Invalid Credentials.").Render(r.Context(), w)
 			return
 		}
 	}
-	err := user.srv.NewUser(user.h.ctx, username, email, password)
+	_, err := user.srv.NewUser(user.h.ctx, username, email, password)
 	if err != nil {
-		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
-		// w.WriteHeader(http.StatusExpectationFailed)
+		user.h.logger.Error("UserHandler.CreateUser", "Error", err)
 		pages.RegisterError("Server Error.").Render(r.Context(), w)
 		return
 	}
-	// send success template
+
 	w.Header().Set("HX-Redirect", "/login")
 	w.WriteHeader(http.StatusOK)
 }
 
 func (user *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
-	user.h.logger.Info("UserHandler.LoginUser", "Method", r.Method)
 
 	if r.Method == "GET" {
 		w.WriteHeader(http.StatusOK)
@@ -75,51 +76,66 @@ func (user *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 
 		if email_username == "" || password == "" {
 			w.WriteHeader(http.StatusBadRequest)
-			http.Error(w, "Empty Fields!", http.StatusBadRequest)
-			logErr := pages.LoginError("Empty Fields!")
-			logErr.Render(user.h.ctx, w)
+			pages.LoginError("Empty Fields!").Render(r.Context(), w)
 			return
 		}
 	}
-	err := user.srv.LoginUser(user.h.ctx, email_username, password)
+	newuser, err := user.srv.LoginUser(user.h.ctx, email_username, password)
 	if err != nil {
-		// http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
 		w.WriteHeader(http.StatusUnauthorized)
-		// pages.Toast("Invalid Credentials!")
-		logErr := pages.LoginError("Invalid Credentials!")
-		logErr.Render(user.h.ctx, w)
-
+		pages.LoginError("Invalid Credentials!").Render(r.Context(), w)
 		return
 	}
-	// 	cookieValue := b64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%d", sessionID, userID)))
 
-	// expiration := time.Now().Add(365 * 24 * time.Hour)
-	// cookie := http.Cookie{
-	// 	Name:     h.sessionCookieName,
-	// 	Value:    cookieValue,
-	// 	Expires:  expiration,
-	// 	Path:     "/",
-	// 	HttpOnly: true,
-	// 	SameSite: http.SameSiteStrictMode,
-	// }
-	// http.SetCookie(w, &cookie)
+	cookieValue := base64.StdEncoding.EncodeToString([]byte(newuser.ID.Hex()))
+	expiration := time.Now().Add(365 * 24 * time.Hour)
+
+	cookie := http.Cookie{
+		Name:     "cookie",
+		Value:    cookieValue,
+		Expires:  expiration,
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	}
+
+	http.SetCookie(w, &cookie)
 	w.Header().Set("HX-Redirect", "/")
 	w.WriteHeader(http.StatusOK)
 }
 
-func (user *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
-	user.h.logger.Info("UserHandler.GetUser", "Method", r.Method)
+func (user *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) types.User {
+	userID := r.Context().Value("user_id")
+	if userID == nil {
+		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
+		return types.User{}
+	}
+	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
+	if err != nil {
+		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
+		return types.User{}
+	}
+	userData, err := user.srv.GetUserByID(user.h.ctx, id)
+	if err != nil {
+		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
+		return types.User{}
+	}
+	return userData
+}
 
+func (user *UserHandler) LogoutUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	// userData := user.srv.GetUser(user.h.ctx)
-	// if userData == nil {
-	// 	http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
-	// 	return
-	// }
-	// w.Header().Set("Content-Type", "application/json")
+	cookie := http.Cookie{
+		Name:    "cookie",
+		MaxAge:  -1,
+		Expires: time.Now().Add(-100 * time.Hour),
+		Path:    "/",
+	}
+
+	http.SetCookie(w, &cookie)
+	w.Header().Set("HX-Redirect", "/login")
 	w.WriteHeader(http.StatusOK)
-	// w.Write(userData)
 }
