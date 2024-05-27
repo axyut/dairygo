@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/axyut/dairygo/internal/db"
 	"github.com/axyut/dairygo/internal/types"
@@ -35,15 +34,15 @@ func (s *AudienceService) NewAudience(ctx context.Context, aud types.Audience) (
 	return
 }
 
-func (s *AudienceService) GetAudience(ctx context.Context, UserID string) error {
+func (s *AudienceService) GetAudienceByID(ctx context.Context, audID primitive.ObjectID) (aud types.Audience, err error) {
 	audience := *s.collection
-	res, err := audience.Find(ctx, bson.M{"userID": UserID})
+	aud = types.Audience{}
+	err = audience.FindOne(ctx, bson.M{"_id": audID}).Decode(&aud)
 	if err != nil {
-		fmt.Println(err)
-		return err
+		s.service.logger.Error("Error while fetching audience", err)
+		return
 	}
-	fmt.Println(res)
-	return nil
+	return
 }
 
 func (s *AudienceService) GetAllAudiences(ctx context.Context, userID primitive.ObjectID) (aud []types.Audience, err error) {

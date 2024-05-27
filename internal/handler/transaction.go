@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/axyut/dairygo/client"
 	"github.com/axyut/dairygo/client/components"
+	"github.com/axyut/dairygo/client/pages"
 	"github.com/axyut/dairygo/internal/service"
 	"github.com/axyut/dairygo/internal/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,21 +18,21 @@ type TransactionHandler struct {
 	srv *service.TransactionService
 }
 
-func (h *TransactionHandler) GetTransaction(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+func (h *TransactionHandler) GetTransactions(w http.ResponseWriter, r *http.Request) (trans []types.Transaction) {
+	userID := r.Context().Value("user_id")
+	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
+	if err != nil {
+		components.GeneralToastError("Couldn't Fullfill Your Request. Please Try Again.").Render(r.Context(), w)
+		h.h.logger.Error("Error while Parsing in Handler.", err)
 		return
 	}
-	transID := r.URL.Query().Get("id")
-	if transID == "" {
-		http.Error(w, "Empty Fields!", http.StatusBadRequest)
-	}
-	err := h.srv.GetTransaction(h.h.ctx, transID)
+
+	trans, err = h.srv.GetTransaction(r.Context(), id)
 	if err != nil {
-		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
+		components.GeneralToastError("Error with service.").Render(r.Context(), w)
+		return
 	}
+	return
 }
 
 func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +48,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	var soldTo primitive.ObjectID
 	var payment_b bool = false
 
-	if goodID == "" || quantity == "" || price == "" || audienceID == "" || trans_type == "" || payment == "" || userID == "" {
+	if goodID == "" || quantity == "" || price == "" || audienceID == "" || trans_type == "" || userID == "" {
 		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
@@ -96,4 +98,76 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	components.GeneralToastSuccess("Transaction Added Successfully!").Render(r.Context(), w)
+}
+
+func (h *TransactionHandler) GetSold(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("user_id")
+	if userID == nil {
+		components.GeneralToastError("Couldn't Identify User. Please Login Again.")
+	}
+
+	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
+	if err != nil {
+		components.GeneralToastError("Couldn't Fullfill Your Request. Please Try Again.")
+	}
+
+	soldTrans, err := h.h.srv.TransactionService.GetSoldTransactions(r.Context(), id)
+	if err != nil {
+		components.GeneralToastError("Error with service.")
+		return
+	}
+	client_Trans := []types.Transaction_Client{}
+
+	for _, v := range soldTrans {
+		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), v.GoodID)
+		soldAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.SoldTo)
+		// boughtAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.BoughtFrom)
+		client_Trans = append(client_Trans, types.Transaction_Client{
+			ID:       v.ID,
+			GoodName: good.Name,
+			GoodUnit: good.Unit,
+			Quantity: strconv.FormatFloat(v.Quantity, 'f', 2, 64),
+			Price:    strconv.FormatFloat(v.Price, 'f', 2, 64),
+			SoldTo:   soldAudience.Name,
+			Payment:  v.Payment,
+			// BoughtFrom: boughtAudience.Name,
+		})
+	}
+	soldPage := pages.Sold(client_Trans)
+	client.Layout(soldPage, "Sold Dairy Products").Render(r.Context(), w)
+}
+
+func (h *TransactionHandler) GetBought(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("user_id")
+	if userID == nil {
+		components.GeneralToastError("Couldn't Identify User. Please Login Again.")
+	}
+
+	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
+	if err != nil {
+		components.GeneralToastError("Couldn't Fullfill Your Request. Please Try Again.")
+	}
+	boughts, err := h.h.srv.TransactionService.GetBoughtTransactions(r.Context(), id)
+	if err != nil {
+		components.GeneralToastError("Error with service.")
+		return
+	}
+	client_T := []types.Transaction_Client{}
+	for _, v := range boughts {
+		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), v.GoodID)
+		// soldAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.SoldTo)
+		boughtAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.BoughtFrom)
+		client_T = append(client_T, types.Transaction_Client{
+			ID:       v.ID,
+			GoodName: good.Name,
+			GoodUnit: good.Unit,
+			Quantity: strconv.FormatFloat(v.Quantity, 'f', 2, 64),
+			Price:    strconv.FormatFloat(v.Price, 'f', 2, 64),
+			// SoldTo:     soldAudience.Name,
+			Payment:    v.Payment,
+			BoughtFrom: boughtAudience.Name,
+		})
+	}
+	boughtPage := pages.Bought(client_T)
+	client.Layout(boughtPage, "Bought Dairy Products").Render(r.Context(), w)
 }

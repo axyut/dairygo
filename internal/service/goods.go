@@ -30,15 +30,15 @@ func (s *GoodsService) NewGoods(ctx context.Context, name string, price float64,
 	return nil
 }
 
-func (s *GoodsService) GetGoods(ctx context.Context, name string) error {
+func (s *GoodsService) GetGoodByID(ctx context.Context, id primitive.ObjectID) (good types.Good, err error) {
 	goods := *s.collection
-	res, err := goods.Find(ctx, bson.M{"name": name})
+	good = types.Good{}
+	err = goods.FindOne(ctx, bson.M{"_id": id}).Decode(&good)
 	if err != nil {
-		fmt.Println(err)
-		return err
+		s.service.logger.Error("Error while fetching good", err)
+		return
 	}
-	fmt.Println(res)
-	return nil
+	return
 }
 
 func (s *GoodsService) InsertGood(ctx context.Context, good types.Good) (insertedGood types.Good, err error) {

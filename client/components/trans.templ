@@ -31,7 +31,7 @@ templ sold(goods []types.Good, auds []types.Audience){
                 }
             </select>
             <label for="payment">Payment:</label>
-            <input class="simpleInput" type="checkbox" name="payment" placeholder="Payment" required />
+            <input class="simpleInput" type="checkbox" name="payment" />
             <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
             <input class="simpleInput" type="number" name="price" placeholder="Price" required />
             <input class="simpleInput" type="hidden" name="type" value="sold" />
@@ -66,7 +66,7 @@ templ bought(goods []types.Good, auds []types.Audience){
                 }
             </select>
             <label for="payment">Payment:</label>
-            <input class="simpleInput" type="checkbox" name="payment" placeholder="Payment" required />
+            <input class="simpleInput" type="checkbox" name="payment"/>
             <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
             <input class="simpleInput" type="number" name="price" placeholder="Price" required />
             <input class="simpleInput" type="hidden" name="type" value="bought" />

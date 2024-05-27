@@ -125,7 +125,7 @@ func sold(goods []types.Good, auds []types.Audience) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"payment\">Payment:</label> <input class=\"simpleInput\" type=\"checkbox\" name=\"payment\" placeholder=\"Payment\" required> <input class=\"simpleInput\" type=\"number\" name=\"quantity\" placeholder=\"Quantity\" required> <input class=\"simpleInput\" type=\"number\" name=\"price\" placeholder=\"Price\" required> <input class=\"simpleInput\" type=\"hidden\" name=\"type\" value=\"sold\"> <button type=\"submit\">Submit</button></form><div id=\"sold\"></div><div id=\"error\"></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"payment\">Payment:</label> <input class=\"simpleInput\" type=\"checkbox\" name=\"payment\"> <input class=\"simpleInput\" type=\"number\" name=\"quantity\" placeholder=\"Quantity\" required> <input class=\"simpleInput\" type=\"number\" name=\"price\" placeholder=\"Price\" required> <input class=\"simpleInput\" type=\"hidden\" name=\"type\" value=\"sold\"> <button type=\"submit\">Submit</button></form><div id=\"sold\"></div><div id=\"error\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -221,7 +221,7 @@ func bought(goods []types.Good, auds []types.Audience) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"payment\">Payment:</label> <input class=\"simpleInput\" type=\"checkbox\" name=\"payment\" placeholder=\"Payment\" required> <input class=\"simpleInput\" type=\"number\" name=\"quantity\" placeholder=\"Quantity\" required> <input class=\"simpleInput\" type=\"number\" name=\"price\" placeholder=\"Price\" required> <input class=\"simpleInput\" type=\"hidden\" name=\"type\" value=\"bought\"> <button type=\"submit\">Submit</button></form><div id=\"bought\"></div><div id=\"error\"></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"payment\">Payment:</label> <input class=\"simpleInput\" type=\"checkbox\" name=\"payment\"> <input class=\"simpleInput\" type=\"number\" name=\"quantity\" placeholder=\"Quantity\" required> <input class=\"simpleInput\" type=\"number\" name=\"price\" placeholder=\"Price\" required> <input class=\"simpleInput\" type=\"hidden\" name=\"type\" value=\"bought\"> <button type=\"submit\">Submit</button></form><div id=\"bought\"></div><div id=\"error\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

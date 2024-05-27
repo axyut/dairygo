@@ -16,27 +16,11 @@ type GoodsHandler struct {
 	srv *service.GoodsService
 }
 
-func (h *GoodsHandler) GetGoods(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	goodID := r.URL.Query().Get("id")
-	if goodID == "" {
-		http.Error(w, "Empty Fields!", http.StatusBadRequest)
-	}
-	err := h.srv.GetGoods(h.h.ctx, goodID)
-	if err != nil {
-		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
-	}
-}
-
 func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	price, perr := strconv.ParseFloat(r.FormValue("price"), 64)
 	quantity, qerr := strconv.ParseFloat(r.FormValue("quantity"), 64)
+	unit := r.FormValue("unit")
 	userID := r.Context().Value("user_id")
 
 	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
@@ -57,6 +41,7 @@ func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 		Name:     name,
 		Price:    price,
 		Quantity: quantity,
+		Unit:     unit,
 		UserID:   id,
 	}
 

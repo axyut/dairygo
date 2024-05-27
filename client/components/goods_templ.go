@@ -103,7 +103,7 @@ func insertGood() templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div hx-ext=\"response-targets\"><h1>Insert Good</h1><form hx-post=\"/goods\" hx-target=\"#response_success\" hx-target-error=\"#error\" hx-target-4*=\"#response_error\" hx-swap=\"afterbegin\" class=\"formContainer\"><input class=\"simpleInput\" type=\"text\" name=\"name\" placeholder=\"Good Name\"> <input class=\"simpleInput\" type=\"text\" name=\"quantity\" placeholder=\"Good Quantity\"> <input class=\"simpleInput\" type=\"text\" name=\"price\" placeholder=\"Good Price\"> <button class=\"simpleButton\" type=\"submit\">Insert</button></form><div id=\"error\"></div><div id=\"response_error\"></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div hx-ext=\"response-targets\"><h1>Insert Good</h1><form hx-post=\"/goods\" hx-target=\"#response_success\" hx-target-error=\"#error\" hx-target-4*=\"#response_error\" hx-swap=\"afterbegin\" class=\"formContainer\"><input class=\"simpleInput\" type=\"text\" name=\"name\" placeholder=\" Name\"> <input class=\"simpleInput\" type=\"text\" name=\"quantity\" placeholder=\" Quantity\"> <input class=\"simpleInput\" type=\"text\" name=\"unit\" placeholder=\" Unit\"> <input class=\"simpleInput\" type=\"text\" name=\"price\" placeholder=\" Price\"> <button class=\"simpleButton\" type=\"submit\">Insert</button></form><div id=\"error\"></div><div id=\"response_error\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -158,7 +158,7 @@ func GoodInsertSuccess(good types.Good) templ.Component {
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(good.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/goods.templ`, Line: 54, Col: 18}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/goods.templ`, Line: 55, Col: 18}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -171,7 +171,7 @@ func GoodInsertSuccess(good types.Good) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.FormatFloat(good.Price, 'f', -1, 64))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/goods.templ`, Line: 55, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/goods.templ`, Line: 56, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -184,7 +184,7 @@ func GoodInsertSuccess(good types.Good) templ.Component {
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.FormatFloat(good.Quantity, 'f', -1, 64))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/goods.templ`, Line: 56, Col: 56}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/goods.templ`, Line: 57, Col: 56}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
