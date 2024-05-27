@@ -18,7 +18,12 @@ func (h *HomeHandler) GetHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := h.h.UserHandler.GetUser(w, r)
-	home := pages.Index(user)
+	goods, err := h.h.srv.GoodsService.GetAllGoods(r.Context())
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	home := pages.Index(user, goods)
 	client.Layout(home, "DairyGo").Render(r.Context(), w)
 }
 

@@ -5,12 +5,10 @@ import "github.com/axyut/dairygo/client/components"
 
 
 
-templ Index(user types.User) {
+templ Index(user types.User, goods []types.Good) {
 
 		<div>
-			Welcome {user.UserName}
-			<h2>Profile</h2>
 			@components.GetUser(user)
-			<h2>Dashboard</h2>
+			@components.TodaysGoods(goods)
 		</div>
 }

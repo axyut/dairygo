@@ -1,0 +1,58 @@
+package components
+import "github.com/axyut/dairygo/internal/types"
+import "strconv"
+
+templ TodaysGoods(goods []types.Good) {
+  <div>
+    <h1>Today's Goods</h1>
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Quantity</th>
+      </tr>
+      for _, good := range goods {
+        <tr>
+          <td>{good.Name}</td>
+          <td>{strconv.FormatFloat(good.Price, 'f', -1, 64)}</td>
+          <td>{strconv.FormatFloat(good.Quantity, 'f', -1, 64)}</td>
+        </tr>
+      }
+      <tr id="response_success"></tr>
+    </table>
+  </div>
+  @InsertGood()
+}
+
+templ InsertGood() {
+  <div hx-ext="response-targets">
+    <h1>Insert Good</h1>
+    <form
+      hx-post="/goods"
+			hx-target="#response_success"
+			hx-target-error="#error"
+      hx-target-4*="#response_error"
+      hx-swap="afterbegin"
+      class="formContainer"
+    >
+      <input class="simpleInput" type="text" name="name" placeholder="Good Name" />
+      <input class="simpleInput" type="text" name="quantity" placeholder="Good Quantity" />
+      <input class="simpleInput" type="text" name="price" placeholder="Good Price" />
+      <button class="simpleButton" type="submit">Insert</button>
+    </form>
+    <div id="error"></div>
+    <div id="response_error"></div>
+  </div>
+}
+
+templ GoodInsertError(msg string) {
+	// <p>Login Error! {msg}</p>
+    @Toast("Goods Creation Error! " + msg)
+}
+
+templ GoodInsertSuccess(good types.Good) {
+    <td>{good.Name}</td>
+    <td>{strconv.FormatFloat(good.Price, 'f', -1, 64)}</td>
+    <td>{strconv.FormatFloat(good.Quantity, 'f', -1, 64)}</td>
+    @Toast(good.Name+" Created Successfully!" )
+}
