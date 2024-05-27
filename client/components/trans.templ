@@ -2,12 +2,12 @@ package components
 
 import "github.com/axyut/dairygo/internal/types"
 
-templ Transaction(goods []types.Good){
-    @sold(goods)
-    @bought()
+templ Transaction(goods []types.Good, auds []types.Audience){
+    @sold(goods, auds)
+    @bought(goods, auds)
 }
 
-templ sold(goods []types.Good){
+templ sold(goods []types.Good, auds []types.Audience){
     <div>
         <h1>Sold</h1>
         <form
@@ -18,15 +18,22 @@ templ sold(goods []types.Good){
             hx-error="#error"
             class="formContainer"
         >
-            <label for="good">Sold to:</label>
+            <label for="good">Sold Item:</label>
             <select id="good" name="goodID" required>
                 for _, good := range goods {
                     <option value={good.ID.Hex()}>{good.Name}</option>
                 }
             </select>
-            <input class="simpleInput" type="text" name="audienceID" placeholder="Select people" required />
+            <label for="audience">Sold to:</label>
+            <select id="audience" name="audienceID" required>
+                for _, aud := range auds {
+                    <option value={aud.ID.Hex()}>{aud.Name}</option>
+                }
+            </select>
+            <label for="payment">Payment:</label>
             <input class="simpleInput" type="checkbox" name="payment" placeholder="Payment" required />
             <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
+            <input class="simpleInput" type="number" name="price" placeholder="Price" required />
             <input class="simpleInput" type="hidden" name="type" value="sold" />
             <button type="submit">Submit</button>
         </form>
@@ -35,7 +42,7 @@ templ sold(goods []types.Good){
     </div>
 }
 
-templ bought(){
+templ bought(goods []types.Good, auds []types.Audience){
     <div>
         <h1>Bought</h1>
         <form
@@ -46,10 +53,22 @@ templ bought(){
             hx-error="#error"
             class="formContainer"
         >
-            <input class="simpleInput" type="text" name="goodID" placeholder="Select item" required />
-            <input class="simpleInput" type="text" name="audienceID" placeholder="Select people" required />
+            <label for="good">Bought Item:</label>
+            <select id="good" name="goodID" required>
+                for _, good := range goods {
+                    <option value={good.ID.Hex()}>{good.Name}</option>
+                }
+            </select>
+            <label for="audience">Bought from:</label>
+            <select id="audience" name="audienceID" required>
+                for _, aud := range auds {
+                    <option value={aud.ID.Hex()}>{aud.Name}</option>
+                }
+            </select>
+            <label for="payment">Payment:</label>
             <input class="simpleInput" type="checkbox" name="payment" placeholder="Payment" required />
             <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
+            <input class="simpleInput" type="number" name="price" placeholder="Price" required />
             <input class="simpleInput" type="hidden" name="type" value="bought" />
             <button type="submit">Submit</button>
         </form>

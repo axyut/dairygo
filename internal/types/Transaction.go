@@ -12,6 +12,7 @@ type Transaction struct {
 	BoughtFrom primitive.ObjectID `json:"boughtFrom,omitempty" bson:"boughtFrom,omitempty"`
 	SoldTo     primitive.ObjectID `json:"soldTo,omitempty" bson:"soldTo,omitempty"`
 	Type       TransactionType    `json:"type" bson:"type"`
+	Payment    bool               `json:"payment" bson:"payment"`
 	UserID     primitive.ObjectID `json:"userID" bson:"userID"`
 }
 

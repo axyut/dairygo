@@ -42,7 +42,7 @@ func Index(user types.User, goods []types.Good, auds []types.Audience) templ.Com
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.Transaction(goods).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.Transaction(goods, auds).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

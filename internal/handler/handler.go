@@ -45,7 +45,7 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 	router.HandleFunc("/logout", h.UserHandler.LogoutUser)
 	router.HandleFunc("POST /audience", h.AudienceHandler.NewAudience)
 	router.HandleFunc("POST /goods", h.GoodsHandler.NewGood)
-	router.HandleFunc("/transaction", h.TransactionHandler.GetTransaction)
+	router.HandleFunc("POST /transaction", h.TransactionHandler.NewTransaction)
 	// calculate
 	// unavailable all other routes
 

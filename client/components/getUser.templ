@@ -9,3 +9,13 @@ templ GetUser(user types.User){
     </div>
 
 }
+
+// color red
+templ GeneralToastError(msg string) {
+    @Toast("Error! " + msg)
+}
+
+// color green
+templ GeneralToastSuccess(msg string) {
+    @Toast("Success! " + msg)
+}

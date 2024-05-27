@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/axyut/dairygo/internal/db"
+	"github.com/axyut/dairygo/internal/types"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -13,19 +14,28 @@ type TransactionService struct {
 	collection db.Collection
 }
 
-func (s *TransactionService) NewTransaction(ctx context.Context, userID string, goodsID string, quantity int) error {
+func (s *TransactionService) NewTransaction(ctx context.Context, trans types.Transaction) (insertedTrans types.Transaction, err error) {
 	transaction := *s.collection
 	res, err := transaction.InsertOne(ctx, bson.M{
-		"userID":   userID,
-		"goodsID":  goodsID,
-		"quantity": quantity,
+		"goodID":     trans.GoodID,
+		"quantity":   trans.Quantity,
+		"price":      trans.Price,
+		"boughtFrom": trans.BoughtFrom,
+		"soldTo":     trans.SoldTo,
+		"userID":     trans.UserID,
+		"type":       trans.Type,
+		"payment":    trans.Payment,
 	})
 	if err != nil {
-		fmt.Println(err)
-		return err
+		s.service.logger.Error("Error while inserting new transaction", err)
+		return trans, err
 	}
-	fmt.Println(res)
-	return nil
+	err = transaction.FindOne(ctx, bson.M{"_id": res.InsertedID}).Decode(&trans)
+	if err != nil {
+		s.service.logger.Error("Error while decoding new transaction", err)
+		return trans, err
+	}
+	return trans, nil
 }
 
 func (s *TransactionService) GetTransaction(ctx context.Context, userID string) error {
