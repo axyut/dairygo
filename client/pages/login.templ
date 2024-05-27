@@ -11,14 +11,11 @@ templ Login() {
 		<form
 			class="formContainer"
 			hx-post="/login"
-			hx-target="#response_success"
-			hx-target-4*="#response_error"
+			hx-target="#login_success"
 			hx-target-error="#error"
 			hx-swap="afterbegin"
 		>
-        <div id="response_error"></div>
-		<div id="error"></div>
-		<div id="response_success"></div>
+		<div id="login_success"></div>
 			<div>
 				// <label for="email">Your email or Username</label>
 				<input

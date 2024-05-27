@@ -18,6 +18,6 @@ type Transaction struct {
 type TransactionType string
 
 const (
-	Import TransactionType = "import"
-	Export TransactionType = "export"
+	Sold   TransactionType = "sold"
+	Bought TransactionType = "bought"
 )

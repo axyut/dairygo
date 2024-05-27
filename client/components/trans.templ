@@ -1,0 +1,59 @@
+package components
+
+import "github.com/axyut/dairygo/internal/types"
+
+templ Transaction(goods []types.Good){
+    @sold(goods)
+    @bought()
+}
+
+templ sold(goods []types.Good){
+    <div>
+        <h1>Sold</h1>
+        <form
+            hx-post="/transaction"
+            hx-swap="afterbegin"
+            hx-target="#sold"
+            hx-trigger="submit"
+            hx-error="#error"
+            class="formContainer"
+        >
+            <label for="good">Sold to:</label>
+            <select id="good" name="goodID" required>
+                for _, good := range goods {
+                    <option value={good.ID.Hex()}>{good.Name}</option>
+                }
+            </select>
+            <input class="simpleInput" type="text" name="audienceID" placeholder="Select people" required />
+            <input class="simpleInput" type="checkbox" name="payment" placeholder="Payment" required />
+            <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
+            <input class="simpleInput" type="hidden" name="type" value="sold" />
+            <button type="submit">Submit</button>
+        </form>
+        <div id="sold"></div>
+        <div id="error"></div>
+    </div>
+}
+
+templ bought(){
+    <div>
+        <h1>Bought</h1>
+        <form
+            hx-post="/transaction"
+            hx-swap="afterbegin"
+            hx-target="#bought"
+            hx-trigger="submit"
+            hx-error="#error"
+            class="formContainer"
+        >
+            <input class="simpleInput" type="text" name="goodID" placeholder="Select item" required />
+            <input class="simpleInput" type="text" name="audienceID" placeholder="Select people" required />
+            <input class="simpleInput" type="checkbox" name="payment" placeholder="Payment" required />
+            <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
+            <input class="simpleInput" type="hidden" name="type" value="bought" />
+            <button type="submit">Submit</button>
+        </form>
+        <div id="bought"></div>
+        <div id="error"></div>
+    </div>
+}

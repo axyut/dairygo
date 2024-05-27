@@ -21,10 +21,10 @@ templ TodaysGoods(goods []types.Good) {
       <tr id="response_success"></tr>
     </table>
   </div>
-  @InsertGood()
+  @insertGood()
 }
 
-templ InsertGood() {
+templ insertGood() {
   <div hx-ext="response-targets">
     <h1>Insert Good</h1>
     <form

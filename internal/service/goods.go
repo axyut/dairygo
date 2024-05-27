@@ -7,6 +7,7 @@ import (
 	"github.com/axyut/dairygo/internal/db"
 	"github.com/axyut/dairygo/internal/types"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type GoodsService struct {
@@ -62,20 +63,24 @@ func (s *GoodsService) InsertGood(ctx context.Context, good types.Good) (inserte
 	return good, nil
 }
 
-func (s *GoodsService) GetAllGoods(ctx context.Context) (goods []types.Good, err error) {
+func (s *GoodsService) GetAllGoods(ctx context.Context, userID primitive.ObjectID) (goods []types.Good, err error) {
 	goods = []types.Good{}
 	goodsCollection := *s.collection
-	cursor, err := goodsCollection.Find(ctx, bson.M{})
+
+	cursor, err := goodsCollection.Find(ctx, bson.M{
+		"userID": userID,
+	})
 	if err != nil {
-		fmt.Println(err)
+		s.service.logger.Error("Error while fetching all goods", err)
 		return
 	}
+
 	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
 		var good types.Good
 		err = cursor.Decode(&good)
 		if err != nil {
-			fmt.Println(err)
+			s.service.logger.Error("Error while decoding all goods", err)
 			return
 		}
 		goods = append(goods, good)

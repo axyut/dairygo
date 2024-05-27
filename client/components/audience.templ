@@ -1,0 +1,61 @@
+package components
+import "github.com/axyut/dairygo/internal/types"
+import "strconv"
+
+templ Audiences(audiences []types.Audience) {
+  <div>
+    <h1>All audiences</h1>
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Contact</th>
+        <th>To Pay</th>
+        <th>To Receive</th>
+        <th>Paid</th>
+      </tr>
+      for _, aud := range audiences {
+        <tr>
+            <td>{aud.Name}</td>
+            <td>{aud.Contact}</td>
+            <td>{strconv.FormatFloat(aud.ToPay, 'f', -1, 64)}</td>
+            <td>{strconv.FormatFloat(aud.ToReceive, 'f', -1, 64)}</td>
+            <td>{strconv.FormatFloat(aud.Paid, 'f', -1, 64)}</td>
+        </tr>
+      }
+      <tr id="aud_success"></tr>
+    </table>
+  </div>
+  @insertAud()
+}
+
+templ insertAud() {
+  <div hx-ext="response-targets">
+    <h1>Insert Audience</h1>
+    <form
+        hx-post="/audience"
+	    hx-target="#aud_success"
+		hx-target-error="#error"
+        hx-swap="afterbegin"
+        class="formContainer"
+    >
+      <input class="simpleInput" type="text" name="name" placeholder="Audience Name" />
+      <input class="simpleInput" type="text" name="contact" placeholder="Contact" />
+      <input class="simpleInput" type="text" name="email" placeholder="Email" />
+      <button class="simpleButton" type="submit">Insert</button>
+    </form>
+  </div>
+}
+
+templ AudienceInsertError(msg string) {
+	// <p>Login Error! {msg}</p>
+    @Toast("Audience Creation Error! " + msg)
+}
+
+templ AudienceInsertSuccess(aud types.Audience) {
+    <td>{aud.Name}</td>
+    <td>{aud.Contact}</td>
+    <td>{strconv.FormatFloat(aud.ToPay, 'f', -1, 64)}</td>
+    <td>{strconv.FormatFloat(aud.ToReceive, 'f', -1, 64)}</td>
+    <td>{strconv.FormatFloat(aud.Paid, 'f', -1, 64)}</td>
+    @Toast(aud.Name+" Created Successfully!" )
+}
