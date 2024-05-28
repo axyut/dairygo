@@ -3,7 +3,7 @@ import "github.com/axyut/dairygo/internal/types"
 import "strconv"
 
 templ TodaysGoods(goods []types.Good) {
-  <div>
+  <div  hx-ext="response-targets">
     <h1>Today's Goods</h1>
     <table>
       <tr>
@@ -13,33 +13,9 @@ templ TodaysGoods(goods []types.Good) {
         <th>Options</th>
       </tr>
       for _, good := range goods {
-        <tr id={"good_"+good.ID.Hex()}>
-          <td>{good.Name}</td>
-          <td>{strconv.FormatFloat(good.Rate, 'f', -1, 64)} /{good.Unit} </td>
-          <td>{" * "+strconv.FormatFloat(good.Quantity, 'f', -1, 64) +" "+ good.Unit +" = Rs." + strconv.FormatFloat(good.Price, 'f', -1, 64)}</td>
-          <td>
-            <button
-              hx-delete={"/goods?id="+good.ID.Hex()}
-              hx-target={"#good_"+good.ID.Hex()}
-              hx-target-error="#error"
-              hx-swap="outerHTML"
-              class="simpleButtonRED"
-            >
-              Delete
-            </button>
-            <button
-              hx-put={"/goods?id="+good.ID.Hex()}
-              hx-target={"#good_"+good.ID.Hex()}
-              hx-target-error="#error"
-              hx-swap="outerHTML"
-              class="simpleButton"
-            >
-              Update
-            </button>
-          </td>
-        </tr>
+          @GoodArray(good)
       }
-      <tr id="response_success"></tr>
+      <tr id="good_success"></tr>
     </table>
   </div>
   @insertGood()
@@ -50,30 +26,60 @@ templ insertGood() {
     <h1>Insert Good</h1>
     <form
       hx-post="/goods"
-			hx-target="#response_success"
+			hx-target="#good_success"
 			hx-target-error="#error"
-      hx-target-4*="#response_error"
       hx-swap="afterbegin"
       class="formContainer"
     >
       <input class="simpleInput" type="text" name="name" placeholder=" Name" />
       <input class="simpleInput" type="text" name="unit" placeholder=" Unit" />
       <input class="simpleInput" type="text" name="rate" placeholder=" Rate" />
-      <button class="simpleButton" type="submit">Insert</button>
+      <button class="simpleButton" type="submit">Create</button>
     </form>
-    <div id="error"></div>
-    <div id="response_error"></div>
+    // <div id="error"></div>
+    // <div id="response_error"></div>
   </div>
 }
 
 templ GoodInsertError(msg string) {
-	// <p>Login Error! {msg}</p>
-    @Toast("Goods Creation Error! " + msg)
+    @Toast("Goods Modification Error! " + msg)
+    // @goodArray(good)
 }
 
 templ GoodInsertSuccess(good types.Good) {
-    <td>{good.Name}</td>
-    <td>{strconv.FormatFloat(good.Price, 'f', -1, 64)}</td>
-    <td>{strconv.FormatFloat(good.Quantity, 'f', -1, 64)}</td>
-    @Toast(good.Name+" Created Successfully!" )
+    @GoodArray(good)
+    @Toast(good.Name+" Modification Successful!" )
+}
+
+templ GoodArray(good types.Good){
+  <tr id={"good_"+good.ID.Hex()}>
+    <td>
+      <input class="tableInput" type="text" name="good_name" value={good.Name} />
+    </td>
+    <td>
+      <input class="tableInput" type="text" name="good_rate" value={strconv.FormatFloat(good.Rate, 'f', -1, 64) + " /"+ good.Unit} />
+      </td>
+    <td>{" * "+strconv.FormatFloat(good.Quantity, 'f', -1, 64) +" "+ good.Unit +" = Rs." + strconv.FormatFloat(good.Rate * good.Quantity, 'f', -1, 64)}</td>
+    <td>
+      <button
+        hx-delete={"/goods?id="+good.ID.Hex()}
+        hx-target={"#good_"+good.ID.Hex()}
+        hx-target-error="#error"
+        hx-swap="outerHTML"
+        class="simpleButtonRED"
+      >
+        Delete
+      </button>
+      <button
+        hx-patch={"/goods?id="+good.ID.Hex()}
+        hx-include="[name='good_name'], [name='good_rate']"
+        hx-target={"#good_"+good.ID.Hex()}
+        hx-target-error="#error"
+        hx-swap="outerHTML"
+        class="simpleButton"
+      >
+        Update
+      </button>
+    </td>
+  </tr>
 }

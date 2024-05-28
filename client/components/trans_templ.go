@@ -25,7 +25,7 @@ func Transaction(goods []types.Good, auds []types.Audience) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = sold(goods, auds).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = sell(goods, auds).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -40,7 +40,7 @@ func Transaction(goods []types.Good, auds []types.Audience) templ.Component {
 	})
 }
 
-func sold(goods []types.Good, auds []types.Audience) templ.Component {
+func sell(goods []types.Good, auds []types.Audience) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -53,7 +53,7 @@ func sold(goods []types.Good, auds []types.Audience) templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div><h1>Sold</h1><form hx-post=\"/transaction\" hx-swap=\"afterbegin\" hx-target=\"#sold\" hx-trigger=\"submit\" hx-error=\"#error\" class=\"formContainer\"><label for=\"good\">Sold Item:</label> <select id=\"good\" name=\"goodID\" required>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div><h1>Sell</h1><form hx-post=\"/transaction\" hx-swap=\"afterbegin\" hx-target=\"#sold\" hx-trigger=\"submit\" hx-error=\"#error\" class=\"formContainer\"><label for=\"good\">Sell Item:</label> <select id=\"good\" name=\"goodID\" required>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -89,7 +89,7 @@ func sold(goods []types.Good, auds []types.Audience) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"audience\">Sold to:</label> <select id=\"audience\" name=\"audienceID\" required>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"audience\">Sell to:</label> <select id=\"audience\" name=\"audienceID\" required>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -125,7 +125,7 @@ func sold(goods []types.Good, auds []types.Audience) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"payment\">Payment:</label> <input class=\"simpleInput\" type=\"checkbox\" name=\"payment\"> <input class=\"simpleInput\" type=\"number\" name=\"quantity\" placeholder=\"Quantity\" required> <input class=\"simpleInput\" type=\"hidden\" name=\"type\" value=\"sold\"> <button type=\"submit\">Submit</button></form><div id=\"sold\"></div><div id=\"error\"></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"payment\">Payment:</label> <input class=\"simpleInput\" type=\"checkbox\" name=\"payment\"> <input class=\"simpleInput\" type=\"number\" name=\"quantity\" placeholder=\"Quantity\" required> <input class=\"simpleInput\" type=\"hidden\" name=\"type\" value=\"sold\"> <button class=\"simpleButton\" type=\"submit\">SELL</button></form><div id=\"sold\"></div><div id=\"error\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -161,7 +161,7 @@ func bought(goods []types.Good, auds []types.Audience) templ.Component {
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(good.ID.Hex())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 58, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 60, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -174,7 +174,7 @@ func bought(goods []types.Good, auds []types.Audience) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(good.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 58, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 60, Col: 60}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -197,7 +197,7 @@ func bought(goods []types.Good, auds []types.Audience) templ.Component {
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(aud.ID.Hex())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 64, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 66, Col: 47}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -210,7 +210,7 @@ func bought(goods []types.Good, auds []types.Audience) templ.Component {
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(aud.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 64, Col: 58}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 66, Col: 58}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -221,7 +221,7 @@ func bought(goods []types.Good, auds []types.Audience) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"payment\">Payment:</label> <input class=\"simpleInput\" type=\"checkbox\" name=\"payment\"> <input class=\"simpleInput\" type=\"number\" name=\"quantity\" placeholder=\"Quantity\" required> <input class=\"simpleInput\" type=\"hidden\" name=\"type\" value=\"bought\"> <button type=\"submit\">Submit</button></form><div id=\"bought\"></div><div id=\"error\"></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"payment\">Payment:</label> <input class=\"simpleInput\" type=\"checkbox\" name=\"payment\"> <input class=\"simpleInput\" type=\"number\" name=\"quantity\" placeholder=\"Quantity\" required> <input class=\"simpleInput\" type=\"hidden\" name=\"type\" value=\"bought\"> <button class=\"simpleButton\" type=\"submit\">BOUGHT</button></form><div id=\"bought\"></div><div id=\"error\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -24,12 +24,12 @@ const (
 )
 
 type Transaction_Client struct {
-	ID         primitive.ObjectID `json:"id" bson:"_id"`
-	GoodName   string             `json:"goodName" bson:"goodName"`
-	GoodUnit   string             `json:"goodUnit" bson:"goodUnit"`
-	Quantity   string             `json:"quantity" bson:"quantity"`
-	Price      string             `json:"price" bson:"price"`
-	BoughtFrom string             `json:"boughtFrom,omitempty" bson:"boughtFrom,omitempty"`
-	SoldTo     string             `json:"soldTo,omitempty" bson:"soldTo,omitempty"`
-	Payment    bool               `json:"payment" bson:"payment"`
+	TransactionID primitive.ObjectID `json:"id" bson:"_id"`
+	GoodName      string             `json:"goodName" bson:"goodName"`
+	GoodUnit      string             `json:"goodUnit" bson:"goodUnit"`
+	Quantity      string             `json:"quantity" bson:"quantity"`
+	Price         string             `json:"price" bson:"price"`
+	BoughtFrom    string             `json:"boughtFrom,omitempty" bson:"boughtFrom,omitempty"`
+	SoldTo        string             `json:"soldTo,omitempty" bson:"soldTo,omitempty"`
+	Payment       bool               `json:"payment" bson:"payment"`
 }

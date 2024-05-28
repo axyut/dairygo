@@ -1,6 +1,7 @@
 package pages
 
 import "github.com/axyut/dairygo/internal/types"
+// import primitive.ObjectID
 
 templ Sold(soldTrans []types.Transaction_Client){
     <div>
@@ -26,7 +27,7 @@ templ Sold(soldTrans []types.Transaction_Client){
                             Pending
                         }
                     </td>
-                    <td>{sold.ID.Timestamp().Format("Wed Feb 25 11:06")}</td>
+                    <td>{sold.TransactionID.Timestamp().Format("Wed Feb 25 11:06:00")}</td>
                 </tr>
             }
         </table>

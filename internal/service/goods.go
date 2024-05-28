@@ -14,10 +14,10 @@ type GoodsService struct {
 	collection db.Collection
 }
 
-func (s *GoodsService) GetGoodByID(ctx context.Context, id primitive.ObjectID) (good types.Good, err error) {
+func (s *GoodsService) GetGoodByID(ctx context.Context, userID primitive.ObjectID, goodID primitive.ObjectID) (good types.Good, err error) {
 	goods := *s.collection
 	good = types.Good{}
-	err = goods.FindOne(ctx, bson.M{"_id": id}).Decode(&good)
+	err = goods.FindOne(ctx, bson.M{"_id": goodID, "userID": userID}).Decode(&good)
 	if err != nil {
 		s.service.logger.Error("Error while fetching good", err)
 		return
@@ -71,14 +71,15 @@ func (s *GoodsService) GetAllGoods(ctx context.Context, userID primitive.ObjectI
 	return
 }
 
-func (s *GoodsService) UpdateGood(ctx context.Context, id primitive.ObjectID, update types.UpdateGood) (good types.Good, err error) {
+func (s *GoodsService) UpdateGood(ctx context.Context, userID primitive.ObjectID, goodID primitive.ObjectID, update types.UpdateGood) (good types.Good, err error) {
 	goods := *s.collection
-
-	err = goods.FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.M{"$set": update}).Decode(&good)
+	good = types.Good{}
+	err = goods.FindOneAndUpdate(ctx, bson.M{"_id": goodID, "userID": userID}, bson.M{"$set": update}).Decode(&good)
 	if err != nil {
 		s.service.logger.Error("Error while updating good", err)
 		return
 	}
+	good, _ = s.GetGoodByID(ctx, userID, goodID)
 	return
 }
 

@@ -33,10 +33,10 @@ func (s *AudienceService) InsertAudience(ctx context.Context, aud types.Audience
 	return
 }
 
-func (s *AudienceService) GetAudienceByID(ctx context.Context, audID primitive.ObjectID) (aud types.Audience, err error) {
+func (s *AudienceService) GetAudienceByID(ctx context.Context, userID primitive.ObjectID, audID primitive.ObjectID) (aud types.Audience, err error) {
 	audience := *s.collection
 	aud = types.Audience{}
-	err = audience.FindOne(ctx, bson.M{"_id": audID}).Decode(&aud)
+	err = audience.FindOne(ctx, bson.M{"_id": audID, "userID": userID}).Decode(&aud)
 	if err != nil {
 		s.service.logger.Error("Error while fetching audience", err)
 		return
@@ -61,9 +61,10 @@ func (s *AudienceService) GetAllAudiences(ctx context.Context, userID primitive.
 	return
 }
 
-func (s *AudienceService) UpdateAudience(ctx context.Context, audID primitive.ObjectID, update types.Audience) (aud types.Audience, err error) {
+func (s *AudienceService) UpdateAudience(ctx context.Context, update types.Audience) (aud types.Audience, err error) {
 	audience := *s.collection
-	err = audience.FindOneAndUpdate(ctx, bson.M{"_id": audID}, bson.M{"$set": update}).Decode(&aud)
+	aud = types.Audience{}
+	err = audience.FindOneAndUpdate(ctx, bson.M{"_id": update.ID}, bson.M{"$set": update}).Decode(&aud)
 	if err != nil {
 		s.service.logger.Error("Error while updating audience", err)
 		return

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/axyut/dairygo/client/components"
 	"github.com/axyut/dairygo/internal/service"
@@ -29,11 +30,11 @@ func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if perr != nil {
-		components.GoodInsertError("Enter Numeric Value for Rate.").Render(r.Context(), w)
+		components.GeneralToastError("Enter Numeric Value for Rate.").Render(r.Context(), w)
 		return
 	}
 	if name == "" {
-		components.GoodInsertError("Empty Fields!").Render(r.Context(), w)
+		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
 	good := types.Good{
@@ -45,7 +46,7 @@ func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 
 	insertedGood, err := h.srv.InsertGood(h.h.ctx, good)
 	if err != nil {
-		components.GoodInsertError("Couldn't fullfill your request.").Render(r.Context(), w)
+		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
 	components.GoodInsertSuccess(insertedGood).Render(r.Context(), w)
@@ -64,4 +65,50 @@ func (h *GoodsHandler) DeleteGood(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	components.GeneralToastSuccess("Deleted Successfully").Render(r.Context(), w)
+}
+
+func (h *GoodsHandler) UpdateGood(w http.ResponseWriter, r *http.Request) {
+	good_id := r.URL.Query().Get("id")
+	name := r.FormValue("good_name")
+	good_rate := strings.TrimSpace(r.FormValue("good_rate"))
+	user_id := r.Context().Value("user_id")
+
+	// h.h.logger.Info("UpdateGood", "good_id", good_id, "name", name, "rate", rate, "user_id", user_id)
+	goodID, _ := primitive.ObjectIDFromHex(good_id)
+	userID, _ := primitive.ObjectIDFromHex(fmt.Sprintf("%v", user_id))
+	g, _ := h.srv.GetGoodByID(h.h.ctx, userID, goodID)
+
+	if strings.Contains(good_rate, " /"+g.Unit) {
+		good_rate = strings.ReplaceAll(good_rate, " /"+g.Unit, "")
+	}
+
+	rate, err := strconv.ParseFloat(good_rate, 64)
+	fmt.Println(rate, good_rate)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		components.GoodInsertError("Enter Numeric Value for Rate.").Render(r.Context(), w)
+		return
+	}
+	if name == "" || rate == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		components.GoodInsertError("Empty Fields!").Render(r.Context(), w)
+		return
+	}
+
+	good := types.UpdateGood{
+		Name: name,
+		Rate: rate,
+		Unit: g.Unit,
+		// Price:    g.Price,
+		Quantity: g.Quantity,
+	}
+
+	insertedGood, err := h.srv.UpdateGood(h.h.ctx, userID, goodID, good)
+	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		components.GoodInsertError("Couldn't fullfill your request.").Render(r.Context(), w)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	components.GoodInsertSuccess(insertedGood).Render(r.Context(), w)
 }

@@ -102,9 +102,9 @@ func Bought(boughtTrans []types.Transaction_Client) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(bought.ID.Timestamp().Format("Wed Feb 25 11:06"))
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(bought.TransactionID.Timestamp().Format("Wed Feb 25 11:06"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/pages/bought.templ`, Line: 29, Col: 73}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/pages/bought.templ`, Line: 29, Col: 84}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {

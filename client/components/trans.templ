@@ -3,13 +3,13 @@ package components
 import "github.com/axyut/dairygo/internal/types"
 
 templ Transaction(goods []types.Good, auds []types.Audience){
-    @sold(goods, auds)
+    @sell(goods, auds)
     @bought(goods, auds)
 }
 
-templ sold(goods []types.Good, auds []types.Audience){
+templ sell(goods []types.Good, auds []types.Audience){
     <div>
-        <h1>Sold</h1>
+        <h1>Sell</h1>
         <form
             hx-post="/transaction"
             hx-swap="afterbegin"
@@ -18,13 +18,13 @@ templ sold(goods []types.Good, auds []types.Audience){
             hx-error="#error"
             class="formContainer"
         >
-            <label for="good">Sold Item:</label>
+            <label for="good">Sell Item:</label>
             <select id="good" name="goodID" required>
                 for _, good := range goods {
                     <option value={good.ID.Hex()}>{good.Name}</option>
                 }
             </select>
-            <label for="audience">Sold to:</label>
+            <label for="audience">Sell to:</label>
             <select id="audience" name="audienceID" required>
                 for _, aud := range auds {
                     <option value={aud.ID.Hex()}>{aud.Name}</option>
@@ -34,7 +34,9 @@ templ sold(goods []types.Good, auds []types.Audience){
             <input class="simpleInput" type="checkbox" name="payment" />
             <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
             <input class="simpleInput" type="hidden" name="type" value="sold" />
-            <button type="submit">Submit</button>
+            <button
+            class="simpleButton"
+             type="submit">SELL</button>
         </form>
         <div id="sold"></div>
         <div id="error"></div>
@@ -68,7 +70,9 @@ templ bought(goods []types.Good, auds []types.Audience){
             <input class="simpleInput" type="checkbox" name="payment"/>
             <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
             <input class="simpleInput" type="hidden" name="type" value="bought" />
-            <button type="submit">Submit</button>
+            <button
+            class="simpleButton"
+             type="submit">BOUGHT</button>
         </form>
         <div id="bought"></div>
         <div id="error"></div>

@@ -52,6 +52,9 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 
 	router.HandleFunc("DELETE /audience", h.AudienceHandler.DeleteAudience)
 	router.HandleFunc("DELETE /goods", h.GoodsHandler.DeleteGood)
+
+	router.HandleFunc("PATCH /audience", h.AudienceHandler.UpdateAudience)
+	router.HandleFunc("PATCH /goods", h.GoodsHandler.UpdateGood)
 	// calculate
 	// unavailable all other routes
 

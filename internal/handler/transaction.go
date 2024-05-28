@@ -41,19 +41,19 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	audienceID := r.FormValue("audienceID")
 	trans_type := r.FormValue("type")
 	payment := r.FormValue("payment")
-	userID := r.Context().Value("user_id")
+	user_id := r.Context().Value("user_id")
 
 	var boughtFrom primitive.ObjectID
 	var soldTo primitive.ObjectID
 	var payment_b bool = false
 
-	if goodID == "" || quantity == "" || audienceID == "" || trans_type == "" || userID == "" {
+	if goodID == "" || quantity == "" || audienceID == "" || trans_type == "" || user_id == "" {
 		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
 	// fmt.Println(goodID, quantity, price, audienceID, trans_type, payment, userID)
 
-	id, Uerr := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
+	userID, Uerr := primitive.ObjectIDFromHex(fmt.Sprintf("%v", user_id))
 	good_id, Gerr := primitive.ObjectIDFromHex(goodID)
 	aud_id, Aerr := primitive.ObjectIDFromHex(audienceID)
 	quantity_f, ferr := strconv.ParseFloat(quantity, 64)
@@ -71,13 +71,13 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	}
 
 	var good_q float64
-	trans_good, err := h.h.srv.GoodsService.GetGoodByID(r.Context(), good_id)
+	trans_good, err := h.h.srv.GoodsService.GetGoodByID(r.Context(), userID, good_id)
 	if err != nil {
 		components.GeneralToastError("That Good Doesn't Exist!").Render(r.Context(), w)
 		return
 	}
 
-	trans_aud, err := h.h.srv.AudienceService.GetAudienceByID(r.Context(), aud_id)
+	trans_aud, err := h.h.srv.AudienceService.GetAudienceByID(r.Context(), userID, aud_id)
 	if err != nil {
 		components.GeneralToastError("That Audience Doesn't Exist!").Render(r.Context(), w)
 		return
@@ -107,19 +107,18 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		SoldTo:     soldTo,
 		Type:       types.TransactionType(trans_type),
 		Payment:    payment_b,
-		UserID:     id,
+		UserID:     userID,
 	}
 	_, err = h.srv.InsertTransaction(h.h.ctx, transaction)
 	if err != nil {
 		components.GeneralToastError("Error with transaction service.").Render(r.Context(), w)
 		return
 	}
-	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), trans_good.ID, types.UpdateGood{
+	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), userID, trans_good.ID, types.UpdateGood{
 		Name:     trans_good.Name,
 		Unit:     trans_good.Unit,
 		Rate:     trans_good.Rate,
 		Quantity: good_q,
-		Price:    good_q * trans_good.Rate,
 	})
 	if err != nil {
 		components.GeneralToastError("Error with goods service.").Render(r.Context(), w)
@@ -133,7 +132,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	} else if !payment_b && trans_type == string(types.Bought) {
 		trans_aud.ToPay += transaction.Price
 	}
-	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), trans_aud.ID, trans_aud)
+	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), trans_aud)
 	if err != nil {
 		components.GeneralToastError("Error with audience service.").Render(r.Context(), w)
 		return
@@ -161,17 +160,17 @@ func (h *TransactionHandler) GetSold(w http.ResponseWriter, r *http.Request) {
 	client_Trans := []types.Transaction_Client{}
 
 	for _, v := range soldTrans {
-		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), v.GoodID)
-		soldAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.SoldTo)
+		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), v.UserID, v.GoodID)
+		soldAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.UserID, v.SoldTo)
 		// boughtAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.BoughtFrom)
 		client_Trans = append(client_Trans, types.Transaction_Client{
-			ID:       v.ID,
-			GoodName: good.Name,
-			GoodUnit: good.Unit,
-			Quantity: strconv.FormatFloat(v.Quantity, 'f', 2, 64),
-			Price:    strconv.FormatFloat(v.Price, 'f', 2, 64),
-			SoldTo:   soldAudience.Name,
-			Payment:  v.Payment,
+			TransactionID: v.ID,
+			GoodName:      good.Name,
+			GoodUnit:      good.Unit,
+			Quantity:      strconv.FormatFloat(v.Quantity, 'f', 2, 64),
+			Price:         strconv.FormatFloat(v.Price, 'f', 2, 64),
+			SoldTo:        soldAudience.Name,
+			Payment:       v.Payment,
 			// BoughtFrom: boughtAudience.Name,
 		})
 	}
@@ -196,15 +195,15 @@ func (h *TransactionHandler) GetBought(w http.ResponseWriter, r *http.Request) {
 	}
 	client_T := []types.Transaction_Client{}
 	for _, v := range boughts {
-		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), v.GoodID)
+		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), v.UserID, v.GoodID)
 		// soldAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.SoldTo)
-		boughtAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.BoughtFrom)
+		boughtAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.UserID, v.BoughtFrom)
 		client_T = append(client_T, types.Transaction_Client{
-			ID:       v.ID,
-			GoodName: good.Name,
-			GoodUnit: good.Unit,
-			Quantity: strconv.FormatFloat(v.Quantity, 'f', 2, 64),
-			Price:    strconv.FormatFloat(v.Price, 'f', 2, 64),
+			TransactionID: v.ID,
+			GoodName:      good.Name,
+			GoodUnit:      good.Unit,
+			Quantity:      strconv.FormatFloat(v.Quantity, 'f', 2, 64),
+			Price:         strconv.FormatFloat(v.Price, 'f', 2, 64),
 			// SoldTo:     soldAudience.Name,
 			Payment:    v.Payment,
 			BoughtFrom: boughtAudience.Name,
