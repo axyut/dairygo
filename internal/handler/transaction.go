@@ -38,7 +38,6 @@ func (h *TransactionHandler) GetTransactions(w http.ResponseWriter, r *http.Requ
 func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Request) {
 	goodID := r.FormValue("goodID")
 	quantity := r.FormValue("quantity")
-	price := r.FormValue("price")
 	audienceID := r.FormValue("audienceID")
 	trans_type := r.FormValue("type")
 	payment := r.FormValue("payment")
@@ -48,7 +47,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	var soldTo primitive.ObjectID
 	var payment_b bool = false
 
-	if goodID == "" || quantity == "" || price == "" || audienceID == "" || trans_type == "" || userID == "" {
+	if goodID == "" || quantity == "" || audienceID == "" || trans_type == "" || userID == "" {
 		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
@@ -58,11 +57,10 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	good_id, Gerr := primitive.ObjectIDFromHex(goodID)
 	aud_id, Aerr := primitive.ObjectIDFromHex(audienceID)
 	quantity_f, ferr := strconv.ParseFloat(quantity, 64)
-	price_f, perr := strconv.ParseFloat(price, 64)
 
 	// fmt.Println(id, good_id, aud_id, quantity_f, price_f, payment_b)
-	if Uerr != nil || Gerr != nil || Aerr != nil || ferr != nil || perr != nil {
-		h.h.logger.Error("Error while Parsing in Handler.", Uerr, Gerr, Aerr, ferr, perr)
+	if Uerr != nil || Gerr != nil || Aerr != nil || ferr != nil {
+		h.h.logger.Error("Error while Parsing in Handler.", Uerr, Gerr, Aerr, ferr)
 		components.GeneralToastError("Error while Parsing in Handler.").Render(r.Context(), w)
 		return
 	}
@@ -72,10 +70,29 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	var good_q float64
+	trans_good, err := h.h.srv.GoodsService.GetGoodByID(r.Context(), good_id)
+	if err != nil {
+		components.GeneralToastError("That Good Doesn't Exist!").Render(r.Context(), w)
+		return
+	}
+
+	trans_aud, err := h.h.srv.AudienceService.GetAudienceByID(r.Context(), aud_id)
+	if err != nil {
+		components.GeneralToastError("That Audience Doesn't Exist!").Render(r.Context(), w)
+		return
+	}
+
 	if trans_type == string(types.Bought) {
 		boughtFrom = aud_id
+		good_q = trans_good.Quantity + quantity_f
 	} else if trans_type == string(types.Sold) {
 		soldTo = aud_id
+		if quantity_f > trans_good.Quantity {
+			components.GeneralToastError("Not Enough Quantity!").Render(r.Context(), w)
+			return
+		}
+		good_q = trans_good.Quantity - quantity_f
 	}
 
 	if payment == "on" {
@@ -85,18 +102,43 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	transaction := types.Transaction{
 		GoodID:     good_id,
 		Quantity:   quantity_f,
-		Price:      price_f,
+		Price:      trans_good.Rate * quantity_f,
 		BoughtFrom: boughtFrom,
 		SoldTo:     soldTo,
 		Type:       types.TransactionType(trans_type),
 		Payment:    payment_b,
 		UserID:     id,
 	}
-	_, err := h.srv.NewTransaction(h.h.ctx, transaction)
+	_, err = h.srv.InsertTransaction(h.h.ctx, transaction)
 	if err != nil {
-		components.GeneralToastError("Error with service.").Render(r.Context(), w)
+		components.GeneralToastError("Error with transaction service.").Render(r.Context(), w)
 		return
 	}
+	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), trans_good.ID, types.UpdateGood{
+		Name:     trans_good.Name,
+		Unit:     trans_good.Unit,
+		Rate:     trans_good.Rate,
+		Quantity: good_q,
+		Price:    good_q * trans_good.Rate,
+	})
+	if err != nil {
+		components.GeneralToastError("Error with goods service.").Render(r.Context(), w)
+		return
+	}
+
+	if payment_b {
+		trans_aud.Paid += transaction.Price
+	} else if !payment_b && trans_type == string(types.Sold) {
+		trans_aud.ToReceive += transaction.Price
+	} else if !payment_b && trans_type == string(types.Bought) {
+		trans_aud.ToPay += transaction.Price
+	}
+	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), trans_aud.ID, trans_aud)
+	if err != nil {
+		components.GeneralToastError("Error with audience service.").Render(r.Context(), w)
+		return
+	}
+
 	components.GeneralToastSuccess("Transaction Added Successfully!").Render(r.Context(), w)
 }
 

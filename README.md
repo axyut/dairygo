@@ -27,6 +27,15 @@ make build_x && bin/app.out # to build the binary x-> linux, darwin, windows
 kill -TERM $(lsof -ti:3000) # to kill the server
 ```
 
+### extra
+
+launch.bat
+
+```bat
+./app.exe
+pause
+```
+
 <!--
 "kill -TERM $(lsof -ti:3000)"
 

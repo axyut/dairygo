@@ -12,14 +12,33 @@ templ Audiences(audiences []types.Audience) {
         <th>To Pay</th>
         <th>To Receive</th>
         <th>Paid</th>
+        <th>Options</th>
       </tr>
       for _, aud := range audiences {
-        <tr>
+        <tr id={"aud_"+aud.ID.Hex()}>
             <td>{aud.Name}</td>
             <td>{aud.Contact}</td>
             <td>{strconv.FormatFloat(aud.ToPay, 'f', -1, 64)}</td>
             <td>{strconv.FormatFloat(aud.ToReceive, 'f', -1, 64)}</td>
             <td>{strconv.FormatFloat(aud.Paid, 'f', -1, 64)}</td>
+            <td>
+                <button
+                    hx-delete={"/audience?id="+aud.ID.Hex()}
+                    hx-target={"#aud_"+aud.ID.Hex()}
+                    hx-target-error="#error"
+                    hx-swap="outerHTML"
+                    class="simpleButtonRED"
+                >Delete</button>
+            </td>
+            <td>
+                <button
+                    hx-put={"/audience?id="+aud.ID.Hex()}
+                    hx-target={"#aud_"+aud.ID.Hex()}
+                    hx-target-error="#error"
+                    hx-swap="outerHTML"
+                    class="simpleButton"
+                >Update</button>
+            </td>
         </tr>
       }
       <tr id="aud_success"></tr>
@@ -40,7 +59,6 @@ templ insertAud() {
     >
       <input class="simpleInput" type="text" name="name" placeholder="Audience Name" />
       <input class="simpleInput" type="text" name="contact" placeholder="Contact" />
-      <input class="simpleInput" type="text" name="email" placeholder="Email" />
       <button class="simpleButton" type="submit">Insert</button>
     </form>
   </div>

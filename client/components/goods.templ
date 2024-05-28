@@ -8,14 +8,35 @@ templ TodaysGoods(goods []types.Good) {
     <table>
       <tr>
         <th>Name</th>
-        <th>Price</th>
-        <th>Quantity</th>
+        <th>Rate</th>
+        <th>Total</th>
+        <th>Options</th>
       </tr>
       for _, good := range goods {
-        <tr>
+        <tr id={"good_"+good.ID.Hex()}>
           <td>{good.Name}</td>
-          <td>{strconv.FormatFloat(good.Price, 'f', -1, 64)}</td>
-          <td>{strconv.FormatFloat(good.Quantity, 'f', -1, 64)}</td>
+          <td>{strconv.FormatFloat(good.Rate, 'f', -1, 64)} /{good.Unit} </td>
+          <td>{" * "+strconv.FormatFloat(good.Quantity, 'f', -1, 64) +" "+ good.Unit +" = Rs." + strconv.FormatFloat(good.Price, 'f', -1, 64)}</td>
+          <td>
+            <button
+              hx-delete={"/goods?id="+good.ID.Hex()}
+              hx-target={"#good_"+good.ID.Hex()}
+              hx-target-error="#error"
+              hx-swap="outerHTML"
+              class="simpleButtonRED"
+            >
+              Delete
+            </button>
+            <button
+              hx-put={"/goods?id="+good.ID.Hex()}
+              hx-target={"#good_"+good.ID.Hex()}
+              hx-target-error="#error"
+              hx-swap="outerHTML"
+              class="simpleButton"
+            >
+              Update
+            </button>
+          </td>
         </tr>
       }
       <tr id="response_success"></tr>
@@ -36,9 +57,8 @@ templ insertGood() {
       class="formContainer"
     >
       <input class="simpleInput" type="text" name="name" placeholder=" Name" />
-      <input class="simpleInput" type="text" name="quantity" placeholder=" Quantity" />
       <input class="simpleInput" type="text" name="unit" placeholder=" Unit" />
-      <input class="simpleInput" type="text" name="price" placeholder=" Price" />
+      <input class="simpleInput" type="text" name="rate" placeholder=" Rate" />
       <button class="simpleButton" type="submit">Insert</button>
     </form>
     <div id="error"></div>

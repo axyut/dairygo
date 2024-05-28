@@ -14,13 +14,12 @@ type AudienceService struct {
 	collection db.Collection
 }
 
-func (s *AudienceService) NewAudience(ctx context.Context, aud types.Audience) (insertedAud types.Audience, err error) {
+func (s *AudienceService) InsertAudience(ctx context.Context, aud types.Audience) (insertedAud types.Audience, err error) {
 	audience := *s.collection
 	insertedAud = types.Audience{}
 	res, err := audience.InsertOne(ctx, bson.M{
 		"name":      aud.Name,
 		"contact":   aud.Contact,
-		"email":     aud.Email,
 		"userID":    aud.UserID,
 		"toPay":     aud.ToPay,
 		"toReceive": aud.ToReceive,
@@ -57,6 +56,26 @@ func (s *AudienceService) GetAllAudiences(ctx context.Context, userID primitive.
 	defer cursor.Close(ctx)
 	if cursor.All(ctx, &aud) != nil {
 		s.service.logger.Error("Error while decoding all audiences", err)
+		return
+	}
+	return
+}
+
+func (s *AudienceService) UpdateAudience(ctx context.Context, audID primitive.ObjectID, update types.Audience) (aud types.Audience, err error) {
+	audience := *s.collection
+	err = audience.FindOneAndUpdate(ctx, bson.M{"_id": audID}, bson.M{"$set": update}).Decode(&aud)
+	if err != nil {
+		s.service.logger.Error("Error while updating audience", err)
+		return
+	}
+	return
+}
+
+func (s *AudienceService) DeleteAudience(ctx context.Context, userID primitive.ObjectID, audID primitive.ObjectID) (err error) {
+	audience := *s.collection
+	_, err = audience.DeleteOne(ctx, bson.M{"_id": audID, "userID": userID})
+	if err != nil {
+		s.service.logger.Error("Error while deleting audience", err)
 		return
 	}
 	return

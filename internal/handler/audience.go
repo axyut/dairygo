@@ -15,27 +15,9 @@ type AudienceHandler struct {
 	srv *service.AudienceService
 }
 
-// func (h *AudienceHandler) GetAudience(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("Content-Type", "application/json")
-
-// 	if r.Method != "GET" {
-// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-// 		return
-// 	}
-// 	user_id := r.URL.Query().Get("user_id")
-// 	if user_id == "" {
-// 		http.Error(w, "Empty Fields!", http.StatusBadRequest)
-// 	}
-// 	err := h.srv.GetAudience(h.h.ctx, user_id)
-// 	if err != nil {
-// 		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
-// 	}
-// }
-
 func (h *AudienceHandler) NewAudience(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	contact := r.FormValue("contact")
-	email := r.FormValue("email")
 	userID := r.Context().Value("user_id")
 
 	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
@@ -44,20 +26,34 @@ func (h *AudienceHandler) NewAudience(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if name == "" || contact == "" || email == "" {
+	if name == "" || contact == "" {
 		components.AudienceInsertError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
 	audience := types.Audience{
 		Name:    name,
 		Contact: contact,
-		Email:   email,
 		UserID:  id,
 	}
-	inserted, err := h.srv.NewAudience(h.h.ctx, audience)
+	inserted, err := h.srv.InsertAudience(h.h.ctx, audience)
 	if err != nil {
 		components.AudienceInsertError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
 	components.AudienceInsertSuccess(inserted).Render(r.Context(), w)
+}
+
+func (h *AudienceHandler) DeleteAudience(w http.ResponseWriter, r *http.Request) {
+	audience_id := r.URL.Query().Get("id")
+	user_id := r.Context().Value("user_id")
+
+	audID, _ := primitive.ObjectIDFromHex(audience_id)
+	userID, _ := primitive.ObjectIDFromHex(fmt.Sprintf("%v", user_id))
+
+	err := h.srv.DeleteAudience(h.h.ctx, userID, audID)
+	if err != nil {
+		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
+		return
+	}
+	components.GeneralToastSuccess("Audience Deleted.").Render(r.Context(), w)
 }

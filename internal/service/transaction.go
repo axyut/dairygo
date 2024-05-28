@@ -14,7 +14,7 @@ type TransactionService struct {
 	collection db.Collection
 }
 
-func (s *TransactionService) NewTransaction(ctx context.Context, trans types.Transaction) (insertedTrans types.Transaction, err error) {
+func (s *TransactionService) InsertTransaction(ctx context.Context, trans types.Transaction) (insertedTrans types.Transaction, err error) {
 	transaction := *s.collection
 	res, err := transaction.InsertOne(ctx, bson.M{
 		"goodID":     trans.GoodID,

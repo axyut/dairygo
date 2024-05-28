@@ -125,7 +125,7 @@ func sold(goods []types.Good, auds []types.Audience) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"payment\">Payment:</label> <input class=\"simpleInput\" type=\"checkbox\" name=\"payment\"> <input class=\"simpleInput\" type=\"number\" name=\"quantity\" placeholder=\"Quantity\" required> <input class=\"simpleInput\" type=\"number\" name=\"price\" placeholder=\"Price\" required> <input class=\"simpleInput\" type=\"hidden\" name=\"type\" value=\"sold\"> <button type=\"submit\">Submit</button></form><div id=\"sold\"></div><div id=\"error\"></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"payment\">Payment:</label> <input class=\"simpleInput\" type=\"checkbox\" name=\"payment\"> <input class=\"simpleInput\" type=\"number\" name=\"quantity\" placeholder=\"Quantity\" required> <input class=\"simpleInput\" type=\"hidden\" name=\"type\" value=\"sold\"> <button type=\"submit\">Submit</button></form><div id=\"sold\"></div><div id=\"error\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -161,7 +161,7 @@ func bought(goods []types.Good, auds []types.Audience) templ.Component {
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(good.ID.Hex())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 59, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 58, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -174,7 +174,7 @@ func bought(goods []types.Good, auds []types.Audience) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(good.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 59, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 58, Col: 60}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -197,7 +197,7 @@ func bought(goods []types.Good, auds []types.Audience) templ.Component {
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(aud.ID.Hex())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 65, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 64, Col: 47}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -210,7 +210,7 @@ func bought(goods []types.Good, auds []types.Audience) templ.Component {
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(aud.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 65, Col: 58}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/components/trans.templ`, Line: 64, Col: 58}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -221,7 +221,7 @@ func bought(goods []types.Good, auds []types.Audience) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"payment\">Payment:</label> <input class=\"simpleInput\" type=\"checkbox\" name=\"payment\"> <input class=\"simpleInput\" type=\"number\" name=\"quantity\" placeholder=\"Quantity\" required> <input class=\"simpleInput\" type=\"number\" name=\"price\" placeholder=\"Price\" required> <input class=\"simpleInput\" type=\"hidden\" name=\"type\" value=\"bought\"> <button type=\"submit\">Submit</button></form><div id=\"bought\"></div><div id=\"error\"></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</select> <label for=\"payment\">Payment:</label> <input class=\"simpleInput\" type=\"checkbox\" name=\"payment\"> <input class=\"simpleInput\" type=\"number\" name=\"quantity\" placeholder=\"Quantity\" required> <input class=\"simpleInput\" type=\"hidden\" name=\"type\" value=\"bought\"> <button type=\"submit\">Submit</button></form><div id=\"bought\"></div><div id=\"error\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

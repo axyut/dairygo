@@ -18,7 +18,7 @@ type UserHandler struct {
 	srv *service.UserService
 }
 
-func (user *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (user *UserHandler) NewUser(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 		w.WriteHeader(http.StatusOK)
@@ -43,7 +43,7 @@ func (user *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	_, err := user.srv.NewUser(user.h.ctx, username, email, password)
+	_, err := user.srv.InsertUser(user.h.ctx, username, email, password)
 	if err != nil {
 		user.h.logger.Error("UserHandler.CreateUser", "Error", err)
 		pages.RegisterError("Server Error.").Render(r.Context(), w)

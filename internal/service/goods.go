@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/axyut/dairygo/internal/db"
 	"github.com/axyut/dairygo/internal/types"
@@ -13,21 +12,6 @@ import (
 type GoodsService struct {
 	service    *Service
 	collection db.Collection
-}
-
-func (s *GoodsService) NewGoods(ctx context.Context, name string, price float64, quantity int) error {
-	goods := *s.collection
-	res, err := goods.InsertOne(ctx, bson.M{
-		"name":     name,
-		"price":    price,
-		"quantity": quantity,
-	})
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	fmt.Println(res)
-	return nil
 }
 
 func (s *GoodsService) GetGoodByID(ctx context.Context, id primitive.ObjectID) (good types.Good, err error) {
@@ -44,11 +28,10 @@ func (s *GoodsService) GetGoodByID(ctx context.Context, id primitive.ObjectID) (
 func (s *GoodsService) InsertGood(ctx context.Context, good types.Good) (insertedGood types.Good, err error) {
 	goods := *s.collection
 	res, err := goods.InsertOne(ctx, bson.M{
-		"name":     good.Name,
-		"price":    good.Price,
-		"quantity": good.Quantity,
-		"unit":     good.Unit,
-		"userID":   good.UserID,
+		"name":   good.Name,
+		"rate":   good.Rate,
+		"unit":   good.Unit,
+		"userID": good.UserID,
 	})
 	if err != nil {
 		s.service.logger.Error("Error inserting good", "Error", err)
@@ -84,6 +67,27 @@ func (s *GoodsService) GetAllGoods(ctx context.Context, userID primitive.ObjectI
 			return
 		}
 		goods = append(goods, good)
+	}
+	return
+}
+
+func (s *GoodsService) UpdateGood(ctx context.Context, id primitive.ObjectID, update types.UpdateGood) (good types.Good, err error) {
+	goods := *s.collection
+
+	err = goods.FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.M{"$set": update}).Decode(&good)
+	if err != nil {
+		s.service.logger.Error("Error while updating good", err)
+		return
+	}
+	return
+}
+
+func (s *GoodsService) DeleteGood(ctx context.Context, userID primitive.ObjectID, goodID primitive.ObjectID) (err error) {
+	goods := *s.collection
+	_, err = goods.DeleteOne(ctx, bson.M{"_id": goodID, "userID": userID})
+	if err != nil {
+		s.service.logger.Error("Error while deleting good", err)
+		return
 	}
 	return
 }

@@ -17,7 +17,7 @@ type UserService struct {
 	Type       types.User
 }
 
-func (s *UserService) NewUser(ctx context.Context, name string, email string, password string) (User types.User, error error) {
+func (s *UserService) InsertUser(ctx context.Context, name string, email string, password string) (User types.User, error error) {
 	user := *s.collection
 	bytePass, hashErr := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if hashErr != nil {
