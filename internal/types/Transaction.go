@@ -19,8 +19,9 @@ type Transaction struct {
 type TransactionType string
 
 const (
-	Sold   TransactionType = "sold"
-	Bought TransactionType = "bought"
+	Sold     TransactionType = "sold"
+	Bought   TransactionType = "bought"
+	Internal TransactionType = "internal"
 )
 
 type Transaction_Client struct {

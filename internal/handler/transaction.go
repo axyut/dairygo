@@ -212,3 +212,104 @@ func (h *TransactionHandler) GetBought(w http.ResponseWriter, r *http.Request) {
 	boughtPage := pages.Bought(client_T)
 	client.Layout(boughtPage, "Bought Dairy Products").Render(r.Context(), w)
 }
+
+func (h *TransactionHandler) InternalTransaction(w http.ResponseWriter, r *http.Request) {
+	before_good_id := r.URL.Query().Get("id")
+	after_good_id := r.FormValue("after_good_id")
+	quantity := r.FormValue("convert_quantity")
+	user_id := r.Context().Value("user_id")
+
+	userID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", user_id))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		components.GeneralToastError("User Not Found. Please Login Again.").Render(r.Context(), w)
+		return
+	}
+	beforeGoodID, err := primitive.ObjectIDFromHex(before_good_id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Improper Good/Product.").Render(r.Context(), w)
+		return
+	}
+	afterGoodID, err := primitive.ObjectIDFromHex(after_good_id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Improper Good/Product.").Render(r.Context(), w)
+		return
+	}
+	quantity_f, err := strconv.ParseFloat(quantity, 64)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Quantity is not a number.").Render(r.Context(), w)
+		return
+	}
+
+	beforeGood, err := h.h.srv.GoodsService.GetGoodByID(r.Context(), userID, beforeGoodID)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		components.GeneralToastError("Before Good Not Found.").Render(r.Context(), w)
+		return
+	}
+	afterGood, err := h.h.srv.GoodsService.GetGoodByID(r.Context(), userID, afterGoodID)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		components.GeneralToastError("After Good Not Found.").Render(r.Context(), w)
+		return
+	}
+	if beforeGoodID == afterGoodID {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Same Good/Product.").Render(r.Context(), w)
+		return
+	}
+
+	if beforeGood.Quantity < quantity_f {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Not Enough Quantity.").Render(r.Context(), w)
+		return
+	}
+
+	transaction := types.Transaction{
+		GoodID:   afterGoodID,
+		Quantity: quantity_f,
+		Price:    afterGood.Rate * quantity_f,
+		Type:     types.Internal,
+		Payment:  true,
+		UserID:   userID,
+	}
+	_, err = h.srv.InsertTransaction(h.h.ctx, transaction)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		components.GeneralToastError("Error with transaction service.").Render(r.Context(), w)
+		return
+	}
+
+	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), userID, beforeGood.ID, types.UpdateGood{
+		Name:     beforeGood.Name,
+		Unit:     beforeGood.Unit,
+		Rate:     beforeGood.Rate,
+		Quantity: beforeGood.Quantity - quantity_f,
+	})
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		components.GeneralToastError("Error with goods service.").Render(r.Context(), w)
+		return
+	}
+
+	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), userID, afterGood.ID, types.UpdateGood{
+		Name:     afterGood.Name,
+		Unit:     afterGood.Unit,
+		Rate:     afterGood.Rate,
+		Quantity: afterGood.Quantity + quantity_f,
+	})
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		components.GeneralToastError("Error with goods service.").Render(r.Context(), w)
+		return
+	}
+
+	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), userID)
+	components.TodaysGoods(goods).Render(r.Context(), w)
+}

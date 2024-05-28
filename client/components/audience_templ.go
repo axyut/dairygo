@@ -244,7 +244,7 @@ func audArray(aud types.Audience) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target-error=\"#error\" hx-swap=\"outerHTML\" class=\"simpleButtonRED\">Delete</button></td><td><button hx-patch=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target-error=\"#error\" hx-swap=\"outerHTML\" class=\"simpleButton red\">Delete</button></td><td><button hx-patch=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -3,6 +3,8 @@ import "github.com/axyut/dairygo/internal/types"
 import "strconv"
 
 templ TodaysGoods(goods []types.Good) {
+  <div id="todaysGoods">
+  @pageStyles()
   <div  hx-ext="response-targets">
     <h1>Today's Goods</h1>
     <table>
@@ -13,12 +15,13 @@ templ TodaysGoods(goods []types.Good) {
         <th>Options</th>
       </tr>
       for _, good := range goods {
-          @GoodArray(good)
+          @GoodArray(good, goods)
       }
       <tr id="good_success"></tr>
     </table>
   </div>
   @insertGood()
+  </div>
 }
 
 templ insertGood() {
@@ -46,12 +49,12 @@ templ GoodInsertError(msg string) {
     // @goodArray(good)
 }
 
-templ GoodInsertSuccess(good types.Good) {
-    @GoodArray(good)
+templ GoodInsertSuccess(good types.Good, goods []types.Good) {
+    @GoodArray(good, goods)
     @Toast(good.Name+" Modification Successful!" )
 }
 
-templ GoodArray(good types.Good){
+templ GoodArray(good types.Good, goods []types.Good){
   <tr id={"good_"+good.ID.Hex()}>
     <td>
       <input class="tableInput" type="text" name="good_name" value={good.Name} />
@@ -66,7 +69,7 @@ templ GoodArray(good types.Good){
         hx-target={"#good_"+good.ID.Hex()}
         hx-target-error="#error"
         hx-swap="outerHTML"
-        class="simpleButtonRED"
+        class="red simpleButton"
       >
         Delete
       </button>
@@ -80,6 +83,65 @@ templ GoodArray(good types.Good){
       >
         Update
       </button>
+
+      <button class="open-button" onclick={openMyForm(good.ID.Hex())}>Convert</button>
+
+      <div class="form-popup" id={"myForm_"+good.ID.Hex()}  hx-ext="response-targets">
+        <form class="formContainer"
+          hx-post={"/internalTransaction?id="+good.ID.Hex()}
+          hx-target={"#todaysGoods"}
+          hx-target-error="#error"
+          hx-swap="innerHTML"
+        >
+        <button type="button" class="emojiBtn" onclick={closeMyForm(good.ID.Hex())}>❌</button>
+
+          <input class="tableInput" type="text" placeholder="Enter quantity" name="convert_quantity" required />
+                      <label for="good">Convert to:</label>
+            <select id="good" name="after_good_id" required>
+                for _, g := range goods {
+                    <option value={g.ID.Hex()}>{g.Name}</option>
+                }
+            </select>
+          <button type="submit" class="simpleButton">Convert</button>
+          
+        </form>
+      </div>
+      
     </td>
   </tr>
+}
+
+script openMyForm(id string){
+  id = "myForm_"+id;
+  document.getElementById(id).style.display = "block";
+}
+script closeMyForm(id string){
+  id = "myForm_"+id;
+  document.getElementById(id).style.display = "none";
+}
+
+templ pageStyles(){
+
+<style>
+
+  .form-popup {
+    display: none;
+    position: absolute;
+    margin-top:-40px;
+    margin-left:200px;
+    border: 3px solid #f1f1f1;
+    z-index: 9;
+  }
+
+  .emojiBtn {
+    background-color: #f1f1f1;
+    color: black;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    width: 10%;
+    border-radius: 2px;
+  }
+
+</style>
 }

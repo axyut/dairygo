@@ -1,28 +1,27 @@
 package client
 
 import (
-    "github.com/axyut/dairygo/client/public"
+	"github.com/axyut/dairygo/client/public"
 	"github.com/axyut/dairygo/client/components"
 )
 
-templ Layout(children templ.Component, title string){
-    <!DOCTYPE html>
-    <html lang="en">
-        <head>
+templ Layout(children templ.Component, title string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<title>{title}</title>
-            <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+			<title>{ title }</title>
+			<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
 			<script src="https://unpkg.com/htmx.org@1.9.12"></script>
-            <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/response-targets.js"></script>
+			<script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/response-targets.js"></script>
 			@public.IndexCss()
 		</head>
-        <body>
-            
-            @components.Nav()
-            @children
-            <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-            <footer></footer>
-        </body>
-    </html>
+		<body>
+			@components.Nav()
+			@children
+			<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+			<footer></footer>
+		</body>
+	</html>
 }

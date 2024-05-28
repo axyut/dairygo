@@ -21,9 +21,9 @@ func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	rate, perr := strconv.ParseFloat(r.FormValue("rate"), 64)
 	unit := r.FormValue("unit")
-	userID := r.Context().Value("user_id")
+	user_id := r.Context().Value("user_id")
 
-	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
+	userID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", user_id))
 	if err != nil {
 		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
 		return
@@ -41,7 +41,7 @@ func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 		Name:   name,
 		Rate:   rate,
 		Unit:   unit,
-		UserID: id,
+		UserID: userID,
 	}
 
 	insertedGood, err := h.srv.InsertGood(h.h.ctx, good)
@@ -49,7 +49,8 @@ func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
-	components.GoodInsertSuccess(insertedGood).Render(r.Context(), w)
+	goods, _ := h.srv.GetAllGoods(r.Context(), userID)
+	components.GoodInsertSuccess(insertedGood, goods).Render(r.Context(), w)
 }
 
 func (h *GoodsHandler) DeleteGood(w http.ResponseWriter, r *http.Request) {
@@ -109,6 +110,7 @@ func (h *GoodsHandler) UpdateGood(w http.ResponseWriter, r *http.Request) {
 		components.GoodInsertError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
+	goods, _ := h.srv.GetAllGoods(r.Context(), userID)
 	w.WriteHeader(http.StatusOK)
-	components.GoodInsertSuccess(insertedGood).Render(r.Context(), w)
+	components.GoodInsertSuccess(insertedGood, goods).Render(r.Context(), w)
 }
