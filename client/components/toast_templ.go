@@ -7,10 +7,10 @@ package components
 
 import "github.com/a-h/templ"
 
-func Toast(msg string) templ.ComponentScript {
+func SuccessToast(msg string) templ.ComponentScript {
 	return templ.ComponentScript{
-		Name: `__templ_Toast_5b21`,
-		Function: `function __templ_Toast_5b21(msg){Toastify({
+		Name: `__templ_SuccessToast_215f`,
+		Function: `function __templ_SuccessToast_215f(msg){Toastify({
   text: msg,
   duration: 2500,
   destination: "/", // destination when clicked
@@ -20,12 +20,35 @@ func Toast(msg string) templ.ComponentScript {
   position: "right", // ` + "`" + `left` + "`" + `, ` + "`" + `center` + "`" + ` or ` + "`" + `right` + "`" + `
   stopOnFocus: true, // Prevents dismissing of toast on hover
   style: {
-    background: "linear-gradient(90deg, rgba(34,19,73,1) 20%, rgba(99,63,128,1) 100%, rgba(65,235,255,1) 100%)",
+    background: "linear-gradient(90deg, rgba(17,117,5,1) 10%, rgba(84,196,93,1) 91%)",
   },
   onClick: function(){} // Callback after click
 }).showToast();
 }`,
-		Call:       templ.SafeScript(`__templ_Toast_5b21`, msg),
-		CallInline: templ.SafeScriptInline(`__templ_Toast_5b21`, msg),
+		Call:       templ.SafeScript(`__templ_SuccessToast_215f`, msg),
+		CallInline: templ.SafeScriptInline(`__templ_SuccessToast_215f`, msg),
+	}
+}
+
+func DangerToast(msg string) templ.ComponentScript {
+	return templ.ComponentScript{
+		Name: `__templ_DangerToast_3532`,
+		Function: `function __templ_DangerToast_3532(msg){Toastify({
+  text: msg,
+  duration: 2500,
+  destination: "/", // destination when clicked
+  newWindow: false, // open destination in new window 
+  close: false, // close icon button
+  gravity: "top", // ` + "`" + `top` + "`" + ` or ` + "`" + `bottom` + "`" + `
+  position: "right", // ` + "`" + `left` + "`" + `, ` + "`" + `center` + "`" + ` or ` + "`" + `right` + "`" + `
+  stopOnFocus: true, // Prevents dismissing of toast on hover
+  style: {
+    background: "linear-gradient(90deg, rgba(255,0,0,1) 10%, rgba(218,83,138,1) 91%)",
+  },
+  onClick: function(){} // Callback after click
+}).showToast();
+}`,
+		Call:       templ.SafeScript(`__templ_DangerToast_3532`, msg),
+		CallInline: templ.SafeScriptInline(`__templ_DangerToast_3532`, msg),
 	}
 }

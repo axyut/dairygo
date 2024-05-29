@@ -85,15 +85,13 @@ func (h *GoodsHandler) UpdateGood(w http.ResponseWriter, r *http.Request) {
 	goodID, _ := primitive.ObjectIDFromHex(good_id)
 	userID, _ := primitive.ObjectIDFromHex(fmt.Sprintf("%v", user_id))
 	g, _ := h.srv.GetGoodByID(h.h.ctx, userID, goodID)
-	fmt.Println(g.Name, g.Unit)
+
 	if strings.Contains(kharid_rate, " /"+g.Unit) {
 		kharid_rate = strings.ReplaceAll(kharid_rate, " /"+g.Unit, "")
 	}
 	if strings.Contains(bikri_rate, " /"+g.Unit) {
 		bikri_rate = strings.ReplaceAll(bikri_rate, " /"+g.Unit, "")
 	}
-
-	fmt.Println(kharid_rate, bikri_rate)
 
 	kharidRate, errK := strconv.ParseFloat(kharid_rate, 64)
 	bikriRate, errB := strconv.ParseFloat(bikri_rate, 64)

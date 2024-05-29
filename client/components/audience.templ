@@ -42,12 +42,12 @@ templ insertAud() {
 
 templ AudienceInsertError(msg string) {
 	// <p>Login Error! {msg}</p>
-    @Toast("Audience Creation Error! " + msg)
+    @DangerToast("Audience Creation Error! " + msg)
 }
 
 templ AudienceInsertSuccess(aud types.Audience) {
     @audArray(aud)
-    @Toast(aud.Name+" Modification Successful!" )
+    @SuccessToast(aud.Name+" Modification Successful!" )
 }
 
 templ audArray(aud types.Audience){

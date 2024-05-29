@@ -12,10 +12,10 @@ templ GetUser(user types.User){
 
 // color red
 templ GeneralToastError(msg string) {
-    @Toast("Error! " + msg)
+    @DangerToast("Error! " + msg)
 }
 
 // color green
 templ GeneralToastSuccess(msg string) {
-    @Toast("Success! " + msg)
+    @SuccessToast("Success! " + msg)
 }

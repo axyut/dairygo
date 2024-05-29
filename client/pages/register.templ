@@ -52,6 +52,5 @@ templ RegisterSuccess() {
 
 
 templ RegisterError(msg string) {
-	    @components.Toast("Registration Error!" + msg)
-
+	@components.DangerToast("Registration Error!" + msg)
 }

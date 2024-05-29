@@ -24,7 +24,7 @@ templ TodaysGoods(goods []types.Good, notify bool) {
   @insertGood()
   </div>
   if notify {
-    @Toast("Goods Updated!")
+    @SuccessToast("Goods Updated!")
   }
 }
 
@@ -50,13 +50,13 @@ templ insertGood() {
 }
 
 templ GoodInsertError(msg string) {
-    @Toast("Goods Modification Error! " + msg)
+    @DangerToast("Goods Modification Error! " + msg)
     // @goodArray(good)
 }
 
 templ GoodInsertSuccess(good types.Good, goods []types.Good) {
     @GoodArray(good, goods)
-    @Toast(good.Name+" Modification Successful!" )
+    @SuccessToast(good.Name+" Modification Successful!" )
 }
 
 templ GoodArray(good types.Good, goods []types.Good){

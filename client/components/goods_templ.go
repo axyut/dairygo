@@ -57,7 +57,7 @@ func TodaysGoods(goods []types.Good, notify bool) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if notify {
-			templ_7745c5c3_Err = Toast("Goods Updated!").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = SuccessToast("Goods Updated!").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -106,7 +106,7 @@ func GoodInsertError(msg string) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = Toast("Goods Modification Error! "+msg).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DangerToast("Goods Modification Error! "+msg).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -134,7 +134,7 @@ func GoodInsertSuccess(good types.Good, goods []types.Good) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Toast(good.Name+" Modification Successful!").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = SuccessToast(good.Name+" Modification Successful!").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -88,7 +88,7 @@ func AudienceInsertError(msg string) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = Toast("Audience Creation Error! "+msg).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DangerToast("Audience Creation Error! "+msg).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -116,7 +116,7 @@ func AudienceInsertSuccess(aud types.Audience) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Toast(aud.Name+" Modification Successful!").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = SuccessToast(aud.Name+" Modification Successful!").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
