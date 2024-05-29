@@ -2,7 +2,7 @@ package components
 import "github.com/axyut/dairygo/internal/types"
 import "strconv"
 
-templ TodaysGoods(goods []types.Good) {
+templ TodaysGoods(goods []types.Good, notify bool) {
   <div id="todaysGoods">
   @pageStyles()
   <div  hx-ext="response-targets">
@@ -10,7 +10,8 @@ templ TodaysGoods(goods []types.Good) {
     <table>
       <tr>
         <th>Name</th>
-        <th>Rate</th>
+        <th>Kharid</th>
+        <th>Bikri</th>
         <th>Total</th>
         <th>Options</th>
       </tr>
@@ -22,6 +23,9 @@ templ TodaysGoods(goods []types.Good) {
   </div>
   @insertGood()
   </div>
+  if notify {
+    @Toast("Goods Updated!")
+  }
 }
 
 templ insertGood() {
@@ -31,12 +35,13 @@ templ insertGood() {
       hx-post="/goods"
 			hx-target="#good_success"
 			hx-target-error="#error"
-      hx-swap="afterbegin"
+      hx-swap="outerHTML"
       class="formContainer"
     >
       <input class="simpleInput" type="text" name="name" placeholder=" Name" />
       <input class="simpleInput" type="text" name="unit" placeholder=" Unit" />
-      <input class="simpleInput" type="text" name="rate" placeholder=" Rate" />
+      <input class="simpleInput" type="text" name="kharid_rate" placeholder="kharid Rate" />
+      <input class="simpleInput" type="text" name="bikri_rate" placeholder="Bikri Rate" />
       <button class="simpleButton" type="submit">Create</button>
     </form>
     // <div id="error"></div>
@@ -55,15 +60,35 @@ templ GoodInsertSuccess(good types.Good, goods []types.Good) {
 }
 
 templ GoodArray(good types.Good, goods []types.Good){
-  <tr id={"good_"+good.ID.Hex()}>
+  
+  
+  <tr id={"good_"+good.ID.Hex()} hx-ext="response-targets">
+  <form id="td_form" name="td_form">
     <td>
-      <input class="tableInput" type="text" name="good_name" value={good.Name} />
+      <input class="tableInput" type="text" name={"td_name"+good.ID.Hex()} value={good.Name} />
     </td>
     <td>
-      <input class="tableInput" type="text" name="good_rate" value={strconv.FormatFloat(good.Rate, 'f', -1, 64) + " /"+ good.Unit} />
-      </td>
-    <td>{" * "+strconv.FormatFloat(good.Quantity, 'f', -1, 64) +" "+ good.Unit +" = Rs." + strconv.FormatFloat(good.Rate * good.Quantity, 'f', -1, 64)}</td>
+      <input class="tableInput" type="text" name={"td_kharid_rate"+good.ID.Hex()} value={strconv.FormatFloat(good.KharidRate, 'f', -1, 64) + " /"+ good.Unit} />
+    </td>
     <td>
+      <input class="tableInput" type="text" name={"td_bikri_rate"+good.ID.Hex()} value={strconv.FormatFloat(good.BikriRate, 'f', -1, 64) + " /"+ good.Unit} />
+    </td>
+
+    <td>{" * "+strconv.FormatFloat(good.Quantity, 'f', -1, 64) +" "+ good.Unit +" = Rs." + strconv.FormatFloat(good.BikriRate * good.Quantity, 'f', -1, 64)}</td>
+    </form>
+     
+    <td>
+
+      <button
+        hx-patch={"/goods?id="+good.ID.Hex()}
+        hx-target={"#good_"+good.ID.Hex()}
+        hx-include="[name='td_form']"
+        hx-target-error="#error"
+        hx-swap="outerHTML"
+        class="simpleButton"
+      >
+        Update
+      </button>
       <button
         hx-delete={"/goods?id="+good.ID.Hex()}
         hx-target={"#good_"+good.ID.Hex()}
@@ -73,17 +98,6 @@ templ GoodArray(good types.Good, goods []types.Good){
       >
         Delete
       </button>
-      <button
-        hx-patch={"/goods?id="+good.ID.Hex()}
-        hx-include="[name='good_name'], [name='good_rate']"
-        hx-target={"#good_"+good.ID.Hex()}
-        hx-target-error="#error"
-        hx-swap="outerHTML"
-        class="simpleButton"
-      >
-        Update
-      </button>
-
       <button class="open-button" onclick={openMyForm(good.ID.Hex())}>Convert</button>
 
       <div class="form-popup" id={"myForm_"+good.ID.Hex()}  hx-ext="response-targets">
@@ -106,9 +120,10 @@ templ GoodArray(good types.Good, goods []types.Good){
           
         </form>
       </div>
-      
+
     </td>
   </tr>
+
 }
 
 script openMyForm(id string){

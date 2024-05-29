@@ -82,10 +82,11 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		components.GeneralToastError("That Audience Doesn't Exist!").Render(r.Context(), w)
 		return
 	}
-
+	var trans_price float64
 	if trans_type == string(types.Bought) {
 		boughtFrom = aud_id
 		good_q = trans_good.Quantity + quantity_f
+		trans_price = trans_good.KharidRate * quantity_f
 	} else if trans_type == string(types.Sold) {
 		soldTo = aud_id
 		if quantity_f > trans_good.Quantity {
@@ -93,6 +94,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 			return
 		}
 		good_q = trans_good.Quantity - quantity_f
+		trans_price = trans_good.BikriRate * quantity_f
 	}
 
 	if payment == "on" {
@@ -102,7 +104,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	transaction := types.Transaction{
 		GoodID:     good_id,
 		Quantity:   quantity_f,
-		Price:      trans_good.Rate * quantity_f,
+		Price:      trans_price,
 		BoughtFrom: boughtFrom,
 		SoldTo:     soldTo,
 		Type:       types.TransactionType(trans_type),
@@ -115,10 +117,11 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), userID, trans_good.ID, types.UpdateGood{
-		Name:     trans_good.Name,
-		Unit:     trans_good.Unit,
-		Rate:     trans_good.Rate,
-		Quantity: good_q,
+		Name:       trans_good.Name,
+		Unit:       trans_good.Unit,
+		KharidRate: trans_good.KharidRate,
+		BikriRate:  trans_good.BikriRate,
+		Quantity:   good_q,
 	})
 	if err != nil {
 		components.GeneralToastError("Error with goods service.").Render(r.Context(), w)
@@ -271,7 +274,7 @@ func (h *TransactionHandler) InternalTransaction(w http.ResponseWriter, r *http.
 	transaction := types.Transaction{
 		GoodID:   afterGoodID,
 		Quantity: quantity_f,
-		Price:    afterGood.Rate * quantity_f,
+		Price:    afterGood.KharidRate * quantity_f,
 		Type:     types.Internal,
 		Payment:  true,
 		UserID:   userID,
@@ -285,10 +288,11 @@ func (h *TransactionHandler) InternalTransaction(w http.ResponseWriter, r *http.
 	}
 
 	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), userID, beforeGood.ID, types.UpdateGood{
-		Name:     beforeGood.Name,
-		Unit:     beforeGood.Unit,
-		Rate:     beforeGood.Rate,
-		Quantity: beforeGood.Quantity - quantity_f,
+		Name:       beforeGood.Name,
+		Unit:       beforeGood.Unit,
+		KharidRate: beforeGood.KharidRate,
+		BikriRate:  beforeGood.BikriRate,
+		Quantity:   beforeGood.Quantity - quantity_f,
 	})
 
 	if err != nil {
@@ -298,10 +302,11 @@ func (h *TransactionHandler) InternalTransaction(w http.ResponseWriter, r *http.
 	}
 
 	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), userID, afterGood.ID, types.UpdateGood{
-		Name:     afterGood.Name,
-		Unit:     afterGood.Unit,
-		Rate:     afterGood.Rate,
-		Quantity: afterGood.Quantity + quantity_f,
+		Name:       afterGood.Name,
+		Unit:       afterGood.Unit,
+		KharidRate: afterGood.KharidRate,
+		BikriRate:  afterGood.BikriRate,
+		Quantity:   afterGood.Quantity + quantity_f,
 	})
 
 	if err != nil {
@@ -311,5 +316,5 @@ func (h *TransactionHandler) InternalTransaction(w http.ResponseWriter, r *http.
 	}
 
 	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), userID)
-	components.TodaysGoods(goods).Render(r.Context(), w)
+	components.TodaysGoods(goods, true).Render(r.Context(), w)
 }

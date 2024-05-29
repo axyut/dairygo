@@ -7,7 +7,7 @@ templ Index(user types.User, goods []types.Good, auds []types.Audience) {
 
 		<div>
 			@components.GetUser(user)
-			@components.TodaysGoods(goods)
+			@components.TodaysGoods(goods, false)
 			@components.Audiences(auds)
 			@components.Transaction(goods, auds)
 		</div>
