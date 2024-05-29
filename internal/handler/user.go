@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/axyut/dairygo/client"
+	"github.com/axyut/dairygo/client/components"
 	"github.com/axyut/dairygo/client/pages"
 	"github.com/axyut/dairygo/internal/service"
 	"github.com/axyut/dairygo/internal/types"
@@ -123,6 +124,17 @@ func (user *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) types.U
 	return userData
 }
 
+func (user *UserHandler) GetUserRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		components.GeneralToastError("Please login.").Render(r.Context(), w)
+		return
+	}
+	sendUser := user.GetUser(w, r)
+	w.WriteHeader(http.StatusOK)
+	components.GetUserReq(sendUser).Render(r.Context(), w)
+}
+
 func (user *UserHandler) LogoutUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -138,4 +150,11 @@ func (user *UserHandler) LogoutUser(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &cookie)
 	w.Header().Set("HX-Redirect", "/login")
 	w.WriteHeader(http.StatusOK)
+}
+
+func (user *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
+	userData := user.GetUser(w, r)
+	w.WriteHeader(http.StatusOK)
+	pg := pages.Profile(userData)
+	client.Layout(pg, "User Profile").Render(r.Context(), w)
 }

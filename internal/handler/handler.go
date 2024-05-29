@@ -44,8 +44,10 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 	router.HandleFunc("/login", h.UserHandler.LoginUser)
 	router.HandleFunc("GET /sold", h.TransactionHandler.GetSold)
 	router.HandleFunc("GET /bought", h.TransactionHandler.GetBought)
+	router.HandleFunc("GET /logout", h.UserHandler.LogoutUser)
+	router.HandleFunc("GET /getUserReq", h.UserHandler.GetUserRequest)
+	router.HandleFunc("GET /profile", h.UserHandler.GetProfile)
 
-	router.HandleFunc("POST /logout", h.UserHandler.LogoutUser)
 	router.HandleFunc("POST /audience", h.AudienceHandler.NewAudience)
 	router.HandleFunc("POST /goods", h.GoodsHandler.NewGood)
 	router.HandleFunc("POST /transaction", h.TransactionHandler.NewTransaction)

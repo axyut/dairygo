@@ -72,11 +72,10 @@ func decode(cookie string) string {
 	return string(val)
 }
 
-func GetUser(ctx context.Context) string {
+func GetUser(ctx context.Context) (userID string) {
 	user_id := ctx.Value("user_id")
 	if user_id == nil {
 		return ""
 	}
-
 	return fmt.Sprintf("%v", user_id)
 }
