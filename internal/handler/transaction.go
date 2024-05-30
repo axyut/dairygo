@@ -326,3 +326,38 @@ func (h *TransactionHandler) DeleteTransaction(w http.ResponseWriter, r *http.Re
 		return
 	}
 }
+
+func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Request) {
+	user := h.h.UserHandler.GetUser(w, r)
+	trans_id := r.URL.Query().Get("id")
+	payment_b := r.URL.Query().Get("payment")
+
+	if payment_b == "" || trans_id == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
+		return
+	}
+
+	transID, err := primitive.ObjectIDFromHex(trans_id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Update transaction ID parse error.")
+		return
+	}
+	payment, err := strconv.ParseBool(payment_b)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Update transaction payment parse error.")
+		return
+	}
+
+	transUpdated, err := h.srv.UpdateTransaction(r.Context(), user.ID, transID, payment)
+	// fmt.Println("\nunedited:", payment_b, "recvieved:", payment, "updated:", transUpdated.Payment, "\n")
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Update transaction service error.")
+		return
+	}
+	pages.CheckboxBoolPayment(transUpdated.ID.Hex(), transUpdated.Payment).Render(r.Context(), w)
+
+}

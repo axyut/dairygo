@@ -55,10 +55,10 @@ func (s *TransactionService) GetAllTransactions(ctx context.Context, userID prim
 	return transactions, nil
 }
 
-func (s *TransactionService) GetTransactionByID(ctx context.Context, transID primitive.ObjectID) (transaction types.Transaction, err error) {
+func (s *TransactionService) GetTransactionByID(ctx context.Context, transID primitive.ObjectID, userID primitive.ObjectID) (transaction types.Transaction, err error) {
 	transaction = types.Transaction{}
 	transactionCollection := *s.collection
-	err = transactionCollection.FindOne(ctx, bson.M{"_id": transID}).Decode(&transaction)
+	err = transactionCollection.FindOne(ctx, bson.M{"_id": transID, "userID": userID}).Decode(&transaction)
 	if err != nil {
 		s.service.logger.Error("Error while decoding transaction", err)
 		return
@@ -107,4 +107,22 @@ func (s *TransactionService) DeleteTransaction(ctx context.Context, userID primi
 		s.service.logger.Error("Error deleteting provided transaction.", err)
 	}
 	return nil
+}
+
+func (s *TransactionService) UpdateTransaction(ctx context.Context, userID primitive.ObjectID, transID primitive.ObjectID, payment bool) (types.Transaction, error) {
+	transaction := *s.collection
+	trans := types.Transaction{}
+	err := transaction.FindOneAndUpdate(ctx, bson.M{"userID": userID, "_id": transID}, bson.M{
+		"$set": bson.M{"payment": payment},
+	}).Decode(&trans)
+	if err != nil {
+		s.service.logger.Error("Error updating transaction", err)
+		return trans, err
+	}
+	trans, err = s.GetTransactionByID(ctx, transID, userID)
+	if err != nil {
+		s.service.logger.Error("Error getting updated transaction", err)
+		return trans, err
+	}
+	return trans, nil
 }

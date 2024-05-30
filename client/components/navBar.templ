@@ -18,6 +18,7 @@ templ Nav() {
 					<a  href="/reports">Reports</a>
 				</li>
 			</ol>
+			<ol class="nav-ol-between"></ol>
 			<ol  class="nav-ol-right">
 				if userID:=middleware.GetUser(ctx);userID != "" {
 					<li class="nav-list" >
@@ -62,28 +63,35 @@ templ navStyles(){
 			cursor: pointer;
 			font-family: "Lucida Console", "Courier New", monospace;
 			text-transform: uppercase;
-			border: 1px solid transparent;
-			margin: 3px 5px;
-		}
-		.navContainer a:hover {
-			border: 1px solid #879EA3;
-			border-radius: 5px;
 		}
 		.nav-ol-left {
 			display: flex;
-			justify-content: space-between;
-			width: 20%;
+			padding-left:40px;
+			justify-content: space-evenly;
+			width:30%;
+		}
+		.nav-ol-between {
+			display: flex;
+			padding: 0px 40px;
+			justify-content: space-evenly;
+			width:40%;
 		}
 		.nav-ol-right {
 			display: flex;
-			justify-content: flex-end;
-			width: 20%;
+			padding-right:40px;
+			justify-content: space-evenly;
+			width:30%;
 		}
 		.nav-list {
+			border: 1px solid transparent;
 			list-style-type: none;
 			display: flex;
-			justify-content: space-between;
-			width: 100%;
+			margin: 3px 5px;
+		}
+		.nav-list:hover {
+			background-color: #555;
+			border: 1px solid #879EA3;
+			border-radius: 5px;
 		}
 	</style>
 }

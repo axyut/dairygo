@@ -1,29 +1,35 @@
 package pages
 
 import "github.com/axyut/dairygo/internal/types"
+import "strconv"
+import "github.com/axyut/dairygo/client/components"
 
 templ TransactionPage(){
+    @pageStyles()
     <div  hx-ext="response-targets">
-    <h1>Bought, Sold and Internal Transactions. </h1>
-
+    <div class="trans_nav">
     <button class="open-button" 
         hx-get="/sold"
-        hx-swap="outerHTML"
-    >Get Sold Transactions.</button>
+        hx-swap="innerHTML"
+        hx-target="#transaction_here"
+    >Sold</button>
 
     <button class="open-button" 
         hx-get="/bought"
-        hx-swap="outerHTML"
-    >Get Bought Transactions.</button>
+        hx-swap="innerHTML"
+        hx-target="#transaction_here"
+    >Bought</button>
 
     <button class="open-button" 
         hx-get="/internal"
-        hx-swap="outerHTML"
-    >Get Internal Transactions.</button>
-
-    <div id="sold_here"></div>
-    <div id="bought_here"></div>
-    <div id="internal_here"></div>
+        hx-swap="innerHTML"
+        hx-target="#transaction_here"
+    >Production</button>
+    </div>
+        <div id="transaction_here" class="divContainer">
+            <h1>Transaction</h1>
+            <p>Click on the buttons above to view the transactions</p>
+        </div>
     </div>
 }
 
@@ -62,40 +68,57 @@ templ Sold(soldTrans []types.Transaction_Client){
     </div>
 }
 
+templ CheckboxTemplate(id string, payment bool){
+    if payment{
+            <input
+                hx-trigger="click"
+                hx-patch={"/transaction?id="+id+"&payment="+strconv.FormatBool(!payment)}
+                hx-target={"#payment_"+id}
+                hx-target-error="#error"
+                hx-swap="innerHTML"
+                class="trans_check" 
+                type="checkbox" 
+            checked />
+        } else {
+                <input
+                    hx-trigger="click"
+                    hx-patch={"/transaction?id="+id+"&payment="+strconv.FormatBool(!payment)}
+                    hx-target={"#payment_"+id}
+                    hx-target-error="#error"
+                    hx-swap="innerHTML"
+                    class="trans_check" 
+                    type="checkbox" 
+                />
+        }
+}
+
+templ CheckboxBoolPayment(id string, payment bool){
+    @CheckboxTemplate(id, payment)
+    if payment{
+        @components.GeneralToastSuccess("Payment Done")
+    } else {
+        @components.GeneralToastError("Payment Removed.")
+    }
+}
+
 templ aRow(soldTrans types.Transaction_Client){
     <tr id={"soldTrans_"+soldTrans.TransactionID.Hex()} hx-ext="response-targets">
-    <form name="soldTrans_form">
         <td>{soldTrans.GoodName}</td>
         <td>{soldTrans.Quantity + soldTrans.GoodUnit}</td>
         <td>{soldTrans.Price}</td>
         <td>{soldTrans.SoldTo}</td>
-        <td>if soldTrans.Payment{
-                Done
-            } else {
-                Pending
-            }
+        <td id={"payment_"+soldTrans.TransactionID.Hex()}>
+            @CheckboxTemplate(soldTrans.TransactionID.Hex(), soldTrans.Payment)
         </td>
         <td>{soldTrans.TransactionID.Timestamp().Format("3:04 pm")}</td>
-    </form>
         <td>
-            <button
-                hx-patch={"/transaction?id="+soldTrans.TransactionID.Hex()}
-                hx-target={"#soldTrans_"+soldTrans.TransactionID.Hex()}
-                hx-include="[name='soldTrans_form']"
-                hx-target-error="#error"
-                hx-swap="outerHTML"
-                class="simpleButton"
-            >
-                Update
-            </button>
             <button
                 hx-delete={"/transaction?id="+soldTrans.TransactionID.Hex()}
                 hx-target={"#soldTrans_"+soldTrans.TransactionID.Hex()}
                 hx-target-error="#error"
                 hx-swap="outerHTML"
                 class="red simpleButton"
-            >
-                Delete
+            >Del
             </button>
       </td>
     </tr>
@@ -131,4 +154,22 @@ templ Bought(boughtTrans []types.Transaction_Client) {
 			}
 		</table>
 	</div>
+}
+
+templ pageStyles(){
+    <style>
+        .trans_nav{
+            display: flex;
+            margin-top: 20px;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+        #transaction_here{
+            align-items: center;
+        }
+        .trans_check{
+            width: 20px;
+            height: 20px;
+        }
+    </style>
 }
