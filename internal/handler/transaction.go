@@ -162,7 +162,8 @@ func (h *TransactionHandler) GetSold(w http.ResponseWriter, r *http.Request) {
 	}
 	client_Trans := []types.Transaction_Client{}
 
-	for _, v := range soldTrans {
+	for i := len(soldTrans) - 1; i >= 0; i-- {
+		v := soldTrans[i]
 		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), v.UserID, v.GoodID)
 		soldAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.UserID, v.SoldTo)
 		// boughtAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.BoughtFrom)
@@ -197,7 +198,8 @@ func (h *TransactionHandler) GetBought(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	client_T := []types.Transaction_Client{}
-	for _, v := range boughts {
+	for i := len(boughts) - 1; i >= 0; i-- {
+		v := boughts[i]
 		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), v.UserID, v.GoodID)
 		// soldAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.SoldTo)
 		boughtAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.UserID, v.BoughtFrom)

@@ -5,16 +5,17 @@ import "github.com/axyut/dairygo/internal/types"
 
 templ Nav() {
 	<nav>
+	@navStyles()
 		<div class="navContainer">
 			<ol class="nav-ol-left">
 				<li class="nav-list">
-					<a  href="/">Dairy</a>
+					<a  href="/">DAIRY</a>
 				</li>
 				<li class="nav-list">
-					<a  href="/sold">Sold</a>
+					<a  href="/sold">SOLD</a>
 				</li>
 				<li class="nav-list">
-					<a  href="/bought">Bought</a>
+					<a  href="/bought">BOUGHT</a>
 				</li>
 			</ol>
 			<ol  class="nav-ol-right">
@@ -23,15 +24,15 @@ templ Nav() {
 						<div hx-trigger="load" id="abc" hx-get="/getUserReq" hx-swap="outerHTML" hx-target="#abc"></div>
 					</li>
 					<li class="nav-list">
-						<a hx-get="/logout" hx-swap="none">Logout</a>
+						<a hx-get="/logout" hx-swap="none">LOGOUT</a>
 					</li>
 					
 				} else {
 					<li class="nav-list">
-						<a  href="/register">Register</a>
+						<a  href="/register">REGISTER</a>
 					</li>
 					<li class="nav-list">
-						<a  href="/login">Login</a>
+						<a  href="/login">LOGIN</a>
 					</li>
 				}
 			</ol>
@@ -41,4 +42,48 @@ templ Nav() {
 
 templ GetUserReq(user types.User){
 	<a href="/profile">{user.UserName}</a>
+}
+
+templ navStyles(){
+	<style>
+		.navContainer {
+			display: flex;
+			justify-content: space-between;
+			flex-direction: row;
+			background-color: #333;
+			color: white;
+			padding: 2px;
+			border-radius: 5px;
+			box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.5);
+		}
+		.navContainer a {
+			color: white;
+			text-decoration: none;
+			cursor: pointer;
+			font-family: "Lucida Console", "Courier New", monospace;
+			text-transform: uppercase;
+			border: 1px solid transparent;
+			margin: 3px 5px;
+		}
+		.navContainer a:hover {
+			border: 1px solid #879EA3;
+			border-radius: 5px;
+		}
+		.nav-ol-left {
+			display: flex;
+			justify-content: space-between;
+			width: 20%;
+		}
+		.nav-ol-right {
+			display: flex;
+			justify-content: flex-end;
+			width: 20%;
+		}
+		.nav-list {
+			list-style-type: none;
+			display: flex;
+			justify-content: space-between;
+			width: 100%;
+		}
+	</style>
 }

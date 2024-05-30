@@ -1,8 +1,9 @@
 package pages
 
 import "github.com/axyut/dairygo/internal/types"
-// import primitive.ObjectID
+import "strconv"
 
+var total float64 = 0
 templ Sold(soldTrans []types.Transaction_Client){
     <div>
         <h1>Sold Items</h1>
@@ -15,21 +16,50 @@ templ Sold(soldTrans []types.Transaction_Client){
                 <th>Payment</th>
                 <th>Date</th>
             </tr>
-            for _, sold := range soldTrans{
+            for i:=0; i<len(soldTrans); i++{
                 <tr>
-                    <td>{sold.GoodName}</td>
-                    <td>{sold.Quantity + sold.GoodUnit}</td>
-                    <td>{sold.Price}</td>
-                    <td>{sold.SoldTo}</td>
-                    <td>if sold.Payment{
-                            Done
-                        } else {
-                            Pending
-                        }
-                    </td>
-                    <td>{sold.TransactionID.Timestamp().Format("Wed Feb 25 11:06:00")}</td>
+                    @aRow(soldTrans[i])
                 </tr>
+
+                if i+1 < len(soldTrans) && soldTrans[i].TransactionID.Timestamp().Day() != soldTrans[i+1].TransactionID.Timestamp().Day(){
+                    <tr>
+                        @rowTotalPrice(i, soldTrans)
+                    </tr>
+                } else if i+1 == len(soldTrans){
+                    <tr>
+                        <td colspan="6">Total: {soldTrans[i].Price}</td>
+                    </tr>
+                }
+                
             }
         </table>
     </div>
+}
+
+templ aRow(soldTrans types.Transaction_Client){
+    <tr>
+        <td>{soldTrans.GoodName}</td>
+        <td>{soldTrans.Quantity + soldTrans.GoodUnit}</td>
+        <td>{soldTrans.Price}</td>
+        <td>{soldTrans.SoldTo}</td>
+        <td>if soldTrans.Payment{
+                Done
+            } else {
+                Pending
+            }
+        </td>
+        <td>{soldTrans.TransactionID.Timestamp().Format("Mon Jan 2 3:04")}</td>
+    </tr>
+}
+
+templ rowTotalPrice(i int, soldTrans []types.Transaction_Client){
+    <td colspan="6">Total:
+        
+        for j:=i; j>=0; j--{
+            if soldTrans[j].TransactionID.Timestamp().Day() == soldTrans[i].TransactionID.Timestamp().Day(){
+                total = soldTrans[j].Price + total
+            }
+        }
+        {strconv.FormatFloat(total, 'f', 2, 64)}
+    </td>
 }
