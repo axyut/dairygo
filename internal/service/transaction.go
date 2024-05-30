@@ -38,7 +38,7 @@ func (s *TransactionService) InsertTransaction(ctx context.Context, trans types.
 	return trans, nil
 }
 
-func (s *TransactionService) GetTransaction(ctx context.Context, userID primitive.ObjectID) (transactions []types.Transaction, err error) {
+func (s *TransactionService) GetAllTransactions(ctx context.Context, userID primitive.ObjectID) (transactions []types.Transaction, err error) {
 	transactions = []types.Transaction{}
 	transaction := *s.collection
 	cursor, err := transaction.Find(ctx, bson.M{"userID": userID})
@@ -98,4 +98,13 @@ func (s *TransactionService) GetBoughtTransactions(ctx context.Context, userID p
 		return
 	}
 	return transactions, nil
+}
+
+func (s *TransactionService) DeleteTransaction(ctx context.Context, userID primitive.ObjectID, transID primitive.ObjectID) error {
+	transaction := *s.collection
+	_, err := transaction.DeleteOne(ctx, bson.M{"userID": userID, "_id": transID})
+	if err != nil {
+		s.service.logger.Error("Error deleteting provided transaction.", err)
+	}
+	return nil
 }

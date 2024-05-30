@@ -108,17 +108,20 @@ func (user *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 func (user *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) types.User {
 	userID := r.Context().Value("user_id")
 	if userID == nil {
-		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
+		w.WriteHeader(http.StatusForbidden)
+		components.GeneralToastError("UserID Error. Re-Login.").Render(r.Context(), w)
 		return types.User{}
 	}
 	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
 	if err != nil {
-		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
+		w.WriteHeader(http.StatusForbidden)
+		components.GeneralToastError("UserID Error. Re-Login.").Render(r.Context(), w)
 		return types.User{}
 	}
 	userData, err := user.srv.GetUserByID(user.h.ctx, id)
 	if err != nil {
-		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
+		w.WriteHeader(http.StatusForbidden)
+		components.GeneralToastError("UserID Error. Re-Login.").Render(r.Context(), w)
 		return types.User{}
 	}
 	return userData

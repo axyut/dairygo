@@ -19,6 +19,7 @@ type Handler struct {
 	TransactionHandler *TransactionHandler
 	UserHandler        *UserHandler
 	HomeHandler        *HomeHandler
+	ReportsHandler     *ReportsHandler
 }
 
 func NewHandler(ctx context.Context, srv *service.Service, logger *slog.Logger) *Handler {
@@ -29,6 +30,7 @@ func NewHandler(ctx context.Context, srv *service.Service, logger *slog.Logger) 
 	h.TransactionHandler = &TransactionHandler{h, srv.TransactionService}
 	h.UserHandler = &UserHandler{h, srv.UserService}
 	h.HomeHandler = &HomeHandler{h}
+	h.ReportsHandler = &ReportsHandler{h}
 
 	return h
 }
@@ -42,11 +44,13 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 	router.HandleFunc("/", h.HomeHandler.GetHome)
 	router.HandleFunc("/register", h.UserHandler.NewUser)
 	router.HandleFunc("/login", h.UserHandler.LoginUser)
+	router.HandleFunc("GET /transaction", h.TransactionHandler.GetTransactionPage)
 	router.HandleFunc("GET /sold", h.TransactionHandler.GetSold)
 	router.HandleFunc("GET /bought", h.TransactionHandler.GetBought)
 	router.HandleFunc("GET /logout", h.UserHandler.LogoutUser)
 	router.HandleFunc("GET /getUserReq", h.UserHandler.GetUserRequest)
 	router.HandleFunc("GET /profile", h.UserHandler.GetProfile)
+	router.HandleFunc("GET /reports", h.ReportsHandler.GetReportsPage)
 
 	router.HandleFunc("POST /audience", h.AudienceHandler.NewAudience)
 	router.HandleFunc("POST /goods", h.GoodsHandler.NewGood)
@@ -55,6 +59,7 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 
 	router.HandleFunc("DELETE /audience", h.AudienceHandler.DeleteAudience)
 	router.HandleFunc("DELETE /goods", h.GoodsHandler.DeleteGood)
+	router.HandleFunc("DELETE /transaction", h.TransactionHandler.DeleteTransaction)
 
 	router.HandleFunc("PATCH /audience", h.AudienceHandler.UpdateAudience)
 	router.HandleFunc("PATCH /goods", h.GoodsHandler.UpdateGood)

@@ -61,7 +61,6 @@ templ GoodInsertSuccess(good types.Good, goods []types.Good) {
 
 templ GoodArray(good types.Good, goods []types.Good){
   
-  
   <tr id={"good_"+good.ID.Hex()} hx-ext="response-targets">
   <form id="td_form" name="td_form">
     <td>

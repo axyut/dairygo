@@ -18,21 +18,10 @@ type TransactionHandler struct {
 	srv *service.TransactionService
 }
 
-func (h *TransactionHandler) GetTransactions(w http.ResponseWriter, r *http.Request) (trans []types.Transaction) {
-	userID := r.Context().Value("user_id")
-	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
-	if err != nil {
-		components.GeneralToastError("Couldn't Fullfill Your Request. Please Try Again.").Render(r.Context(), w)
-		h.h.logger.Error("Error while Parsing in Handler.", err)
-		return
-	}
-
-	trans, err = h.srv.GetTransaction(r.Context(), id)
-	if err != nil {
-		components.GeneralToastError("Error with service.").Render(r.Context(), w)
-		return
-	}
-	return
+func (h *TransactionHandler) GetTransactionPage(w http.ResponseWriter, r *http.Request) {
+	h.h.UserHandler.GetUser(w, r)
+	page := pages.TransactionPage()
+	client.Layout(page, "Transactions").Render(r.Context(), w)
 }
 
 func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Request) {
@@ -178,8 +167,7 @@ func (h *TransactionHandler) GetSold(w http.ResponseWriter, r *http.Request) {
 			// BoughtFrom: boughtAudience.Name,
 		})
 	}
-	soldPage := pages.Sold(client_Trans)
-	client.Layout(soldPage, "Sold Dairy Products").Render(r.Context(), w)
+	pages.Sold(client_Trans).Render(r.Context(), w)
 }
 
 func (h *TransactionHandler) GetBought(w http.ResponseWriter, r *http.Request) {
@@ -214,8 +202,7 @@ func (h *TransactionHandler) GetBought(w http.ResponseWriter, r *http.Request) {
 			BoughtFrom: boughtAudience.Name,
 		})
 	}
-	boughtPage := pages.Bought(client_T)
-	client.Layout(boughtPage, "Bought Dairy Products").Render(r.Context(), w)
+	pages.Bought(client_T).Render(r.Context(), w)
 }
 
 func (h *TransactionHandler) InternalTransaction(w http.ResponseWriter, r *http.Request) {
@@ -319,4 +306,23 @@ func (h *TransactionHandler) InternalTransaction(w http.ResponseWriter, r *http.
 
 	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), userID)
 	components.TodaysGoods(goods, true).Render(r.Context(), w)
+}
+
+func (h *TransactionHandler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
+	user := h.h.UserHandler.GetUser(w, r)
+	trans_id := r.URL.Query().Get("id")
+
+	transID, err := primitive.ObjectIDFromHex(trans_id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Deletion transaction ID parse error.")
+		return
+	}
+
+	err = h.srv.DeleteTransaction(r.Context(), user.ID, transID)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Deletion unsuccessful. Service Failure.")
+		return
+	}
 }

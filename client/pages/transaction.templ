@@ -1,0 +1,134 @@
+package pages
+
+import "github.com/axyut/dairygo/internal/types"
+
+templ TransactionPage(){
+    <div  hx-ext="response-targets">
+    <h1>Bought, Sold and Internal Transactions. </h1>
+
+    <button class="open-button" 
+        hx-get="/sold"
+        hx-swap="outerHTML"
+    >Get Sold Transactions.</button>
+
+    <button class="open-button" 
+        hx-get="/bought"
+        hx-swap="outerHTML"
+    >Get Bought Transactions.</button>
+
+    <button class="open-button" 
+        hx-get="/internal"
+        hx-swap="outerHTML"
+    >Get Internal Transactions.</button>
+
+    <div id="sold_here"></div>
+    <div id="bought_here"></div>
+    <div id="internal_here"></div>
+    </div>
+}
+
+templ Sold(soldTrans []types.Transaction_Client){
+    <div>
+        <h1>Sold Items</h1>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Sold To</th>
+                <th>Payment</th>
+                <th>Time</th>
+            </tr>
+            for i:=0; i<len(soldTrans); i++{
+                if i == 0{
+                    <tr>
+                        <td colspan="6">Date : {soldTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                    </tr>
+                } else if soldTrans[i].TransactionID.Timestamp().Day() != soldTrans[i-1].TransactionID.Timestamp().Day(){
+                    <tr>
+                            <td colspan="6">Date : {soldTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                    </tr>
+                }
+
+                    @aRow(soldTrans[i])
+
+                if i+1 < len(soldTrans) && soldTrans[i].TransactionID.Timestamp().Day() != soldTrans[i+1].TransactionID.Timestamp().Day(){
+                    <tr><td colspan="6" height="10px"></td></tr>
+                } else if i+1 == len(soldTrans){
+                    <tr><td colspan="6" height="10px"></td></tr>
+                }
+            }
+        </table>
+    </div>
+}
+
+templ aRow(soldTrans types.Transaction_Client){
+    <tr id={"soldTrans_"+soldTrans.TransactionID.Hex()} hx-ext="response-targets">
+    <form name="soldTrans_form">
+        <td>{soldTrans.GoodName}</td>
+        <td>{soldTrans.Quantity + soldTrans.GoodUnit}</td>
+        <td>{soldTrans.Price}</td>
+        <td>{soldTrans.SoldTo}</td>
+        <td>if soldTrans.Payment{
+                Done
+            } else {
+                Pending
+            }
+        </td>
+        <td>{soldTrans.TransactionID.Timestamp().Format("3:04 pm")}</td>
+    </form>
+        <td>
+            <button
+                hx-patch={"/transaction?id="+soldTrans.TransactionID.Hex()}
+                hx-target={"#soldTrans_"+soldTrans.TransactionID.Hex()}
+                hx-include="[name='soldTrans_form']"
+                hx-target-error="#error"
+                hx-swap="outerHTML"
+                class="simpleButton"
+            >
+                Update
+            </button>
+            <button
+                hx-delete={"/transaction?id="+soldTrans.TransactionID.Hex()}
+                hx-target={"#soldTrans_"+soldTrans.TransactionID.Hex()}
+                hx-target-error="#error"
+                hx-swap="outerHTML"
+                class="red simpleButton"
+            >
+                Delete
+            </button>
+      </td>
+    </tr>
+}
+
+templ Bought(boughtTrans []types.Transaction_Client) {
+	<div>
+		<h1>Bought Items</h1>
+		<table>
+			<tr>
+				<th>Name</th>
+				<th>Quantity</th>
+				<th>Price</th>
+				<th>Bought From</th>
+				<th>Payment</th>
+				<th>Date</th>
+			</tr>
+			for _, bought := range boughtTrans {
+				<tr>
+					<td>{ bought.GoodName }</td>
+					<td>{ bought.Quantity + bought.GoodUnit }</td>
+					<td>{ bought.Price }</td>
+					<td>{ bought.BoughtFrom }</td>
+					<td>
+						if bought.Payment {
+							Done
+						} else {
+							Pending
+						}
+					</td>
+					<td>{bought.TransactionID.Timestamp().Format("Mon Jan 2 3:04")}</td>
+				</tr>
+			}
+		</table>
+	</div>
+}
