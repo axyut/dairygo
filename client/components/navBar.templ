@@ -4,6 +4,10 @@ import "github.com/axyut/dairygo/internal/middleware"
 import "github.com/axyut/dairygo/internal/types"
 
 templ Nav() {
+	// progress bar -- add hx-indicator=".progress" to requests to show progress bar
+	<div class="progress" style="height: 3px; background-color: white;">
+      <div class="indeterminate" style="background-color: red;"></div>
+    </div>
 	<nav>
 	@navStyles()
 		<div class="navContainer">

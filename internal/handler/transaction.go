@@ -205,6 +205,29 @@ func (h *TransactionHandler) GetBought(w http.ResponseWriter, r *http.Request) {
 	pages.Bought(client_T).Render(r.Context(), w)
 }
 
+func (h *TransactionHandler) GetInternal(w http.ResponseWriter, r *http.Request) {
+	user := h.h.UserHandler.GetUser(w, r)
+	internals, err := h.h.srv.TransactionService.GetInternalTransactions(r.Context(), user.ID)
+	if err != nil {
+		components.GeneralToastError("Error with service.")
+		return
+	}
+	client_T := []types.Transaction_Client{}
+	for i := len(internals) - 1; i >= 0; i-- {
+		v := internals[i]
+		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), v.UserID, v.GoodID)
+		client_T = append(client_T, types.Transaction_Client{
+			TransactionID: v.ID,
+			GoodName:      good.Name,
+			GoodUnit:      good.Unit,
+			Quantity:      strconv.FormatFloat(v.Quantity, 'f', 2, 64),
+			Price:         strconv.FormatFloat(v.Price, 'f', 2, 64),
+			Payment:       v.Payment,
+		})
+	}
+	pages.Internal(client_T).Render(r.Context(), w)
+}
+
 func (h *TransactionHandler) InternalTransaction(w http.ResponseWriter, r *http.Request) {
 	before_good_id := r.URL.Query().Get("id")
 	after_good_id := r.FormValue("after_good_id")

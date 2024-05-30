@@ -6,23 +6,27 @@ import "github.com/axyut/dairygo/client/components"
 
 templ TransactionPage(){
     @pageStyles()
+
     <div  hx-ext="response-targets">
     <div class="trans_nav">
     <button class="open-button" 
         hx-get="/sold"
         hx-swap="innerHTML"
         hx-target="#transaction_here"
+        hx-indicator=".progress"
     >Sold</button>
 
     <button class="open-button" 
         hx-get="/bought"
         hx-swap="innerHTML"
         hx-target="#transaction_here"
+        hx-indicator=".progress"
     >Bought</button>
 
     <button class="open-button" 
         hx-get="/internal"
         hx-swap="innerHTML"
+        hx-indicator=".progress"
         hx-target="#transaction_here"
     >Production</button>
     </div>
@@ -56,7 +60,7 @@ templ Sold(soldTrans []types.Transaction_Client){
                     </tr>
                 }
 
-                    @aRow(soldTrans[i])
+                    @sRow(soldTrans[i])
 
                 if i+1 < len(soldTrans) && soldTrans[i].TransactionID.Timestamp().Day() != soldTrans[i+1].TransactionID.Timestamp().Day(){
                     <tr><td colspan="6" height="10px"></td></tr>
@@ -95,13 +99,13 @@ templ CheckboxTemplate(id string, payment bool){
 templ CheckboxBoolPayment(id string, payment bool){
     @CheckboxTemplate(id, payment)
     if payment{
-        @components.GeneralToastSuccess("Payment Done")
+        @components.SuccessToast("Payment Done. Congratulations!")
     } else {
-        @components.GeneralToastError("Payment Removed.")
+        @components.DangerToast("Payment Removed. Please pay soon!")
     }
 }
 
-templ aRow(soldTrans types.Transaction_Client){
+templ sRow(soldTrans types.Transaction_Client){
     <tr id={"soldTrans_"+soldTrans.TransactionID.Hex()} hx-ext="response-targets">
         <td>{soldTrans.GoodName}</td>
         <td>{soldTrans.Quantity + soldTrans.GoodUnit}</td>
@@ -124,38 +128,6 @@ templ aRow(soldTrans types.Transaction_Client){
     </tr>
 }
 
-templ Bought(boughtTrans []types.Transaction_Client) {
-	<div>
-		<h1>Bought Items</h1>
-		<table>
-			<tr>
-				<th>Name</th>
-				<th>Quantity</th>
-				<th>Price</th>
-				<th>Bought From</th>
-				<th>Payment</th>
-				<th>Date</th>
-			</tr>
-			for _, bought := range boughtTrans {
-				<tr>
-					<td>{ bought.GoodName }</td>
-					<td>{ bought.Quantity + bought.GoodUnit }</td>
-					<td>{ bought.Price }</td>
-					<td>{ bought.BoughtFrom }</td>
-					<td>
-						if bought.Payment {
-							Done
-						} else {
-							Pending
-						}
-					</td>
-					<td>{bought.TransactionID.Timestamp().Format("Mon Jan 2 3:04")}</td>
-				</tr>
-			}
-		</table>
-	</div>
-}
-
 templ pageStyles(){
     <style>
         .trans_nav{
@@ -171,5 +143,118 @@ templ pageStyles(){
             width: 20px;
             height: 20px;
         }
+
     </style>
+}
+
+templ bRow(boughtTrans types.Transaction_Client){
+    <tr id={"boughtTrans_"+boughtTrans.TransactionID.Hex()} hx-ext="response-targets">
+        <td>{boughtTrans.GoodName}</td>
+        <td>{boughtTrans.Quantity + boughtTrans.GoodUnit}</td>
+        <td>{boughtTrans.Price}</td>
+        <td>{boughtTrans.BoughtFrom}</td>
+        <td id={"payment_"+boughtTrans.TransactionID.Hex()}>
+            @CheckboxTemplate(boughtTrans.TransactionID.Hex(), boughtTrans.Payment)
+        </td>
+        <td>{boughtTrans.TransactionID.Timestamp().Format("3:04 pm")}</td>
+        <td>
+            <button
+                hx-delete={"/transaction?id="+boughtTrans.TransactionID.Hex()}
+                hx-target={"#boughtTrans_"+boughtTrans.TransactionID.Hex()}
+                hx-target-error="#error"
+                hx-swap="outerHTML"
+                class="red simpleButton"
+            >Del
+            </button>
+      </td>
+    </tr>
+}
+
+templ Bought(boughtTrans []types.Transaction_Client) {
+	<div>
+		<h1>Bought Items</h1>
+        
+		<table>
+			<tr>
+				<th>Name</th>
+				<th>Quantity</th>
+				<th>Price</th>
+				<th>Bought From</th>
+				<th>Payment</th>
+				<th>Time</th>
+			</tr>
+			for i:=0; i<len(boughtTrans); i++{
+                if i == 0{
+                    <tr>
+                        <td colspan="6">Date : {boughtTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                    </tr>
+                } else if boughtTrans[i].TransactionID.Timestamp().Day() != boughtTrans[i-1].TransactionID.Timestamp().Day(){
+                    <tr>
+                            <td colspan="6">Date : {boughtTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                    </tr>
+                }
+
+                    @bRow(boughtTrans[i])
+
+                if i+1 < len(boughtTrans) && boughtTrans[i].TransactionID.Timestamp().Day() != boughtTrans[i+1].TransactionID.Timestamp().Day(){
+                    <tr><td colspan="6" height="10px"></td></tr>
+                } else if i+1 == len(boughtTrans){
+                    <tr><td colspan="6" height="10px"></td></tr>
+                }
+            }
+		</table>
+	</div>
+}
+
+
+templ Internal(internalTrans []types.Transaction_Client){
+    <div>
+        <h1>Production</h1>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Time</th>
+            </tr>
+            for i:=0; i<len(internalTrans); i++{
+                if i == 0{
+                    <tr>
+                        <td colspan="4">Date : {internalTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                    </tr>
+                } else if internalTrans[i].TransactionID.Timestamp().Day() != internalTrans[i-1].TransactionID.Timestamp().Day(){
+                    <tr>
+                            <td colspan="4">Date : {internalTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                    </tr>
+                }
+
+                    @iRow(internalTrans[i])
+
+                if i+1 < len(internalTrans) && internalTrans[i].TransactionID.Timestamp().Day() != internalTrans[i+1].TransactionID.Timestamp().Day(){
+                    <tr><td colspan="4" height="10px"></td></tr>
+                } else if i+1 == len(internalTrans){
+                    <tr><td colspan="4" height="10px"></td></tr>
+                }
+            }
+        </table>
+    </div>
+}
+
+templ iRow(internalTrans types.Transaction_Client){
+    <tr id={"internalTrans_"+internalTrans.TransactionID.Hex()} hx-ext="response-targets">
+        <td>{internalTrans.GoodName}</td>
+        <td>{internalTrans.Quantity + internalTrans.GoodUnit}</td>
+        <td>{internalTrans.Price}</td>
+        <td>{internalTrans.TransactionID.Timestamp().Format("3:04 pm")}</td>
+        <td>
+            <button
+                hx-delete={"/transaction?id="+internalTrans.TransactionID.Hex()}
+                hx-target={"#internalTrans_"+internalTrans.TransactionID.Hex()}
+                hx-target-error="#error"
+                hx-swap="outerHTML"
+                class="red simpleButton"
+            >Del
+            </button>
+      </td>
+    </tr>
 }

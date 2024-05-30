@@ -63,22 +63,23 @@ templ audArray(aud types.Audience){
     <td>{strconv.FormatFloat(aud.Paid, 'f', -1, 64)}</td>
     <td>
         <button
-            hx-delete={"/audience?id="+aud.ID.Hex()}
-            hx-target={"#aud_"+aud.ID.Hex()}
-            hx-target-error="#error"
-            hx-swap="outerHTML"
-            class="simpleButton red"
-        >Delete</button>
-    </td>
-    <td>
-        <button
             hx-patch={"/audience?id="+aud.ID.Hex()}
             hx-include="[name='aud_name'], [name='aud_contact']"
             hx-target={"#aud_"+aud.ID.Hex()}
             hx-target-error="#error"
             hx-swap="outerHTML"
             class="simpleButton"
-        >Update</button>
+        >Save</button>
     </td>
+    <td>
+        <button
+            hx-delete={"/audience?id="+aud.ID.Hex()}
+            hx-target={"#aud_"+aud.ID.Hex()}
+            hx-target-error="#error"
+            hx-swap="outerHTML"
+            class="simpleButton red"
+        >Del</button>
+    </td>
+
 </tr>
 }

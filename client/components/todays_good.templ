@@ -86,7 +86,7 @@ templ GoodArray(good types.Good, goods []types.Good){
         hx-swap="outerHTML"
         class="simpleButton"
       >
-        Update
+        Save
       </button>
       <button
         hx-delete={"/goods?id="+good.ID.Hex()}
@@ -95,7 +95,7 @@ templ GoodArray(good types.Good, goods []types.Good){
         hx-swap="outerHTML"
         class="red simpleButton"
       >
-        Delete
+        Del
       </button>
       <button class="open-button" onclick={openMyForm(good.ID.Hex())}>Convert</button>
 
