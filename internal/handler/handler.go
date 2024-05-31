@@ -20,6 +20,7 @@ type Handler struct {
 	UserHandler        *UserHandler
 	HomeHandler        *HomeHandler
 	ReportsHandler     *ReportsHandler
+	ProductionHandler  *ProductionHandler
 }
 
 func NewHandler(ctx context.Context, srv *service.Service, logger *slog.Logger) *Handler {
@@ -31,6 +32,7 @@ func NewHandler(ctx context.Context, srv *service.Service, logger *slog.Logger) 
 	h.UserHandler = &UserHandler{h, srv.UserService}
 	h.HomeHandler = &HomeHandler{h}
 	h.ReportsHandler = &ReportsHandler{h}
+	h.ProductionHandler = &ProductionHandler{h, srv.ProductionService}
 
 	return h
 }
@@ -47,7 +49,7 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 	router.HandleFunc("GET /transaction", h.TransactionHandler.GetTransactionPage)
 	router.HandleFunc("GET /sold", h.TransactionHandler.GetSold)
 	router.HandleFunc("GET /bought", h.TransactionHandler.GetBought)
-	router.HandleFunc("GET /internal", h.TransactionHandler.GetInternal)
+	router.HandleFunc("GET /production", h.ProductionHandler.GetProductionPage)
 	router.HandleFunc("GET /logout", h.UserHandler.LogoutUser)
 	router.HandleFunc("GET /getUserReq", h.UserHandler.GetUserRequest)
 	router.HandleFunc("GET /profile", h.UserHandler.GetProfile)
@@ -56,11 +58,12 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 	router.HandleFunc("POST /audience", h.AudienceHandler.NewAudience)
 	router.HandleFunc("POST /goods", h.GoodsHandler.NewGood)
 	router.HandleFunc("POST /transaction", h.TransactionHandler.NewTransaction)
-	router.HandleFunc("POST /internalTransaction", h.TransactionHandler.InternalTransaction)
+	router.HandleFunc("POST /production", h.ProductionHandler.NewProduction)
 
 	router.HandleFunc("DELETE /audience", h.AudienceHandler.DeleteAudience)
 	router.HandleFunc("DELETE /goods", h.GoodsHandler.DeleteGood)
 	router.HandleFunc("DELETE /transaction", h.TransactionHandler.DeleteTransaction)
+	router.HandleFunc("DELETE /production", h.ProductionHandler.DeleteProduction)
 
 	router.HandleFunc("PATCH /audience", h.AudienceHandler.UpdateAudience)
 	router.HandleFunc("PATCH /goods", h.GoodsHandler.UpdateGood)

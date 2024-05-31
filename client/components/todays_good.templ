@@ -122,20 +122,21 @@ templ GoodArray(good types.Good, goods []types.Good){
       <div class="todaysInsert" id={"myForm_"+good.ID.Hex()}  hx-ext="response-targets">
         <div class="content">
         <form class="formContainer"
-          hx-post={"/internalTransaction?id="+good.ID.Hex()}
+          hx-post={"/production?change_good_id="+good.ID.Hex()}
           hx-target="#good_success"
           hx-target-error="#error"
           hx-swap="innerHTML"
         >
         <button type="button" class="emojiBtn" onclick={closeMyForm(good.ID.Hex())}>❌</button>
 
-          <input class="simpleInput" type="text" placeholder="Enter quantity" name="convert_quantity" required />
-                      <label for="good">Convert to:</label>
-            <select id="good" name="after_good_id" required>
-                for _, g := range goods {
-                    <option value={g.ID.Hex()}>{g.Name}</option>
-                }
-            </select>
+          <input class="simpleInput" type="text" placeholder={good.Name+" quantity"} name="change_quantity" required />
+          <label for="good">Convert to:</label>
+          <select id="good" name="prod_good_id" required>
+              for _, g := range goods {
+                  <option value={g.ID.Hex()}>{g.Name}</option>
+              }
+          </select>
+          <input class="simpleInput" type="text" placeholder="Produce quantity" name="prod_quantity" required />
           <button type="submit" class="simpleButton">Convert</button>
           
         </form>

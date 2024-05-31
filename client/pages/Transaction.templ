@@ -24,7 +24,7 @@ templ TransactionPage(){
     >Bought</button>
 
     <button class="open-button" 
-        hx-get="/internal"
+        hx-get="/production"
         hx-swap="innerHTML"
         hx-indicator=".progress"
         hx-target="#transaction_here"
@@ -52,20 +52,20 @@ templ Sold(soldTrans []types.Transaction_Client){
             for i:=0; i<len(soldTrans); i++{
                 if i == 0{
                     <tr id="date">
-                        <td  colspan="7"><strong>{soldTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</strong></td>
+                        <td  colspan="7">{soldTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
                     </tr>
                 } else if soldTrans[i].TransactionID.Timestamp().Day() != soldTrans[i-1].TransactionID.Timestamp().Day(){
                     <tr id="date">
-                            <td  colspan="7"><strong>{soldTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</strong></td>
+                            <td  colspan="7">{soldTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
                     </tr>
                 }
 
                     @sRow(soldTrans[i])
 
                 if i+1 < len(soldTrans) && soldTrans[i].TransactionID.Timestamp().Day() != soldTrans[i+1].TransactionID.Timestamp().Day(){
-                    <tr id="break"><td  colspan="7" height="10px"></td></tr>
+                    <tr id="break"><td  colspan="7" ></td></tr>
                 } else if i+1 == len(soldTrans){
-                    <tr id="break"><td  colspan="7" height="10px"></td></tr>
+                    <tr id="break"><td  colspan="7" ></td></tr>
                 }
             }
         </table>
@@ -199,9 +199,9 @@ templ Bought(boughtTrans []types.Transaction_Client) {
                     @bRow(boughtTrans[i])
 
                 if i+1 < len(boughtTrans) && boughtTrans[i].TransactionID.Timestamp().Day() != boughtTrans[i+1].TransactionID.Timestamp().Day(){
-                    <tr id="break"><td  colspan="7" height="10px"></td></tr>
+                    <tr id="break"><td  colspan="7" ></td></tr>
                 } else if i+1 == len(boughtTrans){
-                    <tr id="break"><td  colspan="7" height="10px"></td></tr>
+                    <tr id="break"><td  colspan="7" ></td></tr>
                 }
             }
 		</table>
@@ -209,49 +209,51 @@ templ Bought(boughtTrans []types.Transaction_Client) {
 }
 
 
-templ Internal(internalTrans []types.Transaction_Client){
+templ Production(prods []types.Production){
     <div>
         <table class="simpleTable">
             <tr>
-                <th>Name</th>
-                <th>Quantity</th>
-                <th>Price</th>
+                <th>Produced</th>
+                <th>From</th>
+                <th>Profit</th>
+                <th>Loss</th>
                 <th>Time</th>
                 <th>Action</th>
             </tr>
-            for i:=0; i<len(internalTrans); i++{
+            for i:=0; i<len(prods); i++{
                 if i == 0{
                     <tr id="date">
-                        <td colspan="5">{internalTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                        <td colspan="6">{prods[i].ID.Timestamp().Format("Mon Jan 2")}</td>
                     </tr>
-                } else if internalTrans[i].TransactionID.Timestamp().Day() != internalTrans[i-1].TransactionID.Timestamp().Day(){
+                } else if prods[i].ID.Timestamp().Day() != prods[i-1].ID.Timestamp().Day(){
                     <tr id="date">
-                            <td colspan="5">{internalTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                            <td colspan="6">{prods[i].ID.Timestamp().Format("Mon Jan 2")}</td>
                     </tr>
                 }
 
-                    @iRow(internalTrans[i])
+                    @iRow(prods[i])
 
-                if i+1 < len(internalTrans) && internalTrans[i].TransactionID.Timestamp().Day() != internalTrans[i+1].TransactionID.Timestamp().Day(){
-                    <tr id="break"><td colspan="5" height="10px"></td></tr>
-                } else if i+1 == len(internalTrans){
-                    <tr id="break"><td colspan="5" height="10px"></td></tr>
+                if i+1 < len(prods) && prods[i].ID.Timestamp().Day() != prods[i+1].ID.Timestamp().Day(){
+                    <tr id="break"><td colspan="6" ></td></tr>
+                } else if i+1 == len(prods){
+                    <tr id="break"><td colspan="6" ></td></tr>
                 }
             }
         </table>
     </div>
 }
 
-templ iRow(internalTrans types.Transaction_Client){
-    <tr id={"internalTrans_"+internalTrans.TransactionID.Hex()} hx-ext="response-targets">
-        <td>{internalTrans.GoodName}</td>
-        <td>{internalTrans.Quantity + internalTrans.GoodUnit}</td>
-        <td>{internalTrans.Price}</td>
-        <td>{internalTrans.TransactionID.Timestamp().Format("3:04 pm")}</td>
+templ iRow(prod types.Production){
+    <tr id={"prod_"+prod.ID.Hex()} hx-ext="response-targets">
+        <td>{strconv.FormatFloat(prod.ProducedQuantity, 'f', 2, 64)} {prod.ProducedGoodUnit} of {prod.ProducedGoodName}</td>
+        <td>{strconv.FormatFloat(prod.ChangeQuantity, 'f', 2, 64)} {prod.ChangeGoodUnit} of {prod.ChangeGoodName}</td>
+        <td>{strconv.FormatFloat(prod.Profit, 'f', 2, 64)}</td>
+        <td>{strconv.FormatFloat(prod.Loss, 'f', 2, 64)}</td>
+        <td>{prod.ID.Timestamp().Format("3:04 pm")}</td>
         <td>
             <button
-                hx-delete={"/transaction?id="+internalTrans.TransactionID.Hex()}
-                hx-target={"#internalTrans_"+internalTrans.TransactionID.Hex()}
+                hx-delete={"/production?id="+prod.ID.Hex()}
+                hx-target={"#prod_"+prod.ID.Hex()}
                 hx-target-error="#error"
                 hx-swap="outerHTML"
                 class="red simpleButton"

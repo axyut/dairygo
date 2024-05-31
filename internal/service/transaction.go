@@ -126,20 +126,3 @@ func (s *TransactionService) UpdateTransaction(ctx context.Context, userID primi
 	}
 	return trans, nil
 }
-
-func (s *TransactionService) GetInternalTransactions(ctx context.Context, userID primitive.ObjectID) (transactions []types.Transaction, err error) {
-	transaction := *s.collection
-	transactions = []types.Transaction{}
-	cursor, err := transaction.Find(ctx, bson.M{"userID": userID, "type": types.Internal})
-	if err != nil {
-		s.service.logger.Error("Error while finding internal transactions", err)
-		return
-	}
-	defer cursor.Close(ctx)
-	err = cursor.All(ctx, &transactions)
-	if err != nil {
-		s.service.logger.Error("Error while decoding internal transactions", err)
-		return
-	}
-	return transactions, nil
-}

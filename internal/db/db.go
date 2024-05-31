@@ -21,6 +21,7 @@ type Collections struct {
 	Goods        Collection
 	Audiences    Collection
 	Transactions Collection
+	Production   Collection
 }
 
 func NewMongo(ctx context.Context, conf config.Config, logger *slog.Logger) (*Mongo, error) {
@@ -53,6 +54,7 @@ func GetCollections(ctx context.Context, m *mongo.Database) *Collections {
 		Goods:        m.Collection("goods"),
 		Audiences:    m.Collection("audiences"),
 		Transactions: m.Collection("transactions"),
+		Production:   m.Collection("production"),
 	}
 }
 
@@ -70,4 +72,8 @@ func GetGoodsColl(ctx context.Context, m *mongo.Database) Collection {
 
 func GetTransactionColl(ctx context.Context, m *mongo.Database) Collection {
 	return GetCollections(ctx, m).Transactions
+}
+
+func GetProductionColl(ctx context.Context, m *mongo.Database) Collection {
+	return GetCollections(ctx, m).Production
 }
