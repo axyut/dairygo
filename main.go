@@ -63,3 +63,12 @@ func main() {
 // when transaction deleted, update audience to pay and to receive
 // when transaction updated, update audience to pay and to receive
 // when transaction inserted(bought,sold), update audience to pay and to receive
+// date option when filling bought/sold transaction
+// monthly report -> db? or calculate on the fly
+// paginated query for transactions  send only from this week
+// add pagination to all queries -> limit and skip
+// add filter to all queries -> filter by date, filter by type
+// add sort to all queries -> sort by date, sort by amount
+// add projection to all queries -> select only required fields
+// add search to all queries -> search by name, search by amount
+// pagination with htmx

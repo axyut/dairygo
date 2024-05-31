@@ -15,19 +15,19 @@ templ Sell(goods []types.Good, auds []types.Audience){
             class="formContainer"
         >
             <select id="good" name="goodID" required>
-                    <option value="0">Select Good:</option>
+                    <option value="0">Select Good</option>
                 for _, good := range goods {
                     <option value={good.ID.Hex()}>{good.Name}</option>
                 }
             </select>
             <select id="audience" name="audienceID" required>
-                    <option value="0">Sell to:</option>
+                    <option value="0">Sell To</option>
                 for _, aud := range auds {
                     <option value={aud.ID.Hex()}>{aud.Name}</option>
                 }
             </select>
-            <div style="display:flex;">
-            <label for="payment">Payment:</label>
+            <div style="display:flex;justify-content:center;align-items:center;font-family:'Lucida Console', 'Courier New', monospace;">
+            <label for="payment">PAYMENT </label>
             <input class="simpleInput" type="checkbox" name="payment" />
             </div>
             <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
@@ -53,22 +53,23 @@ templ Buy(goods []types.Good, auds []types.Audience){
             class="formContainer"
         >
             <select id="good" name="goodID" required>
-                <option value="0">Bought Good:</option>
+                <option value="0">Bought Good</option>
                 for _, good := range goods {
                     <option value={good.ID.Hex()}>{good.Name}</option>
                 }
             </select>
             <select id="audience" name="audienceID" required>
-                <option value="0">Bought from:</option>
+                <option value="0">Bought From</option>
                 for _, aud := range auds {
                     <option value={aud.ID.Hex()}>{aud.Name}</option>
                 }
             </select>
-            <div style="display:flex;">
-            <label for="payment">Payment:</label>
+            <div style="display:flex;justify-content:center;align-items:center;font-family:'Lucida Console', 'Courier New', monospace;">
+            <label for="payment">PAYMENT </label>
             <input class="simpleInput" type="checkbox" name="payment" />
             </div>
             <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
+            <input class="simpleInput" type="number" name="price" placeholder="Price" />
             <input class="simpleInput" type="hidden" name="type" value="bought" />
             <button
             class="simpleButton"

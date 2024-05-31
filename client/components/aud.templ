@@ -12,6 +12,7 @@ templ Audiences(auds []types.Audience, goods []types.Good) {
         <button class="open-button" 
           hx-get="/audience/refresh"
         	hx-target="#aud_success"
+          hx-indicator=".progress"
 		      hx-target-error="#error"
         >Refresh 🔃</button>
         </div>

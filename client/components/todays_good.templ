@@ -23,6 +23,7 @@ templ TodaysGoods(goods []types.Good, notify bool){
           hx-target="#good_success"
           hx-target-error="#error"
           hx-swap="innerHTML"
+          hx-indicator=".progress"
         >Refresh 🔃</button>
         </div>
       </div>
@@ -146,7 +147,7 @@ templ GoodArray(good types.Good, goods []types.Good){
               }
           </select>
           <input class="simpleInput" type="text" placeholder="Produce quantity" name="prod_quantity" required />
-          <button type="submit" class="simpleButton">Convert</button>
+          <button type="submit" class="simpleButton">Produce</button>
           
         </form>
         </div>
