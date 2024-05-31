@@ -2,41 +2,50 @@ package components
 import "github.com/axyut/dairygo/internal/types"
 import "strconv"
 
-templ Audiences(audiences []types.Audience) {
-  <div  hx-ext="response-targets">
-    <h1>All audiences</h1>
-    <table>
+templ Audiences(auds []types.Audience, goods []types.Good) {
+  <div  hx-ext="response-targets" class="todays">
+    <div class="todaysTable">
+    <div class="todaysHeader">
+      <h1>People you Know</h1>
+      <button class="open-button" onclick={OpenMyInsertForm("insertAud")}>Create</button>
+    </div>
+    @insertAud()
+    <table class="simpleTable"  id="aud_success">
       <tr>
         <th>Name</th>
         <th>Contact</th>
         <th>To Pay</th>
         <th>To Receive</th>
         <th>Paid</th>
-        <th>Options</th>
+        <th>Actions</th>
       </tr>
-      for _, aud := range audiences {
+      for _, aud := range auds {
         @audArray(aud)
       }
-      <tr id="aud_success"></tr>
     </table>
+    </div>
+    @Sell(goods, auds)
   </div>
-  @insertAud()
+  
 }
 
 templ insertAud() {
-  <div hx-ext="response-targets">
-    <h1>Insert Audience</h1>
+  <div class="todaysInsert" hx-ext="response-targets" id="insertAud">
+  <div class="content">
+    <button class="emojiBtn" onclick={CloseMyInsertForm("insertAud")}>❌</button>
+
     <form
         hx-post="/audience"
 	      hx-target="#aud_success"
 		    hx-target-error="#error"
-        hx-swap="afterbegin"
+        hx-swap="beforeend"
         class="formContainer"
     >
       <input class="simpleInput" type="text" name="name" placeholder="Audience Name" />
       <input class="simpleInput" type="text" name="contact" placeholder="Contact" />
       <button class="simpleButton" type="submit">Create</button>
     </form>
+    </div>
   </div>
 }
 
@@ -70,8 +79,6 @@ templ audArray(aud types.Audience){
             hx-swap="outerHTML"
             class="simpleButton"
         >Save</button>
-    </td>
-    <td>
         <button
             hx-delete={"/audience?id="+aud.ID.Hex()}
             hx-target={"#aud_"+aud.ID.Hex()}

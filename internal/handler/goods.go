@@ -22,19 +22,18 @@ func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 	kharidRate, errK := strconv.ParseFloat(r.FormValue("kharid_rate"), 64)
 	bikriRate, errP := strconv.ParseFloat(r.FormValue("bikri_rate"), 64)
 	unit := r.FormValue("unit")
-	user_id := r.Context().Value("user_id")
+	user := h.h.UserHandler.GetUser(w, r)
 
-	userID, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", user_id))
-	if err != nil {
-		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
-		return
-	}
-
-	if errK != nil || errP != nil {
+	if errP != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		components.GeneralToastError("Enter Numeric Value for Rate.").Render(r.Context(), w)
 		return
 	}
+	if errK != nil {
+		kharidRate = 0
+	}
 	if name == "" {
+		w.WriteHeader(http.StatusBadRequest)
 		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
@@ -44,16 +43,17 @@ func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 		KharidRate: kharidRate,
 		BikriRate:  bikriRate,
 		Unit:       unit,
-		UserID:     userID,
+		UserID:     user.ID,
 	}
 
 	insertedGood, err := h.srv.InsertGood(h.h.ctx, good)
 	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
 		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
 
-	goods, _ := h.srv.GetAllGoods(r.Context(), userID)
+	goods, _ := h.srv.GetAllGoods(r.Context(), user.ID)
 	components.GoodInsertSuccess(insertedGood, goods).Render(r.Context(), w)
 }
 
@@ -66,6 +66,7 @@ func (h *GoodsHandler) DeleteGood(w http.ResponseWriter, r *http.Request) {
 
 	err := h.srv.DeleteGood(h.h.ctx, userID, goodID)
 	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
 		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}

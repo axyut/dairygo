@@ -6,8 +6,7 @@ import "github.com/axyut/dairygo/client/components"
 templ Index(user types.User, goods []types.Good, auds []types.Audience) {
 
 		<div class="divContainer">
-			@components.TodaysGoods(goods, false)
-			@components.Audiences(auds)
-			@components.Transaction(goods, auds)
+			@components.TodaysGoodsRow(goods, auds, false)
+			@components.Audiences(auds, goods)
 		</div>
 }

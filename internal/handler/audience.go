@@ -22,11 +22,13 @@ func (h *AudienceHandler) NewAudience(w http.ResponseWriter, r *http.Request) {
 
 	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
 	if err != nil {
-		http.Error(w, "Couldn't fullfill your request.", http.StatusExpectationFailed)
+		w.WriteHeader(http.StatusBadRequest)
+		components.AudienceInsertError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
 
 	if name == "" || contact == "" {
+		w.WriteHeader(http.StatusBadRequest)
 		components.AudienceInsertError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
@@ -37,6 +39,7 @@ func (h *AudienceHandler) NewAudience(w http.ResponseWriter, r *http.Request) {
 	}
 	inserted, err := h.srv.InsertAudience(h.h.ctx, audience)
 	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
 		components.AudienceInsertError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
@@ -52,6 +55,7 @@ func (h *AudienceHandler) DeleteAudience(w http.ResponseWriter, r *http.Request)
 
 	err := h.srv.DeleteAudience(h.h.ctx, userID, audID)
 	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
 		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
@@ -68,6 +72,7 @@ func (h *AudienceHandler) UpdateAudience(w http.ResponseWriter, r *http.Request)
 	userID, _ := primitive.ObjectIDFromHex(fmt.Sprintf("%v", user_id))
 
 	if name == "" || contact == "" {
+		w.WriteHeader(http.StatusBadRequest)
 		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
@@ -77,6 +82,7 @@ func (h *AudienceHandler) UpdateAudience(w http.ResponseWriter, r *http.Request)
 
 	_, err := h.srv.UpdateAudience(h.h.ctx, aud)
 	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
 		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}

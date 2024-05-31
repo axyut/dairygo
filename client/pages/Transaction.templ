@@ -39,8 +39,7 @@ templ TransactionPage(){
 
 templ Sold(soldTrans []types.Transaction_Client){
     <div>
-        <h1>Sold Items</h1>
-        <table>
+        <table class="simpleTable">
             <tr>
                 <th>Name</th>
                 <th>Quantity</th>
@@ -48,24 +47,25 @@ templ Sold(soldTrans []types.Transaction_Client){
                 <th>Sold To</th>
                 <th>Payment</th>
                 <th>Time</th>
+                <th>Action</th>
             </tr>
             for i:=0; i<len(soldTrans); i++{
                 if i == 0{
-                    <tr>
-                        <td colspan="6">Date : {soldTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                    <tr id="date">
+                        <td  colspan="7"><strong>{soldTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</strong></td>
                     </tr>
                 } else if soldTrans[i].TransactionID.Timestamp().Day() != soldTrans[i-1].TransactionID.Timestamp().Day(){
-                    <tr>
-                            <td colspan="6">Date : {soldTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                    <tr id="date">
+                            <td  colspan="7"><strong>{soldTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</strong></td>
                     </tr>
                 }
 
                     @sRow(soldTrans[i])
 
                 if i+1 < len(soldTrans) && soldTrans[i].TransactionID.Timestamp().Day() != soldTrans[i+1].TransactionID.Timestamp().Day(){
-                    <tr><td colspan="6" height="10px"></td></tr>
+                    <tr id="break"><td  colspan="7" height="10px"></td></tr>
                 } else if i+1 == len(soldTrans){
-                    <tr><td colspan="6" height="10px"></td></tr>
+                    <tr id="break"><td  colspan="7" height="10px"></td></tr>
                 }
             }
         </table>
@@ -107,7 +107,9 @@ templ CheckboxBoolPayment(id string, payment bool){
 
 templ sRow(soldTrans types.Transaction_Client){
     <tr id={"soldTrans_"+soldTrans.TransactionID.Hex()} hx-ext="response-targets">
-        <td>{soldTrans.GoodName}</td>
+        <td>
+            {soldTrans.GoodName}
+        </td>
         <td>{soldTrans.Quantity + soldTrans.GoodUnit}</td>
         <td>{soldTrans.Price}</td>
         <td>{soldTrans.SoldTo}</td>
@@ -137,7 +139,7 @@ templ pageStyles(){
             align-items: center;
         }
         #transaction_here{
-            align-items: center;
+            padding: 20px 10%;
         }
         .trans_check{
             width: 20px;
@@ -172,9 +174,8 @@ templ bRow(boughtTrans types.Transaction_Client){
 
 templ Bought(boughtTrans []types.Transaction_Client) {
 	<div>
-		<h1>Bought Items</h1>
         
-		<table>
+		<table class="simpleTable">
 			<tr>
 				<th>Name</th>
 				<th>Quantity</th>
@@ -182,24 +183,25 @@ templ Bought(boughtTrans []types.Transaction_Client) {
 				<th>Bought From</th>
 				<th>Payment</th>
 				<th>Time</th>
+                <th>Action</th>
 			</tr>
 			for i:=0; i<len(boughtTrans); i++{
                 if i == 0{
-                    <tr>
-                        <td colspan="6">Date : {boughtTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                    <tr id="date">
+                        <td  colspan="7">{boughtTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
                     </tr>
                 } else if boughtTrans[i].TransactionID.Timestamp().Day() != boughtTrans[i-1].TransactionID.Timestamp().Day(){
-                    <tr>
-                            <td colspan="6">Date : {boughtTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                    <tr id="date">
+                            <td  colspan="7"> {boughtTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
                     </tr>
                 }
 
                     @bRow(boughtTrans[i])
 
                 if i+1 < len(boughtTrans) && boughtTrans[i].TransactionID.Timestamp().Day() != boughtTrans[i+1].TransactionID.Timestamp().Day(){
-                    <tr><td colspan="6" height="10px"></td></tr>
+                    <tr id="break"><td  colspan="7" height="10px"></td></tr>
                 } else if i+1 == len(boughtTrans){
-                    <tr><td colspan="6" height="10px"></td></tr>
+                    <tr id="break"><td  colspan="7" height="10px"></td></tr>
                 }
             }
 		</table>
@@ -209,31 +211,31 @@ templ Bought(boughtTrans []types.Transaction_Client) {
 
 templ Internal(internalTrans []types.Transaction_Client){
     <div>
-        <h1>Production</h1>
-        <table>
+        <table class="simpleTable">
             <tr>
                 <th>Name</th>
                 <th>Quantity</th>
                 <th>Price</th>
                 <th>Time</th>
+                <th>Action</th>
             </tr>
             for i:=0; i<len(internalTrans); i++{
                 if i == 0{
-                    <tr>
-                        <td colspan="4">Date : {internalTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                    <tr id="date">
+                        <td colspan="5">{internalTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
                     </tr>
                 } else if internalTrans[i].TransactionID.Timestamp().Day() != internalTrans[i-1].TransactionID.Timestamp().Day(){
-                    <tr>
-                            <td colspan="4">Date : {internalTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                    <tr id="date">
+                            <td colspan="5">{internalTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
                     </tr>
                 }
 
                     @iRow(internalTrans[i])
 
                 if i+1 < len(internalTrans) && internalTrans[i].TransactionID.Timestamp().Day() != internalTrans[i+1].TransactionID.Timestamp().Day(){
-                    <tr><td colspan="4" height="10px"></td></tr>
+                    <tr id="break"><td colspan="5" height="10px"></td></tr>
                 } else if i+1 == len(internalTrans){
-                    <tr><td colspan="4" height="10px"></td></tr>
+                    <tr id="break"><td colspan="5" height="10px"></td></tr>
                 }
             }
         </table>

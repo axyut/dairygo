@@ -2,12 +2,8 @@ package components
 
 import "github.com/axyut/dairygo/internal/types"
 
-templ Transaction(goods []types.Good, auds []types.Audience){
-    @sell(goods, auds)
-    @bought(goods, auds)
-}
 
-templ sell(goods []types.Good, auds []types.Audience){
+templ Sell(goods []types.Good, auds []types.Audience){
     <div>
         <h1>Sell</h1>
         <form
@@ -39,11 +35,11 @@ templ sell(goods []types.Good, auds []types.Audience){
              type="submit">SELL</button>
         </form>
         <div id="sold"></div>
-        <div id="error"></div>
+        // <div id="error"></div>
     </div>
 }
 
-templ bought(goods []types.Good, auds []types.Audience){
+templ Buy(goods []types.Good, auds []types.Audience){
     <div>
         <h1>Bought</h1>
         <form
@@ -75,6 +71,6 @@ templ bought(goods []types.Good, auds []types.Audience){
              type="submit">BOUGHT</button>
         </form>
         <div id="bought"></div>
-        <div id="error"></div>
+        // <div id="error"></div>
     </div>
 }

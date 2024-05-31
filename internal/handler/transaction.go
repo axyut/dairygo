@@ -37,6 +37,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	var payment_b bool = false
 
 	if goodID == "" || quantity == "" || audienceID == "" || trans_type == "" || user_id == "" {
+		w.WriteHeader(http.StatusBadRequest)
 		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
@@ -55,6 +56,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	}
 
 	if trans_type != string(types.Bought) && trans_type != string(types.Sold) {
+		w.WriteHeader(http.StatusBadRequest)
 		components.GeneralToastError("Invalid Transaction Type.").Render(r.Context(), w)
 		return
 	}
@@ -62,12 +64,14 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	var good_q float64
 	trans_good, err := h.h.srv.GoodsService.GetGoodByID(r.Context(), userID, good_id)
 	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
 		components.GeneralToastError("That Good Doesn't Exist!").Render(r.Context(), w)
 		return
 	}
 
 	trans_aud, err := h.h.srv.AudienceService.GetAudienceByID(r.Context(), userID, aud_id)
 	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
 		components.GeneralToastError("That Audience Doesn't Exist!").Render(r.Context(), w)
 		return
 	}
@@ -79,6 +83,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	} else if trans_type == string(types.Sold) {
 		soldTo = aud_id
 		if quantity_f > trans_good.Quantity {
+			w.WriteHeader(http.StatusNotAcceptable)
 			components.GeneralToastError("Not Enough Quantity!").Render(r.Context(), w)
 			return
 		}
@@ -102,6 +107,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	}
 	_, err = h.srv.InsertTransaction(h.h.ctx, transaction)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		components.GeneralToastError("Error with transaction service.").Render(r.Context(), w)
 		return
 	}
@@ -113,6 +119,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		Quantity:   good_q,
 	})
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		components.GeneralToastError("Error with goods service.").Render(r.Context(), w)
 		return
 	}
@@ -126,6 +133,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	}
 	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), trans_aud)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		components.GeneralToastError("Error with audience service.").Render(r.Context(), w)
 		return
 	}
@@ -136,16 +144,19 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 func (h *TransactionHandler) GetSold(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("user_id")
 	if userID == nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		components.GeneralToastError("Couldn't Identify User. Please Login Again.")
 	}
 
 	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
 	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
 		components.GeneralToastError("Couldn't Fullfill Your Request. Please Try Again.")
 	}
 
 	soldTrans, err := h.h.srv.TransactionService.GetSoldTransactions(r.Context(), id)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		components.GeneralToastError("Error with service.")
 		return
 	}
@@ -173,15 +184,18 @@ func (h *TransactionHandler) GetSold(w http.ResponseWriter, r *http.Request) {
 func (h *TransactionHandler) GetBought(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("user_id")
 	if userID == nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		components.GeneralToastError("Couldn't Identify User. Please Login Again.")
 	}
 
 	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
 	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
 		components.GeneralToastError("Couldn't Fullfill Your Request. Please Try Again.")
 	}
 	boughts, err := h.h.srv.TransactionService.GetBoughtTransactions(r.Context(), id)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		components.GeneralToastError("Error with service.")
 		return
 	}
@@ -209,6 +223,7 @@ func (h *TransactionHandler) GetInternal(w http.ResponseWriter, r *http.Request)
 	user := h.h.UserHandler.GetUser(w, r)
 	internals, err := h.h.srv.TransactionService.GetInternalTransactions(r.Context(), user.ID)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		components.GeneralToastError("Error with service.")
 		return
 	}
@@ -328,7 +343,7 @@ func (h *TransactionHandler) InternalTransaction(w http.ResponseWriter, r *http.
 	}
 
 	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), userID)
-	components.TodaysGoods(goods, true).Render(r.Context(), w)
+	components.GoodsTable(goods, true).Render(r.Context(), w)
 }
 
 func (h *TransactionHandler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
@@ -381,6 +396,7 @@ func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Re
 		components.GeneralToastError("Update transaction service error.")
 		return
 	}
+	// update audience
 	pages.CheckboxBoolPayment(transUpdated.ID.Hex(), transUpdated.Payment).Render(r.Context(), w)
 
 }
