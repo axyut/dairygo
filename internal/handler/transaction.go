@@ -19,8 +19,8 @@ type TransactionHandler struct {
 }
 
 func (h *TransactionHandler) GetTransactionPage(w http.ResponseWriter, r *http.Request) {
-	h.h.UserHandler.GetUser(w, r)
-	page := pages.TransactionPage()
+	soldTrans := h.getSoldTransClient(w, r)
+	page := pages.TransactionPage(soldTrans)
 	client.Layout(page, "Transactions").Render(r.Context(), w)
 }
 
@@ -124,9 +124,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if payment_b {
-		trans_aud.Paid += transaction.Price
-	} else if !payment_b && trans_type == string(types.Sold) {
+	if !payment_b && trans_type == string(types.Sold) {
 		trans_aud.ToReceive += transaction.Price
 	} else if !payment_b && trans_type == string(types.Bought) {
 		trans_aud.ToPay += transaction.Price
@@ -141,32 +139,21 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	components.GeneralToastSuccess("Transaction Added Successfully!").Render(r.Context(), w)
 }
 
-func (h *TransactionHandler) GetSold(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("user_id")
-	if userID == nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		components.GeneralToastError("Couldn't Identify User. Please Login Again.")
-	}
+func (h *TransactionHandler) getSoldTransClient(w http.ResponseWriter, r *http.Request) (client_Trans []types.Transaction_Client) {
+	client_Trans = []types.Transaction_Client{}
+	user := h.h.UserHandler.GetUser(w, r)
 
-	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
-	if err != nil {
-		w.WriteHeader(http.StatusNotAcceptable)
-		components.GeneralToastError("Couldn't Fullfill Your Request. Please Try Again.")
-	}
-
-	soldTrans, err := h.h.srv.TransactionService.GetSoldTransactions(r.Context(), id)
+	soldTrans, err := h.h.srv.TransactionService.GetSoldTransactions(r.Context(), user.ID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		components.GeneralToastError("Error with service.")
 		return
 	}
-	client_Trans := []types.Transaction_Client{}
 
 	for i := len(soldTrans) - 1; i >= 0; i-- {
 		v := soldTrans[i]
 		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), v.UserID, v.GoodID)
 		soldAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.UserID, v.SoldTo)
-		// boughtAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.BoughtFrom)
 		client_Trans = append(client_Trans, types.Transaction_Client{
 			TransactionID: v.ID,
 			GoodName:      good.Name,
@@ -175,9 +162,13 @@ func (h *TransactionHandler) GetSold(w http.ResponseWriter, r *http.Request) {
 			Price:         strconv.FormatFloat(v.Price, 'f', 2, 64),
 			SoldTo:        soldAudience.Name,
 			Payment:       v.Payment,
-			// BoughtFrom: boughtAudience.Name,
 		})
 	}
+	return client_Trans
+}
+
+func (h *TransactionHandler) GetSold(w http.ResponseWriter, r *http.Request) {
+	client_Trans := h.getSoldTransClient(w, r)
 	pages.Sold(client_Trans).Render(r.Context(), w)
 }
 
@@ -270,6 +261,40 @@ func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Re
 		return
 	}
 	// update audience
+	audID := transUpdated.SoldTo
+	if transUpdated.Type == types.Bought {
+		audID = transUpdated.BoughtFrom
+	}
+	aud, err := h.h.srv.AudienceService.GetAudienceByID(r.Context(), user.ID, audID)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Update transaction audience service error.")
+		return
+	}
+	fmt.Println("before price:", transUpdated.Price, aud.Name, "toget:", aud.ToReceive, "topay", aud.ToPay)
+	if payment {
+		fmt.Println("payed")
+		if transUpdated.Type == types.Sold {
+			aud.ToReceive -= transUpdated.Price
+		} else if transUpdated.Type == types.Bought {
+			aud.ToPay -= transUpdated.Price
+		}
+	} else if !payment {
+		fmt.Println("not payed")
+		if transUpdated.Type == types.Sold {
+			aud.ToReceive += transUpdated.Price
+		} else if transUpdated.Type == types.Bought {
+			aud.ToPay += transUpdated.Price
+		}
+	}
+	fmt.Println("after price:", transUpdated.Price, aud.Name, "to recieve:", aud.ToReceive, "topay", aud.ToPay)
+	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), aud)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Update transaction audience service error.")
+		return
+	}
+
 	pages.CheckboxBoolPayment(transUpdated.ID.Hex(), transUpdated.Payment).Render(r.Context(), w)
 
 }

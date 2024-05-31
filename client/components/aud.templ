@@ -3,30 +3,43 @@ import "github.com/axyut/dairygo/internal/types"
 import "strconv"
 
 templ Audiences(auds []types.Audience, goods []types.Good) {
-  <div  hx-ext="response-targets" class="todays">
+  <div class="todays"  hx-ext="response-targets">
     <div class="todaysTable">
-    <div class="todaysHeader">
-      <h1>People you Know</h1>
-      <button class="open-button" onclick={OpenMyInsertForm("insertAud")}>Create</button>
-    </div>
+      <div class="todaysHeader">
+        <h1>People you Know</h1>
+        <div>
+        <button class="open-button" onclick={OpenMyInsertForm("insertAud")}>Create ➕</button>
+        <button class="open-button" 
+          hx-get="/audience/refresh"
+        	hx-target="#aud_success"
+		      hx-target-error="#error"
+        >Refresh 🔃</button>
+        </div>
+      </div>
     @insertAud()
-    <table class="simpleTable"  id="aud_success">
+    @AudTable(auds, false)
+    </div>
+    @Sell(goods, auds)
+  </div>
+  
+}
+
+templ AudTable(auds []types.Audience, notify bool){
+      <table class="simpleTable"  id="aud_success">
       <tr>
         <th>Name</th>
         <th>Contact</th>
         <th>To Pay</th>
         <th>To Receive</th>
-        <th>Paid</th>
         <th>Actions</th>
       </tr>
       for _, aud := range auds {
         @audArray(aud)
       }
     </table>
-    </div>
-    @Sell(goods, auds)
-  </div>
-  
+    if notify {
+      @SuccessToast("Fetching Audiences. Refreshed!")
+    }
 }
 
 templ insertAud() {
@@ -41,7 +54,7 @@ templ insertAud() {
         hx-swap="beforeend"
         class="formContainer"
     >
-      <input class="simpleInput" type="text" name="name" placeholder="Audience Name" />
+      <input class="simpleInput" type="text" name="name" placeholder="Name" />
       <input class="simpleInput" type="text" name="contact" placeholder="Contact" />
       <button class="simpleButton" type="submit">Create</button>
     </form>
@@ -69,7 +82,6 @@ templ audArray(aud types.Audience){
     </td>
     <td>{strconv.FormatFloat(aud.ToPay, 'f', -1, 64)}</td>
     <td>{strconv.FormatFloat(aud.ToReceive, 'f', -1, 64)}</td>
-    <td>{strconv.FormatFloat(aud.Paid, 'f', -1, 64)}</td>
     <td>
         <button
             hx-patch={"/audience?id="+aud.ID.Hex()}
@@ -80,6 +92,7 @@ templ audArray(aud types.Audience){
             class="simpleButton"
         >Save</button>
         <button
+            hx-confirm={aud.Name+" will be deleted."}
             hx-delete={"/audience?id="+aud.ID.Hex()}
             hx-target={"#aud_"+aud.ID.Hex()}
             hx-target-error="#error"

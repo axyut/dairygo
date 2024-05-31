@@ -4,7 +4,7 @@ import "github.com/axyut/dairygo/internal/types"
 
 
 templ Sell(goods []types.Good, auds []types.Audience){
-    <div>
+    <div class="miniDiv">
         <h1>Sell</h1>
         <form
             hx-post="/transaction"
@@ -14,20 +14,22 @@ templ Sell(goods []types.Good, auds []types.Audience){
             hx-error="#error"
             class="formContainer"
         >
-            <label for="good">Sell Item:</label>
             <select id="good" name="goodID" required>
+                    <option value="0">Select Good:</option>
                 for _, good := range goods {
                     <option value={good.ID.Hex()}>{good.Name}</option>
                 }
             </select>
-            <label for="audience">Sell to:</label>
             <select id="audience" name="audienceID" required>
+                    <option value="0">Sell to:</option>
                 for _, aud := range auds {
                     <option value={aud.ID.Hex()}>{aud.Name}</option>
                 }
             </select>
+            <div style="display:flex;">
             <label for="payment">Payment:</label>
             <input class="simpleInput" type="checkbox" name="payment" />
+            </div>
             <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
             <input class="simpleInput" type="hidden" name="type" value="sold" />
             <button
@@ -40,8 +42,8 @@ templ Sell(goods []types.Good, auds []types.Audience){
 }
 
 templ Buy(goods []types.Good, auds []types.Audience){
-    <div>
-        <h1>Bought</h1>
+    <div class="miniDiv">
+        <h1>Buy</h1>
         <form
             hx-post="/transaction"
             hx-swap="afterbegin"
@@ -50,27 +52,28 @@ templ Buy(goods []types.Good, auds []types.Audience){
             hx-error="#error"
             class="formContainer"
         >
-            <label for="good">Bought Item:</label>
             <select id="good" name="goodID" required>
+                <option value="0">Bought Good:</option>
                 for _, good := range goods {
                     <option value={good.ID.Hex()}>{good.Name}</option>
                 }
             </select>
-            <label for="audience">Bought from:</label>
             <select id="audience" name="audienceID" required>
+                <option value="0">Bought from:</option>
                 for _, aud := range auds {
                     <option value={aud.ID.Hex()}>{aud.Name}</option>
                 }
             </select>
+            <div style="display:flex;">
             <label for="payment">Payment:</label>
-            <input class="simpleInput" type="checkbox" name="payment"/>
+            <input class="simpleInput" type="checkbox" name="payment" />
+            </div>
             <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
             <input class="simpleInput" type="hidden" name="type" value="bought" />
             <button
             class="simpleButton"
-             type="submit">BOUGHT</button>
+             type="submit">BUY</button>
         </form>
         <div id="bought"></div>
-        // <div id="error"></div>
     </div>
 }

@@ -127,3 +127,16 @@ func (h *GoodsHandler) UpdateGood(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	components.GoodInsertSuccess(insertedGood, goods).Render(r.Context(), w)
 }
+
+func (h *GoodsHandler) RefreshGoods(w http.ResponseWriter, r *http.Request) {
+	user := h.h.UserHandler.GetUser(w, r)
+
+	allGoods, err := h.srv.GetAllGoods(r.Context(), user.ID)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		components.GeneralToastError("Please Re-login.").Render(r.Context(), w)
+		return
+	}
+
+	components.GoodsTable(allGoods, true).Render(r.Context(), w)
+}

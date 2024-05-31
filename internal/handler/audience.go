@@ -88,3 +88,16 @@ func (h *AudienceHandler) UpdateAudience(w http.ResponseWriter, r *http.Request)
 	}
 	components.AudienceInsertSuccess(aud).Render(r.Context(), w)
 }
+
+func (h *AudienceHandler) RefreshAudience(w http.ResponseWriter, r *http.Request) {
+	user := h.h.UserHandler.GetUser(w, r)
+
+	allAuds, err := h.srv.GetAllAudiences(r.Context(), user.ID)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		components.GeneralToastError("Please Re-login.").Render(r.Context(), w)
+		return
+	}
+
+	components.AudTable(allAuds, true).Render(r.Context(), w)
+}

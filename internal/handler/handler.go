@@ -54,6 +54,8 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 	router.HandleFunc("GET /getUserReq", h.UserHandler.GetUserRequest)
 	router.HandleFunc("GET /profile", h.UserHandler.GetProfile)
 	router.HandleFunc("GET /reports", h.ReportsHandler.GetReportsPage)
+	router.HandleFunc("GET /audience/refresh", h.AudienceHandler.RefreshAudience)
+	router.HandleFunc("GET /goods/refresh", h.GoodsHandler.RefreshGoods)
 
 	router.HandleFunc("POST /audience", h.AudienceHandler.NewAudience)
 	router.HandleFunc("POST /goods", h.GoodsHandler.NewGood)

@@ -4,7 +4,7 @@ import "github.com/axyut/dairygo/internal/types"
 import "strconv"
 import "github.com/axyut/dairygo/client/components"
 
-templ TransactionPage(){
+templ TransactionPage(soldTrans []types.Transaction_Client){
     @pageStyles()
 
     <div  hx-ext="response-targets">
@@ -31,8 +31,7 @@ templ TransactionPage(){
     >Production</button>
     </div>
         <div id="transaction_here" class="divContainer">
-            <h1>Transaction</h1>
-            <p>Click on the buttons above to view the transactions</p>
+           @Sold(soldTrans)
         </div>
     </div>
 }
@@ -52,11 +51,11 @@ templ Sold(soldTrans []types.Transaction_Client){
             for i:=0; i<len(soldTrans); i++{
                 if i == 0{
                     <tr id="date">
-                        <td  colspan="7">{soldTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                        <td  colspan="7">{soldTrans[i].TransactionID.Timestamp().Format("Monday Jan 2")}</td>
                     </tr>
                 } else if soldTrans[i].TransactionID.Timestamp().Day() != soldTrans[i-1].TransactionID.Timestamp().Day(){
                     <tr id="date">
-                            <td  colspan="7">{soldTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                            <td  colspan="7">{soldTrans[i].TransactionID.Timestamp().Format("Monday Jan 2")}</td>
                     </tr>
                 }
 
@@ -116,9 +115,14 @@ templ sRow(soldTrans types.Transaction_Client){
         <td id={"payment_"+soldTrans.TransactionID.Hex()}>
             @CheckboxTemplate(soldTrans.TransactionID.Hex(), soldTrans.Payment)
         </td>
-        <td>{soldTrans.TransactionID.Timestamp().Format("3:04 pm")}</td>
+        <td>{soldTrans.TransactionID.Timestamp().Format("03:04 pm MST")}</td>
         <td>
             <button
+                if soldTrans.Payment{
+                    hx-confirm={"This transaction will be deleted. "}
+                } else {
+                    hx-confirm={soldTrans.SoldTo +" has not payed. This transaction will be deleted. "}
+                }
                 hx-delete={"/transaction?id="+soldTrans.TransactionID.Hex()}
                 hx-target={"#soldTrans_"+soldTrans.TransactionID.Hex()}
                 hx-target-error="#error"
@@ -141,11 +145,6 @@ templ pageStyles(){
         #transaction_here{
             padding: 20px 10%;
         }
-        .trans_check{
-            width: 20px;
-            height: 20px;
-        }
-
     </style>
 }
 
@@ -161,6 +160,11 @@ templ bRow(boughtTrans types.Transaction_Client){
         <td>{boughtTrans.TransactionID.Timestamp().Format("3:04 pm")}</td>
         <td>
             <button
+                if boughtTrans.Payment{
+                    hx-confirm={"This transaction will be deleted. "}
+                } else {
+                    hx-confirm={"You have not paid for this transaction. This transaction will be deleted. "}
+                }
                 hx-delete={"/transaction?id="+boughtTrans.TransactionID.Hex()}
                 hx-target={"#boughtTrans_"+boughtTrans.TransactionID.Hex()}
                 hx-target-error="#error"
@@ -188,11 +192,11 @@ templ Bought(boughtTrans []types.Transaction_Client) {
 			for i:=0; i<len(boughtTrans); i++{
                 if i == 0{
                     <tr id="date">
-                        <td  colspan="7">{boughtTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                        <td  colspan="7">{boughtTrans[i].TransactionID.Timestamp().Format("Monday Jan 2")}</td>
                     </tr>
                 } else if boughtTrans[i].TransactionID.Timestamp().Day() != boughtTrans[i-1].TransactionID.Timestamp().Day(){
                     <tr id="date">
-                            <td  colspan="7"> {boughtTrans[i].TransactionID.Timestamp().Format("Mon Jan 2")}</td>
+                            <td  colspan="7"> {boughtTrans[i].TransactionID.Timestamp().Format("Monday Jan 2")}</td>
                     </tr>
                 }
 
@@ -220,22 +224,22 @@ templ Production(prods []types.Production){
                 <th>Time</th>
                 <th>Action</th>
             </tr>
-            for i:=0; i<len(prods); i++{
-                if i == 0{
+            for i:=len(prods)-1; i>=0 ; i--{
+                if i == len(prods)-1{
                     <tr id="date">
-                        <td colspan="6">{prods[i].ID.Timestamp().Format("Mon Jan 2")}</td>
+                        <td colspan="6">{prods[i].ID.Timestamp().Format("Monday Jan 2")}</td>
                     </tr>
-                } else if prods[i].ID.Timestamp().Day() != prods[i-1].ID.Timestamp().Day(){
+                } else if prods[i].ID.Timestamp().Day() != prods[i+1].ID.Timestamp().Day(){
                     <tr id="date">
-                            <td colspan="6">{prods[i].ID.Timestamp().Format("Mon Jan 2")}</td>
+                            <td colspan="6">{prods[i].ID.Timestamp().Format("Monday Jan 2")}</td>
                     </tr>
                 }
 
                     @iRow(prods[i])
 
-                if i+1 < len(prods) && prods[i].ID.Timestamp().Day() != prods[i+1].ID.Timestamp().Day(){
+                if i > 0 && prods[i].ID.Timestamp().Day() != prods[i-1].ID.Timestamp().Day(){
                     <tr id="break"><td colspan="6" ></td></tr>
-                } else if i+1 == len(prods){
+                } else if i == 0{
                     <tr id="break"><td colspan="6" ></td></tr>
                 }
             }
@@ -247,11 +251,12 @@ templ iRow(prod types.Production){
     <tr id={"prod_"+prod.ID.Hex()} hx-ext="response-targets">
         <td>{strconv.FormatFloat(prod.ProducedQuantity, 'f', 2, 64)} {prod.ProducedGoodUnit} of {prod.ProducedGoodName}</td>
         <td>{strconv.FormatFloat(prod.ChangeQuantity, 'f', 2, 64)} {prod.ChangeGoodUnit} of {prod.ChangeGoodName}</td>
-        <td>{strconv.FormatFloat(prod.Profit, 'f', 2, 64)}</td>
-        <td>{strconv.FormatFloat(prod.Loss, 'f', 2, 64)}</td>
+        <td>Rs. {strconv.FormatFloat(prod.Profit, 'f', 2, 64)}</td>
+        <td>Rs. {strconv.FormatFloat(prod.Loss, 'f', 2, 64)}</td>
         <td>{prod.ID.Timestamp().Format("3:04 pm")}</td>
         <td>
             <button
+                hx-confirm={"This production will be deleted. "}
                 hx-delete={"/production?id="+prod.ID.Hex()}
                 hx-target={"#prod_"+prod.ID.Hex()}
                 hx-target-error="#error"

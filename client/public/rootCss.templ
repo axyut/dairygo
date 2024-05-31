@@ -42,7 +42,6 @@ templ IndexCss() {
 			border-radius: 5px;
 			padding: 5px;
 			margin-bottom: 5px;
-			width: 100%;
 		}
 		.tableInput{
 			border: solid 1px black;
@@ -58,6 +57,9 @@ templ IndexCss() {
 			justify-content: center;
 			padding: 10px;
 		}
+		.formContainer > *:not(:first-child) {
+    		margin-top: 5px;
+		}
 		.divContainer{
             border: 1px solid black;
             padding: 20px;
@@ -69,6 +71,24 @@ templ IndexCss() {
             flex-direction: column;
 			min-height: 70vh;
 		}
+
+		.miniDiv{
+			border: 1px solid black;
+            padding: 10px;
+			margin: 10px;
+            display: flex;
+            border-radius: 5px;
+			box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.5);
+			background-color: #ddd;
+            flex-direction: column;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.miniDiv > *:not(:first-child) {
+    		margin-top: 5px;
+		}
+		
 
 		.progress {
 		position: fixed;
@@ -175,14 +195,15 @@ templ IndexCss() {
 		.todays {
 			display: flex;
 			flex-direction: row;
-			align-items: flex-end;
+			align-items: center;
 			justify-content: space-between;
+			margin-top: 30px;
   		}
 		.todaysTable {
-			width: 60%;
+			width: 65%;
 		}
 		.todaysRight{
-			width: 30%;
+			width: 35%;
 		}
 		.todaysInsert {
 			display: none;
@@ -208,6 +229,20 @@ templ IndexCss() {
 			flex-direction: row;
 			justify-content: space-between;
 			align-items: center;
+			border: 0px solid black;
+            border-radius: 3px;
+			box-shadow: 0px -5px 10px 0px rgba(0, 0, 0, 0.5);
+			background-color: #ddd;
+			padding: 0px 15px;
+			height: 50px;
+			margin: 0 1px;
+			margin-top: 10px;
+		}
+
+		h1 {
+			font-family:  "Lucida Console", "Courier New", monospace;
+			font-size: 1.5em;
+			margin: 0;
 		}
 
 		.simpleTable {
@@ -254,5 +289,19 @@ templ IndexCss() {
 			font-family: "Courier New", monospace;
 			width: 120px;
 		}
+
+		input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+
+		select {
+			width: 100%;
+			padding: 5px;
+			border-radius: 5px;
+			border: solid 1px black;
+			align-items:center;
+		}
+
 	</style>
 }

@@ -59,9 +59,7 @@ func main() {
 	logger.Info("Server shutdown complete")
 }
 
-// internal transaction is, you sell to and buy from yourself
-// qunatity of changing good, quantity of produced good
 // buy at different rate from same vendor for different goods
-// are you sure on delete
-// payment update audience
-// refresh buttons on different components
+// when transaction deleted, update audience to pay and to receive
+// when transaction updated, update audience to pay and to receive
+// when transaction inserted(bought,sold), update audience to pay and to receive

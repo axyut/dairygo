@@ -23,7 +23,6 @@ func (s *AudienceService) InsertAudience(ctx context.Context, aud types.Audience
 		"userID":    aud.UserID,
 		"toPay":     aud.ToPay,
 		"toReceive": aud.ToReceive,
-		"paid":      aud.Paid,
 	})
 	if err != nil {
 		s.service.logger.Error("Error while inserting new audience", err)

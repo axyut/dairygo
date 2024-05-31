@@ -3,32 +3,40 @@ import "github.com/axyut/dairygo/internal/types"
 import "strconv"
 
 templ TodaysGoodsRow(goods []types.Good,auds []types.Audience, notify bool) {
-  <div id="todaysGoodsRow" class="todays">
-  @pageStyles()
-  @TodaysGoods(goods, notify)
-  @Buy(goods, auds)
+  <div  class="todays" id="todaysGoodsRow">
+    @pageStyles()
+    @TodaysGoods(goods, notify)
+    @Buy(goods, auds)
   </div>
   
 }
 
 templ TodaysGoods(goods []types.Good, notify bool){
-    <div id="todaysGoods" class="todaysTable"  hx-ext="response-targets">
-    <div class="todaysHeader"> 
-      <h1>Today's Goods</h1>
-      <button class="open-button" onclick={OpenMyInsertForm("insertGood")}>Create</button>
+  
+    <div  class="todaysTable"  id="todaysGoods" hx-ext="response-targets">
+      <div class="todaysHeader"> 
+        <h1>Today's Goods</h1>
+        <div>
+        <button class="open-button" onclick={OpenMyInsertForm("insertGood")}>Create ➕</button>
+        <button class="open-button" 
+          hx-get="/goods/refresh"
+          hx-target="#good_success"
+          hx-target-error="#error"
+          hx-swap="innerHTML"
+        >Refresh 🔃</button>
+        </div>
+      </div>
+      @insertGood()
+      @GoodsTable(goods, notify)
+      
     </div>
-    @insertGood()
-    <div  id="good_success">
-    @GoodsTable(goods, notify)
-    </div>
-  </div>
-  if notify {
-    @SuccessToast("Goods Updated!")
-  }
+    if notify {
+      @SuccessToast("Fetching Goods! Refreshed.")
+    }
 }
 
 templ GoodsTable(goods []types.Good, notify bool){
-  <table class="simpleTable" >
+  <table class="simpleTable"  id="good_success">
         <tr>
           <th>Name</th>
           <th>Kharid</th>
@@ -109,6 +117,7 @@ templ GoodArray(good types.Good, goods []types.Good){
         Save
       </button>
       <button
+        hx-confirm={strconv.FormatFloat(good.Quantity, 'f', 2, 64)+" "+good.Unit+"s of "+good.Name+" will be deleted. "}
         hx-delete={"/goods?id="+good.ID.Hex()}
         hx-target={"#good_"+good.ID.Hex()}
         hx-target-error="#error"
