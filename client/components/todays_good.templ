@@ -27,30 +27,16 @@ templ TodaysGoods(goods []types.Good, notify bool){
         </div>
       </div>
       @insertGood()
-      @GoodsTable(goods, notify)
-      
+      <table class="simpleTable"  id="good_success">
+        @GoodsTable(goods, notify)
+      </table>      
     </div>
     if notify {
       @SuccessToast("Fetching Goods! Refreshed.")
     }
 }
 
-templ GoodsTable(goods []types.Good, notify bool){
-  <table class="simpleTable"  id="good_success">
-        <tr>
-          <th>Name</th>
-          <th>Rate</th>
-          <th  colspan="2">Total</th>
-          <th>Actions</th>
-        </tr>
-        for _, good := range goods {
-            @GoodArray(good, goods)
-        }
-  </table>
-  if notify {
-    @SuccessToast("Goods Updated!")
-  }
-}
+
 
 templ insertGood() {
   <div class="todaysInsert" hx-ext="response-targets" id="insertGood">
@@ -87,19 +73,35 @@ templ GoodInsertSuccess(good types.Good, goods []types.Good) {
     @SuccessToast(good.Name+" Modification Successful!" )
 }
 
+templ GoodsTable(goods []types.Good, notify bool){
+        <tr>
+          <th>Name</th>
+          <th>Rate</th>
+          <th  colspan="2">Total</th>
+          <th>Actions</th>
+        </tr>
+        for _, good := range goods {
+          <tr id={"good_"+good.ID.Hex()} hx-ext="response-targets">
+            @GoodArray(good, goods)
+          </tr>
+        }
+  if notify {
+    @SuccessToast("Goods Updated!")
+  }
+}
+
 templ GoodArray(good types.Good, goods []types.Good){
   
-  <tr id={"good_"+good.ID.Hex()} hx-ext="response-targets">
   <form id="td_form" name="td_form">
     <td>
       <input class="tableInput" type="text" name={"td_name"+good.ID.Hex()} value={good.Name} />
     </td>
     <td>
-      <input class="tableInput" type="text" name={"td_bikri_rate"+good.ID.Hex()} value={strconv.FormatFloat(good.BikriRate, 'f', -1, 64) + " /"+ good.Unit} />
+      <input class="tableInput" type="text" name={"td_selling_rate"+good.ID.Hex()} value={strconv.FormatFloat(good.SellingRate, 'f', -1, 64) + " /"+ good.Unit} />
     </td>
 
       <td colspan="1">{strconv.FormatFloat(good.Quantity, 'f', -1, 64) +" "+ good.Unit}</td>
-      <td colspan="1">{" Rs. " + strconv.FormatFloat(good.BikriRate * good.Quantity, 'f', -1, 64)}</td>
+      <td colspan="1">{" Rs. " + strconv.FormatFloat(good.SellingRate * good.Quantity, 'f', -1, 64)}</td>
     </form>
      
     <td>
@@ -109,7 +111,7 @@ templ GoodArray(good types.Good, goods []types.Good){
         hx-target={"#good_"+good.ID.Hex()}
         hx-include="[name='td_form']"
         hx-target-error="#error"
-        hx-swap="outerHTML"
+        hx-swap="innerHTML"
         class="simpleButton"
       >
         Save
@@ -119,7 +121,7 @@ templ GoodArray(good types.Good, goods []types.Good){
         hx-delete={"/goods?id="+good.ID.Hex()}
         hx-target={"#good_"+good.ID.Hex()}
         hx-target-error="#error"
-        hx-swap="outerHTML"
+        hx-swap="innerHTML"
         class="red simpleButton"
       >
         Del
@@ -154,7 +156,6 @@ templ GoodArray(good types.Good, goods []types.Good){
       </div>
 
     </td>
-  </tr>
 
 }
 

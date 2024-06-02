@@ -27,13 +27,7 @@ func (s *GoodsService) GetGoodByID(ctx context.Context, userID primitive.ObjectI
 
 func (s *GoodsService) InsertGood(ctx context.Context, good types.Good) (insertedGood types.Good, err error) {
 	goods := *s.collection
-	res, err := goods.InsertOne(ctx, bson.M{
-		"name":       good.Name,
-		"kharidRate": good.KharidRate,
-		"bikriRate":  good.BikriRate,
-		"unit":       good.Unit,
-		"userID":     good.UserID,
-	})
+	res, err := goods.InsertOne(ctx, good)
 	if err != nil {
 		s.service.logger.Error("Error inserting good", "Error", err)
 		return good, err

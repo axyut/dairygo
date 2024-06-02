@@ -19,8 +19,7 @@ type GoodsHandler struct {
 
 func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
-	kharidRate, errK := strconv.ParseFloat(r.FormValue("kharid_rate"), 64)
-	bikriRate, errP := strconv.ParseFloat(r.FormValue("bikri_rate"), 64)
+	sellingRate, errP := strconv.ParseFloat(r.FormValue("bikri_rate"), 64)
 	unit := r.FormValue("unit")
 	user := h.h.UserHandler.GetUser(w, r)
 
@@ -29,9 +28,6 @@ func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 		components.GeneralToastError("Enter Numeric Value for Rate.").Render(r.Context(), w)
 		return
 	}
-	if errK != nil {
-		kharidRate = 0
-	}
 	if name == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
@@ -39,11 +35,10 @@ func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 	}
 
 	good := types.Good{
-		Name:       name,
-		KharidRate: kharidRate,
-		BikriRate:  bikriRate,
-		Unit:       unit,
-		UserID:     user.ID,
+		Name:        name,
+		SellingRate: sellingRate,
+		Unit:        unit,
+		UserID:      user.ID,
 	}
 
 	insertedGood, err := h.srv.InsertGood(h.h.ctx, good)
@@ -76,10 +71,8 @@ func (h *GoodsHandler) DeleteGood(w http.ResponseWriter, r *http.Request) {
 func (h *GoodsHandler) UpdateGood(w http.ResponseWriter, r *http.Request) {
 	good_id := r.URL.Query().Get("id")
 	name := r.FormValue("td_name" + good_id)
-	kharid_rate := strings.TrimSpace(r.FormValue("td_kharid_rate" + good_id))
-	bikri_rate := strings.TrimSpace(r.FormValue("td_bikri_rate" + good_id))
+	selling_rate := strings.TrimSpace(r.FormValue("td_selling_rate" + good_id))
 	user_id := r.Context().Value("user_id")
-	fmt.Println(kharid_rate, bikri_rate)
 
 	// h.h.logger.Info("UpdateGood", "good_id", good_id, "name", name, "rate", rate, "user_id", user_id)
 
@@ -87,33 +80,28 @@ func (h *GoodsHandler) UpdateGood(w http.ResponseWriter, r *http.Request) {
 	userID, _ := primitive.ObjectIDFromHex(fmt.Sprintf("%v", user_id))
 	g, _ := h.srv.GetGoodByID(h.h.ctx, userID, goodID)
 
-	if strings.Contains(kharid_rate, " /"+g.Unit) {
-		kharid_rate = strings.ReplaceAll(kharid_rate, " /"+g.Unit, "")
-	}
-	if strings.Contains(bikri_rate, " /"+g.Unit) {
-		bikri_rate = strings.ReplaceAll(bikri_rate, " /"+g.Unit, "")
+	if strings.Contains(selling_rate, " /"+g.Unit) {
+		selling_rate = strings.ReplaceAll(selling_rate, " /"+g.Unit, "")
 	}
 
-	kharidRate, errK := strconv.ParseFloat(kharid_rate, 64)
-	bikriRate, errB := strconv.ParseFloat(bikri_rate, 64)
-	if errB != nil || errK != nil {
+	sellingRate, errB := strconv.ParseFloat(selling_rate, 64)
+	if errB != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		components.GoodInsertError("Enter Numeric Value for Rate.").Render(r.Context(), w)
 		return
 	}
 
-	if name == "" || bikriRate == 0 || kharidRate == 0 {
+	if name == "" || sellingRate == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		components.GoodInsertError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
 
 	good := types.UpdateGood{
-		Name:       name,
-		BikriRate:  bikriRate,
-		KharidRate: kharidRate,
-		Unit:       g.Unit,
-		Quantity:   g.Quantity,
+		Name:        name,
+		SellingRate: sellingRate,
+		Unit:        g.Unit,
+		Quantity:    g.Quantity,
 	}
 
 	insertedGood, err := h.srv.UpdateGood(h.h.ctx, userID, goodID, good)

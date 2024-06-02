@@ -23,6 +23,7 @@ func (s *AudienceService) InsertAudience(ctx context.Context, aud types.Audience
 		"userID":    aud.UserID,
 		"toPay":     aud.ToPay,
 		"toReceive": aud.ToReceive,
+		"mapRates":  make(map[string]float64),
 	})
 	if err != nil {
 		s.service.logger.Error("Error while inserting new audience", err)
@@ -43,9 +44,9 @@ func (s *AudienceService) GetAudienceByID(ctx context.Context, userID primitive.
 	return
 }
 
-func (s *AudienceService) GetAllAudiences(ctx context.Context, userID primitive.ObjectID) (aud []types.Audience, err error) {
+func (s *AudienceService) GetAllAudiences(ctx context.Context, userID primitive.ObjectID) (auds []types.Audience, err error) {
 	audience := *s.collection
-	aud = []types.Audience{}
+	auds = []types.Audience{}
 
 	cursor, err := audience.Find(ctx, bson.M{"userID": userID})
 	if err != nil {
@@ -53,10 +54,11 @@ func (s *AudienceService) GetAllAudiences(ctx context.Context, userID primitive.
 		return
 	}
 	defer cursor.Close(ctx)
-	if cursor.All(ctx, &aud) != nil {
+	if cursor.All(ctx, &auds) != nil {
 		s.service.logger.Error("Error while decoding all audiences", err)
 		return
 	}
+
 	return
 }
 
@@ -90,3 +92,19 @@ func (s *AudienceService) DeleteAllAudiences(ctx context.Context, userID primiti
 	}
 	return
 }
+
+// func (s *AudienceService) GetBuyingRate(ctx context.Context, userID primitive.ObjectID, audienceID primitive.ObjectID, goodID primitive.ObjectID) (rate types.Rate, err error) {
+// 	aud := *s.collection
+// 	audience := types.Audience{}
+// 	err = aud.FindOne(ctx, bson.M{"_id": audienceID, "userID": userID}).Decode(&audience)
+// 	if err != nil {
+// 		s.service.logger.Error("Error while fetching audience", err)
+// 		return
+// 	}
+// 	for _, rate := range audience.Rates {
+// 		if rate.GoodID == goodID {
+// 			return rate, nil
+// 		}
+// 	}
+// 	return
+// }

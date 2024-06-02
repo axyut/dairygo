@@ -85,7 +85,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		boughtFromID = trans_aud.ID
 		boughtFrom = trans_aud.Name
 		good_q = trans_good.Quantity + quantity_f
-		trans_price = trans_good.KharidRate * quantity_f
+		// trans_price = trans_good.KharidRate * quantity_f
 	} else if trans_type == string(types.Sold) {
 		soldToID = trans_aud.ID
 		soldTo = trans_aud.Name
@@ -95,7 +95,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 			return
 		}
 		good_q = trans_good.Quantity - quantity_f
-		trans_price = trans_good.BikriRate * quantity_f
+		// trans_price = trans_good.BikriRate * quantity_f
 	}
 
 	if payment == "on" {
@@ -124,11 +124,11 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), userID, trans_good.ID, types.UpdateGood{
-		Name:       trans_good.Name,
-		Unit:       trans_good.Unit,
-		KharidRate: trans_good.KharidRate,
-		BikriRate:  trans_good.BikriRate,
-		Quantity:   good_q,
+		Name: trans_good.Name,
+		Unit: trans_good.Unit,
+		// KharidRate: trans_good.KharidRate,
+		// BikriRate:  trans_good.BikriRate,
+		Quantity: good_q,
 	})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

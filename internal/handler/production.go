@@ -75,13 +75,13 @@ func (h *ProductionHandler) NewProduction(w http.ResponseWriter, r *http.Request
 	}
 
 	// when kharid rate is later implemented according to bought transactions, this will be updated. idk how
-	if (Cgood.KharidRate * C_quantity) < (Pgood.KharidRate * P_quantity) {
-		profit = (Pgood.KharidRate * P_quantity) - (Cgood.KharidRate * C_quantity)
-		loss = 0
-	} else {
-		loss = (Cgood.KharidRate * C_quantity) - (Pgood.KharidRate * P_quantity)
-		profit = 0
-	}
+	// if (Cgood.KharidRate * C_quantity) < (Pgood.KharidRate * P_quantity) {
+	// 	profit = (Pgood.KharidRate * P_quantity) - (Cgood.KharidRate * C_quantity)
+	// 	loss = 0
+	// } else {
+	// 	loss = (Cgood.KharidRate * C_quantity) - (Pgood.KharidRate * P_quantity)
+	// 	profit = 0
+	// }
 
 	insertProd := types.Production{
 		ChangeGoodID:     Change_goodID,
@@ -105,11 +105,11 @@ func (h *ProductionHandler) NewProduction(w http.ResponseWriter, r *http.Request
 	}
 	// update both goods quantity value
 	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), user.ID, Cgood.ID, types.UpdateGood{
-		Name:       Cgood.Name,
-		Unit:       Cgood.Unit,
-		KharidRate: Cgood.KharidRate,
-		BikriRate:  Cgood.BikriRate,
-		Quantity:   Cgood.Quantity - C_quantity,
+		Name: Cgood.Name,
+		Unit: Cgood.Unit,
+		// KharidRate: Cgood.KharidRate,
+		// BikriRate:  Cgood.BikriRate,
+		Quantity: Cgood.Quantity - C_quantity,
 	})
 
 	if err != nil {
@@ -119,11 +119,11 @@ func (h *ProductionHandler) NewProduction(w http.ResponseWriter, r *http.Request
 	}
 
 	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), user.ID, Pgood.ID, types.UpdateGood{
-		Name:       Pgood.Name,
-		Unit:       Pgood.Unit,
-		KharidRate: Pgood.KharidRate,
-		BikriRate:  Pgood.BikriRate,
-		Quantity:   Pgood.Quantity + P_quantity,
+		Name: Pgood.Name,
+		Unit: Pgood.Unit,
+		// KharidRate: Pgood.KharidRate,
+		// BikriRate:  Pgood.BikriRate,
+		Quantity: Pgood.Quantity + P_quantity,
 	})
 
 	if err != nil {
