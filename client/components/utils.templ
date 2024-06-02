@@ -10,12 +10,10 @@ templ GetUser(user types.User){
 
 }
 
-// color red
-templ GeneralToastError(msg string) {
-    @DangerToast("Error! " + msg)
+script OpenPopUp(id string){
+  document.getElementById(id).style.display = "flex";
 }
 
-// color green
-templ GeneralToastSuccess(msg string) {
-    @SuccessToast("Success! " + msg)
+script ClosePopUp(id string){
+  document.getElementById(id).style.display = "none";
 }

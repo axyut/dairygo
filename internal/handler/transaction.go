@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/axyut/dairygo/client"
 	"github.com/axyut/dairygo/client/components"
 	"github.com/axyut/dairygo/client/pages"
 	"github.com/axyut/dairygo/internal/service"
 	"github.com/axyut/dairygo/internal/types"
+	"github.com/axyut/dairygo/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -30,10 +32,13 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	audienceID := r.FormValue("audienceID")
 	trans_type := r.FormValue("type")
 	payment := r.FormValue("payment")
+	date := r.FormValue("date")
 	user_id := r.Context().Value("user_id")
 
-	var boughtFrom primitive.ObjectID
-	var soldTo primitive.ObjectID
+	var boughtFromID primitive.ObjectID
+	var boughtFrom string
+	var soldToID primitive.ObjectID
+	var soldTo string
 	var payment_b bool = false
 
 	if goodID == "" || quantity == "" || audienceID == "" || trans_type == "" || user_id == "" {
@@ -77,11 +82,13 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	}
 	var trans_price float64
 	if trans_type == string(types.Bought) {
-		boughtFrom = aud_id
+		boughtFromID = trans_aud.ID
+		boughtFrom = trans_aud.Name
 		good_q = trans_good.Quantity + quantity_f
 		trans_price = trans_good.KharidRate * quantity_f
 	} else if trans_type == string(types.Sold) {
-		soldTo = aud_id
+		soldToID = trans_aud.ID
+		soldTo = trans_aud.Name
 		if quantity_f > trans_good.Quantity {
 			w.WriteHeader(http.StatusNotAcceptable)
 			components.GeneralToastError("Not Enough Quantity!").Render(r.Context(), w)
@@ -96,15 +103,20 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	}
 
 	transaction := types.Transaction{
-		GoodID:     good_id,
-		Quantity:   quantity_f,
-		Price:      trans_price,
-		BoughtFrom: boughtFrom,
-		SoldTo:     soldTo,
-		Type:       types.TransactionType(trans_type),
-		Payment:    payment_b,
-		UserID:     userID,
+		ID:           primitive.NewObjectIDFromTimestamp(time.Now()),
+		GoodID:       good_id,
+		Quantity:     quantity_f,
+		Price:        trans_price,
+		BoughtFrom:   boughtFrom,
+		BoughtFromID: boughtFromID,
+		SoldToID:     soldToID,
+		SoldTo:       soldTo,
+		Type:         types.TransactionType(trans_type),
+		Payment:      payment_b,
+		UserID:       userID,
+		CreationTime: utils.GetMongoTimeFromHTMLDate(date),
 	}
+
 	_, err = h.srv.InsertTransaction(h.h.ctx, transaction)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -139,8 +151,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	components.GeneralToastSuccess("Transaction Added Successfully!").Render(r.Context(), w)
 }
 
-func (h *TransactionHandler) getSoldTransClient(w http.ResponseWriter, r *http.Request) (client_Trans []types.Transaction_Client) {
-	client_Trans = []types.Transaction_Client{}
+func (h *TransactionHandler) getSoldTransClient(w http.ResponseWriter, r *http.Request) (soldTrans []types.Transaction) {
 	user := h.h.UserHandler.GetUser(w, r)
 
 	soldTrans, err := h.h.srv.TransactionService.GetSoldTransactions(r.Context(), user.ID)
@@ -149,27 +160,12 @@ func (h *TransactionHandler) getSoldTransClient(w http.ResponseWriter, r *http.R
 		components.GeneralToastError("Error with service.")
 		return
 	}
-
-	for i := len(soldTrans) - 1; i >= 0; i-- {
-		v := soldTrans[i]
-		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), v.UserID, v.GoodID)
-		soldAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.UserID, v.SoldTo)
-		client_Trans = append(client_Trans, types.Transaction_Client{
-			TransactionID: v.ID,
-			GoodName:      good.Name,
-			GoodUnit:      good.Unit,
-			Quantity:      strconv.FormatFloat(v.Quantity, 'f', 2, 64),
-			Price:         strconv.FormatFloat(v.Price, 'f', 2, 64),
-			SoldTo:        soldAudience.Name,
-			Payment:       v.Payment,
-		})
-	}
-	return client_Trans
+	return
 }
 
 func (h *TransactionHandler) GetSold(w http.ResponseWriter, r *http.Request) {
-	client_Trans := h.getSoldTransClient(w, r)
-	pages.Sold(client_Trans).Render(r.Context(), w)
+	soldTrans := h.getSoldTransClient(w, r)
+	pages.Sold(soldTrans).Render(r.Context(), w)
 }
 
 func (h *TransactionHandler) GetBought(w http.ResponseWriter, r *http.Request) {
@@ -190,24 +186,8 @@ func (h *TransactionHandler) GetBought(w http.ResponseWriter, r *http.Request) {
 		components.GeneralToastError("Error with service.")
 		return
 	}
-	client_T := []types.Transaction_Client{}
-	for i := len(boughts) - 1; i >= 0; i-- {
-		v := boughts[i]
-		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), v.UserID, v.GoodID)
-		// soldAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.SoldTo)
-		boughtAudience, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), v.UserID, v.BoughtFrom)
-		client_T = append(client_T, types.Transaction_Client{
-			TransactionID: v.ID,
-			GoodName:      good.Name,
-			GoodUnit:      good.Unit,
-			Quantity:      strconv.FormatFloat(v.Quantity, 'f', 2, 64),
-			Price:         strconv.FormatFloat(v.Price, 'f', 2, 64),
-			// SoldTo:     soldAudience.Name,
-			Payment:    v.Payment,
-			BoughtFrom: boughtAudience.Name,
-		})
-	}
-	pages.Bought(client_T).Render(r.Context(), w)
+
+	pages.Bought(boughts).Render(r.Context(), w)
 }
 
 func (h *TransactionHandler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
@@ -261,9 +241,9 @@ func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Re
 		return
 	}
 	// update audience
-	audID := transUpdated.SoldTo
+	audID := transUpdated.SoldToID
 	if transUpdated.Type == types.Bought {
-		audID = transUpdated.BoughtFrom
+		audID = transUpdated.BoughtFromID
 	}
 	aud, err := h.h.srv.AudienceService.GetAudienceByID(r.Context(), user.ID, audID)
 	if err != nil {

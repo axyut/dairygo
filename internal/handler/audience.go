@@ -18,14 +18,7 @@ type AudienceHandler struct {
 func (h *AudienceHandler) NewAudience(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	contact := r.FormValue("contact")
-	userID := r.Context().Value("user_id")
-
-	id, err := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userID))
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		components.AudienceInsertError("Couldn't fullfill your request.").Render(r.Context(), w)
-		return
-	}
+	user := h.h.UserHandler.GetUser(w, r)
 
 	if name == "" || contact == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -35,7 +28,7 @@ func (h *AudienceHandler) NewAudience(w http.ResponseWriter, r *http.Request) {
 	audience := types.Audience{
 		Name:    name,
 		Contact: contact,
-		UserID:  id,
+		UserID:  user.ID,
 	}
 	inserted, err := h.srv.InsertAudience(h.h.ctx, audience)
 	if err != nil {
@@ -43,7 +36,8 @@ func (h *AudienceHandler) NewAudience(w http.ResponseWriter, r *http.Request) {
 		components.AudienceInsertError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
-	components.AudienceInsertSuccess(inserted).Render(r.Context(), w)
+	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), user.ID)
+	components.AudienceInsertSuccess(inserted, goods).Render(r.Context(), w)
 }
 
 func (h *AudienceHandler) DeleteAudience(w http.ResponseWriter, r *http.Request) {
@@ -66,17 +60,16 @@ func (h *AudienceHandler) UpdateAudience(w http.ResponseWriter, r *http.Request)
 	audience_id := r.URL.Query().Get("id")
 	name := r.FormValue("aud_name")
 	contact := r.FormValue("aud_contact")
-	user_id := r.Context().Value("user_id")
+	user := h.h.UserHandler.GetUser(w, r)
 
 	audID, _ := primitive.ObjectIDFromHex(audience_id)
-	userID, _ := primitive.ObjectIDFromHex(fmt.Sprintf("%v", user_id))
 
 	if name == "" || contact == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
-	aud, _ := h.srv.GetAudienceByID(h.h.ctx, userID, audID)
+	aud, _ := h.srv.GetAudienceByID(h.h.ctx, user.ID, audID)
 	aud.Name = name
 	aud.Contact = contact
 
@@ -86,7 +79,8 @@ func (h *AudienceHandler) UpdateAudience(w http.ResponseWriter, r *http.Request)
 		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
-	components.AudienceInsertSuccess(aud).Render(r.Context(), w)
+	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), user.ID)
+	components.AudienceInsertSuccess(aud, goods).Render(r.Context(), w)
 }
 
 func (h *AudienceHandler) RefreshAudience(w http.ResponseWriter, r *http.Request) {
@@ -98,6 +92,6 @@ func (h *AudienceHandler) RefreshAudience(w http.ResponseWriter, r *http.Request
 		components.GeneralToastError("Please Re-login.").Render(r.Context(), w)
 		return
 	}
-
-	components.AudTable(allAuds, true).Render(r.Context(), w)
+	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), user.ID)
+	components.AudTable(allAuds, true, goods).Render(r.Context(), w)
 }

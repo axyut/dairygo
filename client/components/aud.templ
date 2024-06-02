@@ -8,26 +8,26 @@ templ Audiences(auds []types.Audience, goods []types.Good) {
       <div class="todaysHeader">
         <h1>People you Know</h1>
         <div>
-        <button class="open-button" onclick={OpenMyInsertForm("insertAud")}>Create ➕</button>
+        <button class="open-button" onclick={OpenPopUp("insertAud")}>➕ Create </button>
         <button class="open-button" 
           hx-get="/audience/refresh"
         	hx-target="#aud_success"
           hx-indicator=".progress"
 		      hx-target-error="#error"
-        >Refresh 🔃</button>
+        >🔃 Refresh </button>
         </div>
       </div>
     @insertAud()
-    @AudTable(auds, false)
+    @AudTable(auds, false, goods)
     </div>
-    @Sell(goods, auds)
   </div>
   
 }
 
-templ AudTable(auds []types.Audience, notify bool){
+templ AudTable(auds []types.Audience, notify bool, goods []types.Good) {
       <table class="simpleTable"  id="aud_success">
       <tr>
+      <th>Transaction</th>
         <th>Name</th>
         <th>Contact</th>
         <th>To Pay</th>
@@ -35,7 +35,7 @@ templ AudTable(auds []types.Audience, notify bool){
         <th>Actions</th>
       </tr>
       for _, aud := range auds {
-        @audArray(aud)
+        @audArray(aud, goods)
       }
     </table>
     if notify {
@@ -46,7 +46,10 @@ templ AudTable(auds []types.Audience, notify bool){
 templ insertAud() {
   <div class="todaysInsert" hx-ext="response-targets" id="insertAud">
   <div class="content">
-    <button class="emojiBtn" onclick={CloseMyInsertForm("insertAud")}>❌</button>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <div></div>
+                <button class="emojiBtn" onclick={ClosePopUp("insertAud")}>❌</button>
+        </div>
 
     <form
         hx-post="/audience"
@@ -68,13 +71,20 @@ templ AudienceInsertError(msg string) {
     @DangerToast("Audience Creation Error! " + msg)
 }
 
-templ AudienceInsertSuccess(aud types.Audience) {
-    @audArray(aud)
+templ AudienceInsertSuccess(aud types.Audience, goods []types.Good) {
+    @audArray(aud, goods)
     @SuccessToast(aud.Name+" Modification Successful!" )
 }
 
-templ audArray(aud types.Audience){
+
+templ audArray(aud types.Audience, goods []types.Good) {
 <tr id={"aud_"+aud.ID.Hex()}>
+    <td>
+        <button class="open-button" onclick={OpenPopUp("aud_buy_"+aud.ID.Hex())}>BUY</button>
+        @Buy(goods, aud)
+        <button class="open-button" onclick={OpenPopUp("aud_sell_"+aud.ID.Hex())}>SELL</button>
+        @Sell(goods, aud)
+    </td>
     <td>
       <input class="tableInput" type="text" name="aud_name" value={aud.Name} />
     </td>
@@ -100,6 +110,31 @@ templ audArray(aud types.Audience){
             hx-swap="outerHTML"
             class="simpleButton red"
         >Del</button>
+        <button class="open-button" onclick={OpenPopUp("myForm_"+aud.ID.Hex())}>Set Rate</button>
+
+      <div class="todaysInsert" id={"myForm_"+aud.ID.Hex()}  hx-ext="response-targets">
+        <div class="content">
+        <form class="formContainer"
+          hx-post={"/production?change_aud_id="+aud.ID.Hex()}
+          hx-target="#aud_success"
+          hx-target-error="#error"
+          hx-swap="innerHTML"
+        >
+        <button type="button" class="emojiBtn" onclick={ClosePopUp("myForm_"+aud.ID.Hex())}>❌</button>
+
+          <input class="simpleInput" type="text" placeholder={aud.Name+" quantity"} name="change_quantity" required />
+          <label for="aud">Convert to:</label>
+          // <select id="aud" name="prod_aud_id" required>
+          //     for _, g := range auds {
+          //         <option value={g.ID.Hex()}>{g.Name}</option>
+          //     }
+          // </select>
+          <input class="simpleInput" type="text" placeholder="Produce quantity" name="prod_quantity" required />
+          <button type="submit" class="simpleButton">Produce</button>
+          
+        </form>
+        </div>
+      </div>
     </td>
 
 </tr>

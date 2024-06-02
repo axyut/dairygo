@@ -3,9 +3,13 @@ package pages
 import "github.com/axyut/dairygo/internal/types"
 
 templ Profile(user types.User){
-    <div class="divContainer">
-        <h1>Profile</h1>
-        <p>Name: {user.UserName}</p>
-        <p>Email: {user.Email}</p>
+    <div class="divContainer" hx-ext="response-targets">
+        <div id="user_action_success"></div>
+            <div class="miniDiv">
+                <h1>Profile</h1>
+                <p>Name: {user.UserName}</p>
+                <p>Email: {user.Email}</p>
+            </div>
+
     </div>
 }

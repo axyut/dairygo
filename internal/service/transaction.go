@@ -16,16 +16,7 @@ type TransactionService struct {
 
 func (s *TransactionService) InsertTransaction(ctx context.Context, trans types.Transaction) (insertedTrans types.Transaction, err error) {
 	transaction := *s.collection
-	res, err := transaction.InsertOne(ctx, bson.M{
-		"goodID":     trans.GoodID,
-		"quantity":   trans.Quantity,
-		"price":      trans.Price,
-		"boughtFrom": trans.BoughtFrom,
-		"soldTo":     trans.SoldTo,
-		"userID":     trans.UserID,
-		"type":       trans.Type,
-		"payment":    trans.Payment,
-	})
+	res, err := transaction.InsertOne(ctx, trans)
 	if err != nil {
 		s.service.logger.Error("Error while inserting new transaction", err)
 		return trans, err

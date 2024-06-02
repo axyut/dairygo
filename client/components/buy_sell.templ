@@ -1,0 +1,111 @@
+package components
+
+import "github.com/axyut/dairygo/internal/types"
+
+
+templ Sell(goods []types.Good, aud types.Audience){
+    <div class="todaysInsert" hx-ext="response-targets" id={"aud_sell_"+aud.ID.Hex()}>
+  <div class="content">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <h1>Sell {aud.Name}</h1>
+            <button type="button" class="emojiBtn" onclick={ClosePopUp("aud_sell_"+aud.ID.Hex())}>❌</button>
+        </div>
+        <form
+            hx-post="/transaction"
+            hx-swap="afterbegin"
+            hx-target="#sold"
+            hx-trigger="submit"
+            hx-error="#error"
+            class="formContainer"
+        >
+            <select id="good" name="goodID" required>
+                for _, good := range goods {
+                    <option value={good.ID.Hex()}>{good.Name}</option>
+                }
+            </select>
+            <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
+            <div style="display:flex;justify-content:center;align-items:center;font-family:'Lucida Console', 'Courier New', monospace;">
+                <input class="simpleInput" type="date" name="date" />
+            </div>
+            <div style="display:flex;justify-content:center;align-items:center;font-family:'Lucida Console', 'Courier New', monospace;">
+                <label for="payment">PAYMENT </label>
+                <input class="simpleInput" type="checkbox" name="payment" />
+            </div>
+            <input class="simpleInput" type="hidden" name="type" value="sold" />
+             <input class="simpleInput" type="hidden" name="audienceID" value={aud.ID.Hex()} />
+            <button
+            class="simpleButton"
+             type="submit">SELL</button>
+        </form>
+        <div id="sold"></div>
+    </div>
+    </div>
+}
+
+templ Buy(goods []types.Good, aud types.Audience){
+    @buySellStyles()
+    <div class="todaysInsert" id={"aud_buy_"+aud.ID.Hex()}>
+    <div class="content">
+        <div style="display:flex;justify-content:space-between;">
+            <h1>Buy from {aud.Name}</h1>
+            <button type="button" class="emojiBtn" onclick={ClosePopUp("aud_buy_"+aud.ID.Hex())}>❌</button>
+        </div>
+        <form
+            hx-post="/transaction"
+            hx-swap="afterbegin"
+            hx-target="#bought"
+            hx-trigger="submit"
+            hx-error="#error"
+            class="formContainer"
+        >
+            <div style="display:flex;justify-content:flex-start;align-items:center;font-family:'Lucida Console', 'Courier New', monospace;">
+                <input class="simpleInput" type="checkbox" name="advancedOptions" onchange={toggleAdvancedOptions()} />
+                <label for="advancedOptions"> Advanced Options </label>
+            </div>
+            <div id="advancedOptions">
+                <input class="simpleInput" type="date" name="date" />
+                <input class="simpleInput" type="text" name="goodName" placeholder="Good Name" />
+                <input class="simpleInput" type="text" name="unit" placeholder="Unit" />
+                <input class="simpleInput" type="text" name="buying_rate" placeholder="Buying Rate" />
+            </div>
+                <select id="good" name="goodID" required>
+                    for _, good := range goods {
+                        <option value={good.ID.Hex()}>{good.Name}</option>
+                    }
+                </select>
+            <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
+            <div style="display:flex;justify-content:center;align-items:center;font-family:'Lucida Console', 'Courier New', monospace;">
+                <label for="payment">PAYMENT </label>
+                <input class="simpleInput" type="checkbox" name="payment" />
+                
+            </div>
+            <input class="simpleInput" type="hidden" name="type" value="bought" />
+            <input class="simpleInput" type="hidden" name="audienceID" value={aud.ID.Hex()} />
+ 
+            <button
+            class="simpleButton"
+             type="submit">BUY</button>
+        </form>
+        <div id="bought"></div>
+    </div>
+    </div>
+}
+
+script toggleAdvancedOptions(){
+    var advancedOptions = document.getElementById("advancedOptions");
+    if (advancedOptions.style.display === "flex") {
+        advancedOptions.style.display = "none";
+    } else {
+        advancedOptions.style.display = "flex";
+    }
+}
+
+templ buySellStyles(){
+<style>
+    #advancedOptions {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+    }
+</style>
+}

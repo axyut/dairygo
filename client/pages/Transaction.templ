@@ -4,7 +4,7 @@ import "github.com/axyut/dairygo/internal/types"
 import "strconv"
 import "github.com/axyut/dairygo/client/components"
 
-templ TransactionPage(soldTrans []types.Transaction_Client){
+templ TransactionPage(soldTrans []types.Transaction){
     @pageStyles()
 
     <div  hx-ext="response-targets">
@@ -36,7 +36,7 @@ templ TransactionPage(soldTrans []types.Transaction_Client){
     </div>
 }
 
-templ Sold(soldTrans []types.Transaction_Client){
+templ Sold(soldTrans []types.Transaction){
     <div>
         <table class="simpleTable">
             <tr>
@@ -51,17 +51,17 @@ templ Sold(soldTrans []types.Transaction_Client){
             for i:=0; i<len(soldTrans); i++{
                 if i == 0{
                     <tr id="date">
-                        <td  colspan="7">{soldTrans[i].TransactionID.Timestamp().Format("Monday Jan 2")}</td>
+                        <td  colspan="7">{soldTrans[i].CreationTime.Time().Format("Monday Jan 2")}</td>
                     </tr>
-                } else if soldTrans[i].TransactionID.Timestamp().Day() != soldTrans[i-1].TransactionID.Timestamp().Day(){
+                } else if soldTrans[i].CreationTime.Time().Day() != soldTrans[i-1].CreationTime.Time().Day(){
                     <tr id="date">
-                            <td  colspan="7">{soldTrans[i].TransactionID.Timestamp().Format("Monday Jan 2")}</td>
+                            <td  colspan="7">{soldTrans[i].CreationTime.Time().Format("Monday Jan 2")}</td>
                     </tr>
                 }
 
                     @sRow(soldTrans[i])
 
-                if i+1 < len(soldTrans) && soldTrans[i].TransactionID.Timestamp().Day() != soldTrans[i+1].TransactionID.Timestamp().Day(){
+                if i+1 < len(soldTrans) && soldTrans[i].CreationTime.Time().Day() != soldTrans[i+1].CreationTime.Time().Day(){
                     <tr id="break"><td  colspan="7" ></td></tr>
                 } else if i+1 == len(soldTrans){
                     <tr id="break"><td  colspan="7" ></td></tr>
@@ -104,18 +104,18 @@ templ CheckboxBoolPayment(id string, payment bool){
     }
 }
 
-templ sRow(soldTrans types.Transaction_Client){
-    <tr id={"soldTrans_"+soldTrans.TransactionID.Hex()} hx-ext="response-targets">
+templ sRow(soldTrans types.Transaction){
+    <tr id={"soldTrans_"+soldTrans.ID.Hex()} hx-ext="response-targets">
         <td>
             {soldTrans.GoodName}
         </td>
-        <td>{soldTrans.Quantity + soldTrans.GoodUnit}</td>
-        <td>{soldTrans.Price}</td>
+        <td>{strconv.FormatFloat(soldTrans.Quantity, 'f', 2, 64)  + soldTrans.GoodUnit}</td>
+        <td>{strconv.FormatFloat(soldTrans.Price, 'f', 2, 64) }</td>
         <td>{soldTrans.SoldTo}</td>
-        <td id={"payment_"+soldTrans.TransactionID.Hex()}>
-            @CheckboxTemplate(soldTrans.TransactionID.Hex(), soldTrans.Payment)
+        <td id={"payment_"+soldTrans.ID.Hex()}>
+            @CheckboxTemplate(soldTrans.ID.Hex(), soldTrans.Payment)
         </td>
-        <td>{soldTrans.TransactionID.Timestamp().Format("03:04 pm MST")}</td>
+        <td>{soldTrans.CreationTime.Time().Format("03:04 pm MST")}</td>
         <td>
             <button
                 if soldTrans.Payment{
@@ -123,8 +123,8 @@ templ sRow(soldTrans types.Transaction_Client){
                 } else {
                     hx-confirm={soldTrans.SoldTo +" has not payed. This transaction will be deleted. "}
                 }
-                hx-delete={"/transaction?id="+soldTrans.TransactionID.Hex()}
-                hx-target={"#soldTrans_"+soldTrans.TransactionID.Hex()}
+                hx-delete={"/transaction?id="+soldTrans.ID.Hex()}
+                hx-target={"#soldTrans_"+soldTrans.ID.Hex()}
                 hx-target-error="#error"
                 hx-swap="outerHTML"
                 class="red simpleButton"
@@ -142,22 +142,19 @@ templ pageStyles(){
             justify-content: space-evenly;
             align-items: center;
         }
-        #transaction_here{
-            padding: 20px 10%;
-        }
     </style>
 }
 
-templ bRow(boughtTrans types.Transaction_Client){
-    <tr id={"boughtTrans_"+boughtTrans.TransactionID.Hex()} hx-ext="response-targets">
+templ bRow(boughtTrans types.Transaction){
+    <tr id={"boughtTrans_"+boughtTrans.ID.Hex()} hx-ext="response-targets">
         <td>{boughtTrans.GoodName}</td>
-        <td>{boughtTrans.Quantity + boughtTrans.GoodUnit}</td>
-        <td>{boughtTrans.Price}</td>
+        <td>{strconv.FormatFloat(boughtTrans.Quantity, 'f', 2, 64) + boughtTrans.GoodUnit}</td>
+        <td>{strconv.FormatFloat(boughtTrans.Price, 'f', 2, 64) }</td>
         <td>{boughtTrans.BoughtFrom}</td>
-        <td id={"payment_"+boughtTrans.TransactionID.Hex()}>
-            @CheckboxTemplate(boughtTrans.TransactionID.Hex(), boughtTrans.Payment)
+        <td id={"payment_"+boughtTrans.ID.Hex()}>
+            @CheckboxTemplate(boughtTrans.ID.Hex(), boughtTrans.Payment)
         </td>
-        <td>{boughtTrans.TransactionID.Timestamp().Format("3:04 pm")}</td>
+        <td>{boughtTrans.CreationTime.Time().Format("3:04 pm")}</td>
         <td>
             <button
                 if boughtTrans.Payment{
@@ -165,8 +162,8 @@ templ bRow(boughtTrans types.Transaction_Client){
                 } else {
                     hx-confirm={"You have not paid for this transaction. This transaction will be deleted. "}
                 }
-                hx-delete={"/transaction?id="+boughtTrans.TransactionID.Hex()}
-                hx-target={"#boughtTrans_"+boughtTrans.TransactionID.Hex()}
+                hx-delete={"/transaction?id="+boughtTrans.ID.Hex()}
+                hx-target={"#boughtTrans_"+boughtTrans.ID.Hex()}
                 hx-target-error="#error"
                 hx-swap="outerHTML"
                 class="red simpleButton"
@@ -176,7 +173,7 @@ templ bRow(boughtTrans types.Transaction_Client){
     </tr>
 }
 
-templ Bought(boughtTrans []types.Transaction_Client) {
+templ Bought(boughtTrans []types.Transaction) {
 	<div>
         
 		<table class="simpleTable">
@@ -192,17 +189,17 @@ templ Bought(boughtTrans []types.Transaction_Client) {
 			for i:=0; i<len(boughtTrans); i++{
                 if i == 0{
                     <tr id="date">
-                        <td  colspan="7">{boughtTrans[i].TransactionID.Timestamp().Format("Monday Jan 2")}</td>
+                        <td  colspan="7">{boughtTrans[i].CreationTime.Time().Format("Monday Jan 2")}</td>
                     </tr>
-                } else if boughtTrans[i].TransactionID.Timestamp().Day() != boughtTrans[i-1].TransactionID.Timestamp().Day(){
+                } else if boughtTrans[i].CreationTime.Time().Day() != boughtTrans[i-1].CreationTime.Time().Day(){
                     <tr id="date">
-                            <td  colspan="7"> {boughtTrans[i].TransactionID.Timestamp().Format("Monday Jan 2")}</td>
+                            <td  colspan="7"> {boughtTrans[i].CreationTime.Time().Format("Monday Jan 2")}</td>
                     </tr>
                 }
 
                     @bRow(boughtTrans[i])
 
-                if i+1 < len(boughtTrans) && boughtTrans[i].TransactionID.Timestamp().Day() != boughtTrans[i+1].TransactionID.Timestamp().Day(){
+                if i+1 < len(boughtTrans) && boughtTrans[i].CreationTime.Time().Day() != boughtTrans[i+1].CreationTime.Time().Day(){
                     <tr id="break"><td  colspan="7" ></td></tr>
                 } else if i+1 == len(boughtTrans){
                     <tr id="break"><td  colspan="7" ></td></tr>

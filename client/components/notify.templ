@@ -33,3 +33,13 @@ script DangerToast(msg string){
   onClick: function(){} // Callback after click
 }).showToast();
 }
+
+// color red
+templ GeneralToastError(msg string) {
+    @DangerToast("Error! " + msg)
+}
+
+// color green
+templ GeneralToastSuccess(msg string) {
+    @SuccessToast("Success! " + msg)
+}
