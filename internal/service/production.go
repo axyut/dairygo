@@ -71,3 +71,9 @@ func (s *ProductionService) DeleteProduction(ctx context.Context, prodID primiti
 	_, err = prod.DeleteOne(ctx, bson.M{"_id": prodID, "userID": userID})
 	return
 }
+
+func (s *ProductionService) DeleteAllProductions(ctx context.Context, userID primitive.ObjectID) (err error) {
+	prod := *s.collection
+	_, err = prod.DeleteMany(ctx, bson.M{"userID": userID})
+	return
+}

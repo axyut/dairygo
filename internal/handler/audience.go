@@ -95,3 +95,16 @@ func (h *AudienceHandler) RefreshAudience(w http.ResponseWriter, r *http.Request
 	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), user.ID)
 	components.AudTable(allAuds, true, goods).Render(r.Context(), w)
 }
+
+func (h *AudienceHandler) DeleteAllAudiences(w http.ResponseWriter, r *http.Request) {
+	user := h.h.UserHandler.GetUser(w, r)
+	err := h.srv.DeleteAllAudiences(h.h.ctx, user.ID)
+	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	components.GeneralToastSuccess("Deleted Successfully").Render(r.Context(), w)
+}

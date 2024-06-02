@@ -278,3 +278,28 @@ func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Re
 	pages.CheckboxBoolPayment(transUpdated.ID.Hex(), transUpdated.Payment).Render(r.Context(), w)
 
 }
+
+func (h *TransactionHandler) DeleteAllTransactions(w http.ResponseWriter, r *http.Request) {
+	user := h.h.UserHandler.GetUser(w, r)
+	trans_type := r.URL.Query().Get("type")
+	transType := types.TransactionType(trans_type)
+	if trans_type == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
+		return
+	}
+	if transType != types.Sold && transType != types.Bought {
+		w.WriteHeader(http.StatusBadRequest)
+		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
+		return
+	}
+	err := h.srv.DeleteAllTransactions(r.Context(), user.ID, transType)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Deletion unsuccessful. Service Failure.")
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	components.GeneralToastSuccess("Deleted Successfully").Render(r.Context(), w)
+}

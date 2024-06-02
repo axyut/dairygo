@@ -41,7 +41,7 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 
 	h := NewHandler(ctx, srv, logger)
 	router := http.NewServeMux()
-	chained := m.Chain(m.Logging, m.Auth)
+	middleware := m.Chain(m.Logging, m.Auth)
 
 	router.HandleFunc("/", h.HomeHandler.GetHome)
 	router.HandleFunc("/register", h.UserHandler.NewUser)
@@ -66,6 +66,11 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 	router.HandleFunc("DELETE /goods", h.GoodsHandler.DeleteGood)
 	router.HandleFunc("DELETE /transaction", h.TransactionHandler.DeleteTransaction)
 	router.HandleFunc("DELETE /production", h.ProductionHandler.DeleteProduction)
+	router.HandleFunc("DELETE /user", h.UserHandler.DeleteUser)
+	router.HandleFunc("DELETE /audience/all", h.AudienceHandler.DeleteAllAudiences)
+	router.HandleFunc("DELETE /goods/all", h.GoodsHandler.DeleteAllGoods)
+	router.HandleFunc("DELETE /transaction/all", h.TransactionHandler.DeleteAllTransactions)
+	router.HandleFunc("DELETE /production/all", h.ProductionHandler.DeleteAllProductions)
 
 	router.HandleFunc("PATCH /audience", h.AudienceHandler.UpdateAudience)
 	router.HandleFunc("PATCH /goods", h.GoodsHandler.UpdateGood)
@@ -75,7 +80,7 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 
 	server := &http.Server{
 		Addr:    ":" + conf.PORT,
-		Handler: chained(router),
+		Handler: middleware(router),
 	}
 	return server
 }

@@ -139,20 +139,15 @@ func (user *UserHandler) GetUserRequest(w http.ResponseWriter, r *http.Request) 
 }
 
 func (user *UserHandler) LogoutUser(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+
 	cookie := http.Cookie{
 		Name:    "cookie",
 		MaxAge:  -1,
 		Expires: time.Now().Add(-100 * time.Hour),
 		Path:    "/",
 	}
-
 	http.SetCookie(w, &cookie)
 	w.Header().Set("HX-Redirect", "/login")
-	w.WriteHeader(http.StatusOK)
 }
 
 func (user *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
@@ -160,4 +155,17 @@ func (user *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	pg := pages.Profile(userData)
 	client.Layout(pg, "User Profile").Render(r.Context(), w)
+}
+
+func (user *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	userData := user.GetUser(w, r)
+
+	err := user.srv.DeleteUser(user.h.ctx, userData.ID)
+	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
+		return
+	}
+
+	user.LogoutUser(w, r)
 }

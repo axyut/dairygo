@@ -160,3 +160,16 @@ func (h *ProductionHandler) GetProductionPage(w http.ResponseWriter, r *http.Req
 	}
 	pages.Production(prods).Render(r.Context(), w)
 }
+
+func (h *ProductionHandler) DeleteAllProductions(w http.ResponseWriter, r *http.Request) {
+	user := h.h.UserHandler.GetUser(w, r)
+	err := h.srv.DeleteAllProductions(h.h.ctx, user.ID)
+	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	components.GeneralToastSuccess("Deleted Successfully").Render(r.Context(), w)
+}

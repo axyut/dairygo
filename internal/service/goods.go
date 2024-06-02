@@ -93,3 +93,13 @@ func (s *GoodsService) DeleteGood(ctx context.Context, userID primitive.ObjectID
 	}
 	return
 }
+
+func (s *GoodsService) DeleteAllGoods(ctx context.Context, userID primitive.ObjectID) (err error) {
+	goods := *s.collection
+	_, err = goods.DeleteMany(ctx, bson.M{"userID": userID})
+	if err != nil {
+		s.service.logger.Error("Error while deleting all goods", err)
+		return
+	}
+	return
+}

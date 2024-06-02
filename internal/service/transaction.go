@@ -117,3 +117,12 @@ func (s *TransactionService) UpdateTransaction(ctx context.Context, userID primi
 	}
 	return trans, nil
 }
+
+func (s *TransactionService) DeleteAllTransactions(ctx context.Context, userID primitive.ObjectID, transType types.TransactionType) error {
+	transaction := *s.collection
+	_, err := transaction.DeleteMany(ctx, bson.M{"userID": userID, "type": transType})
+	if err != nil {
+		s.service.logger.Error("Error deleting all transactions", err)
+	}
+	return nil
+}

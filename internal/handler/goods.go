@@ -140,3 +140,16 @@ func (h *GoodsHandler) RefreshGoods(w http.ResponseWriter, r *http.Request) {
 
 	components.GoodsTable(allGoods, true).Render(r.Context(), w)
 }
+
+func (h *GoodsHandler) DeleteAllGoods(w http.ResponseWriter, r *http.Request) {
+	user := h.h.UserHandler.GetUser(w, r)
+	err := h.srv.DeleteAllGoods(h.h.ctx, user.ID)
+	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	components.GeneralToastSuccess("Deleted Successfully").Render(r.Context(), w)
+}

@@ -10,6 +10,56 @@ templ Profile(user types.User){
                 <p>Name: {user.UserName}</p>
                 <p>Email: {user.Email}</p>
             </div>
-
+        <div class="miniDiv">
+            <h1>Settings</h1>
+            <button 
+                class="simpleButton red"
+                hx-delete="/user"
+                hx-target="#user_action_success"
+                hx-target-error="#error"
+                hx-swap="innerHTML"
+                hx-indicator=".progress"
+            >Delete Account</button>
+            <button 
+                class="simpleButton red"
+                hx-delete="/goods/all"
+                hx-target="#user_action_success"
+                hx-target-error="#error"
+                hx-swap="innerHTML"
+                hx-indicator=".progress"
+            >Delete All Goods</button>
+            <button
+                class="simpleButton red"
+                hx-delete="/audience/all"
+                hx-target="#user_action_success"
+                hx-target-error="#error"
+                hx-swap="innerHTML"
+                hx-indicator=".progress"
+            >Delete All Audiences</button>
+            <button 
+                class="simpleButton red"
+                hx-delete="/transaction/all?type=bought"
+                hx-target="#user_action_success"
+                hx-target-error="#error"
+                hx-swap="innerHTML"
+                hx-indicator=".progress"
+                >Delete All Bought Transactions</button>
+            <button 
+                class="simpleButton red"
+                hx-delete="/transaction/all?type=sold"
+                hx-target="#user_action_success"
+                hx-target-error="#error"
+                hx-swap="innerHTML"
+                hx-indicator=".progress"
+                >Delete All Sold Transactions</button>
+            <button 
+                class="simpleButton red"
+                hx-delete="/production/all"
+                hx-target="#user_action_success"
+                hx-target-error="#error"
+                hx-swap="innerHTML"
+                hx-indicator=".progress"
+                >Delete All Productions</button>
+        </div>
     </div>
 }

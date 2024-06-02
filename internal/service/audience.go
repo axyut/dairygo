@@ -80,3 +80,13 @@ func (s *AudienceService) DeleteAudience(ctx context.Context, userID primitive.O
 	}
 	return
 }
+
+func (s *AudienceService) DeleteAllAudiences(ctx context.Context, userID primitive.ObjectID) (err error) {
+	audience := *s.collection
+	_, err = audience.DeleteMany(ctx, bson.M{"userID": userID})
+	if err != nil {
+		s.service.logger.Error("Error while deleting all audiences", err)
+		return
+	}
+	return
+}

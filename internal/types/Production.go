@@ -16,5 +16,6 @@ type Production struct {
 	ProducedGoodUnit string             `json:"producedGoodUnit" bson:"producedGoodUnit"`
 	Profit           float64            `json:"profit" bson:"profit"`
 	Loss             float64            `json:"loss" bson:"loss"`
+	CreationTime     primitive.DateTime `json:"creationTime" bson:"creationTime"`
 	UserID           primitive.ObjectID `json:"userID" bson:"userID"`
 }
