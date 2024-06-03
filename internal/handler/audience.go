@@ -61,8 +61,8 @@ func (h *AudienceHandler) DeleteAudience(w http.ResponseWriter, r *http.Request)
 func (h *AudienceHandler) UpdateAudience(w http.ResponseWriter, r *http.Request) {
 	audience_id := r.URL.Query().Get("id")
 	good_id := r.URL.Query().Get("good_id")
-	name := r.FormValue("aud_name")
-	contact := r.FormValue("aud_contact")
+	name := r.FormValue("aud_name_" + audience_id)
+	contact := r.FormValue("aud_contact_" + audience_id)
 	buying_rate := strings.TrimSpace(r.FormValue("aud_buying_rate"))
 	user := h.h.UserHandler.GetUser(w, r)
 
@@ -102,10 +102,11 @@ func (h *AudienceHandler) UpdateAudience(w http.ResponseWriter, r *http.Request)
 		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
-	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), user.ID)
 	if good_id == "" && buying_rate == "" {
+		goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), user.ID)
+		allAuds, _ := h.srv.GetAllAudiences(r.Context(), user.ID)
 		w.WriteHeader(http.StatusOK)
-		components.AudienceInsertSuccess(aud, goods).Render(r.Context(), w)
+		components.AudTable(allAuds, true, goods).Render(r.Context(), w)
 		return
 	} else if good_id != "" && buying_rate != "" {
 		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), user.ID, goodID)

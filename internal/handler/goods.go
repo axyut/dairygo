@@ -70,8 +70,8 @@ func (h *GoodsHandler) DeleteGood(w http.ResponseWriter, r *http.Request) {
 
 func (h *GoodsHandler) UpdateGood(w http.ResponseWriter, r *http.Request) {
 	good_id := r.URL.Query().Get("id")
-	name := r.FormValue("td_name" + good_id)
-	selling_rate := strings.TrimSpace(r.FormValue("td_selling_rate" + good_id))
+	name := r.FormValue("good_name_" + good_id)
+	selling_rate := strings.TrimSpace(r.FormValue("good_selling_rate_" + good_id))
 	user_id := r.Context().Value("user_id")
 
 	// h.h.logger.Info("UpdateGood", "good_id", good_id, "name", name, "rate", rate, "user_id", user_id)
@@ -104,7 +104,7 @@ func (h *GoodsHandler) UpdateGood(w http.ResponseWriter, r *http.Request) {
 		Quantity:    g.Quantity,
 	}
 
-	insertedGood, err := h.srv.UpdateGood(h.h.ctx, userID, goodID, good)
+	_, err := h.srv.UpdateGood(h.h.ctx, userID, goodID, good)
 	if err != nil {
 		w.WriteHeader(http.StatusExpectationFailed)
 		components.GoodInsertError("Couldn't fullfill your request.").Render(r.Context(), w)
@@ -113,7 +113,7 @@ func (h *GoodsHandler) UpdateGood(w http.ResponseWriter, r *http.Request) {
 
 	goods, _ := h.srv.GetAllGoods(r.Context(), userID)
 	w.WriteHeader(http.StatusOK)
-	components.GoodInsertSuccess(insertedGood, goods).Render(r.Context(), w)
+	components.GoodsTable(goods, true).Render(r.Context(), w)
 }
 
 func (h *GoodsHandler) RefreshGoods(w http.ResponseWriter, r *http.Request) {

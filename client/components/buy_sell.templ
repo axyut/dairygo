@@ -59,8 +59,8 @@ templ Buy(goods []types.Good, aud types.Audience){
             class="formContainer"
         >
             <div style="display:flex;justify-content:flex-start;align-items:center;font-family:'Lucida Console', 'Courier New', monospace;">
-                <input class="simpleInput" type="checkbox" name="advancedOptions" onchange={toggleAdvancedOptions()} />
                 <label for="advancedOptions"> Advanced Options </label>
+                <input class="simpleInput" type="checkbox" name="advancedOptions" onchange={toggleAdvancedOptions()} />
             </div>
             <div id="advancedOptions">
                 <input class="simpleInput" type="date" name="date" />

@@ -81,9 +81,8 @@ templ GoodsTable(goods []types.Good, notify bool){
           <th>Actions</th>
         </tr>
         for _, good := range goods {
-          <tr id={"good_"+good.ID.Hex()} hx-ext="response-targets">
+          
             @GoodArray(good, goods)
-          </tr>
         }
   if notify {
     @SuccessToast("Goods Updated!")
@@ -91,25 +90,23 @@ templ GoodsTable(goods []types.Good, notify bool){
 }
 
 templ GoodArray(good types.Good, goods []types.Good){
-  
-  <form id="td_form" name="td_form">
+  <tr id={"good_"+good.ID.Hex()} hx-ext="response-targets">
     <td>
-      <input class="tableInput" type="text" name={"td_name"+good.ID.Hex()} value={good.Name} />
+      <input class="tableInput" type="text" name={"good_name_"+good.ID.Hex()} value={good.Name} />
     </td>
     <td>
-      <input class="tableInput" type="text" name={"td_selling_rate"+good.ID.Hex()} value={strconv.FormatFloat(good.SellingRate, 'f', -1, 64) + " /"+ good.Unit} />
+      <input class="tableInput" type="text" name={"good_selling_rate_"+good.ID.Hex()} value={strconv.FormatFloat(good.SellingRate, 'f', -1, 64) + " /"+ good.Unit} />
     </td>
 
       <td colspan="1">{strconv.FormatFloat(good.Quantity, 'f', -1, 64) +" "+ good.Unit}</td>
       <td colspan="1">{" Rs. " + strconv.FormatFloat(good.SellingRate * good.Quantity, 'f', -1, 64)}</td>
-    </form>
      
     <td>
 
       <button
         hx-patch={"/goods?id="+good.ID.Hex()}
-        hx-target={"#good_"+good.ID.Hex()}
-        hx-include="[name='td_form']"
+        hx-target="#good_success"
+        hx-include={"[name='good_name_"+good.ID.Hex()+"'], [name='good_selling_rate_"+good.ID.Hex()+"']"}
         hx-target-error="#error"
         hx-swap="innerHTML"
         class="simpleButton"
@@ -156,6 +153,7 @@ templ GoodArray(good types.Good, goods []types.Good){
       </div>
 
     </td>
+  </tr>
 
 }
 

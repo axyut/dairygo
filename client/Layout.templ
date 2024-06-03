@@ -19,8 +19,12 @@ templ Layout(children templ.Component, title string) {
 		</head>
 		<body>
 			<div id="error"></div>
-			@components.Nav()
-			@children
+			
+			<div hx-ext="response-targets">
+				@components.Nav()
+				@children
+			</div>
+
 			<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 			<footer></footer>
 		</body>

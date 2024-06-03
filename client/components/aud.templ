@@ -86,18 +86,19 @@ templ audArray(aud types.Audience, goods []types.Good) {
         @Sell(goods, aud)
     </td>
     <td>
-      <input class="tableInput" type="text" name="aud_name" value={aud.Name} />
+      <input class="tableInput" type="text" name={"aud_name_"+aud.ID.Hex()} value={aud.Name} />
     </td>
     <td>
-      <input class="tableInput" type="text" name="aud_contact" value={aud.Contact} />
+      <input class="tableInput" type="text" name={"aud_contact_"+aud.ID.Hex()} value={aud.Contact} />
     </td>
     <td>{strconv.FormatFloat(aud.ToPay, 'f', -1, 64)}</td>
     <td>{strconv.FormatFloat(aud.ToReceive, 'f', -1, 64)}</td>
     <td>
         <button
             hx-patch={"/audience?id="+aud.ID.Hex()}
-            hx-include="[name='aud_name'], [name='aud_contact']"
-            hx-target={"#aud_"+aud.ID.Hex()}
+            hx-include={"[name='aud_name_"+aud.ID.Hex()+"'], [name='aud_contact_"+aud.ID.Hex()+"']"}
+            hx-target="#aud_success"
+            hx-indicator=".progress"
             hx-target-error="#error"
             hx-swap="innerHTML"
             class="simpleButton"
