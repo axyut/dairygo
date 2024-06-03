@@ -3,11 +3,13 @@ package service
 import (
 	"context"
 	"math"
+	"time"
 
 	"github.com/axyut/dairygo/internal/db"
 	"github.com/axyut/dairygo/internal/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type TransactionService struct {
@@ -63,7 +65,12 @@ func (s *TransactionService) GetTransactionByID(ctx context.Context, transID pri
 func (s *TransactionService) GetSoldTransactions(ctx context.Context, userID primitive.ObjectID) (transactions []types.Transaction, err error) {
 	transactions = []types.Transaction{}
 	transaction := *s.collection
-	cursor, err := transaction.Find(ctx, bson.M{"userID": userID, "type": types.Sold})
+
+	lastweek := primitive.NewDateTimeFromTime(time.Now().Local().AddDate(0, 0, -7))
+	options := options.Find().SetSort(bson.D{{Key: "creationTime", Value: -1}})
+	filter := bson.D{{Key: "userID", Value: userID}, {Key: "type", Value: types.Sold}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: lastweek}}}}
+
+	cursor, err := transaction.Find(ctx, filter, options)
 	if err != nil {
 		s.service.logger.Error("Error while finding sold transactions", err)
 		return
@@ -80,7 +87,12 @@ func (s *TransactionService) GetSoldTransactions(ctx context.Context, userID pri
 func (s *TransactionService) GetBoughtTransactions(ctx context.Context, userID primitive.ObjectID) (transactions []types.Transaction, err error) {
 	transactions = []types.Transaction{}
 	transaction := *s.collection
-	cursor, err := transaction.Find(ctx, bson.M{"userID": userID, "type": types.Bought})
+
+	lastweek := primitive.NewDateTimeFromTime(time.Now().Local().AddDate(0, 0, -7))
+	options := options.Find().SetSort(bson.D{{Key: "creationTime", Value: -1}})
+	filter := bson.D{{Key: "userID", Value: userID}, {Key: "type", Value: types.Bought}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: lastweek}}}}
+
+	cursor, err := transaction.Find(ctx, filter, options)
 	if err != nil {
 		s.service.logger.Error("Error while finding bought transactions", err)
 		return

@@ -59,20 +59,11 @@ func main() {
 	logger.Info("Server shutdown complete")
 }
 
-// buy at different rate from same vendor for different goods
-// when transaction deleted, update audience to pay and to receive
-// when transaction updated, update audience to pay and to receive
-// when transaction inserted(bought,sold), update audience to pay and to receive
-// date option when filling bought/sold transaction
+// when transaction deleted, update audience to pay and to receive?
+
 // monthly report -> db? or calculate on the fly
+
 // paginated query for transactions  send only from this week
-
-// pin feature in audience
-// buy/sell feature in audience -> buy will have advanced options toggle
-// advanced options -> custom good name, rate, unit, date, quantity
-// search feature in audience
-// setRate button in audience -> set kharid rate for goods in table
-
 // add pagination to all queries -> limit and skip
 // add filter to all queries -> filter by date, filter by type
 // add sort to all queries -> sort by date, sort by amount
@@ -81,3 +72,5 @@ func main() {
 // pagination with htmx
 
 // feat: partial payment.
+// feat: pin audience.
+// feat: search audience.

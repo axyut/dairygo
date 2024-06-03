@@ -3,11 +3,13 @@ package service
 import (
 	"context"
 	"math"
+	"time"
 
 	"github.com/axyut/dairygo/internal/db"
 	"github.com/axyut/dairygo/internal/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type ProductionService struct {
@@ -39,7 +41,12 @@ func (s *ProductionService) InsertProduction(ctx context.Context, production typ
 func (s *ProductionService) GetAllProductions(ctx context.Context, userID primitive.ObjectID) (productions []types.Production, err error) {
 	productions = []types.Production{}
 	prod := *s.collection
-	cursor, err := prod.Find(ctx, bson.M{"userID": userID})
+
+	lastweek := primitive.NewDateTimeFromTime(time.Now().Local().AddDate(0, 0, -7))
+	options := options.Find().SetSort(bson.D{{Key: "creationTime", Value: -1}})
+	filter := bson.D{{Key: "userID", Value: userID}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: lastweek}}}}
+
+	cursor, err := prod.Find(ctx, filter, options)
 	if err != nil {
 		s.service.logger.Error("Error while finding productions", err)
 		return

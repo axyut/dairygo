@@ -221,12 +221,13 @@ templ Production(prods []types.Production){
                 <th>Time</th>
                 <th>Action</th>
             </tr>
-            for i:=len(prods)-1; i>=0 ; i--{
-                if i == len(prods)-1{
+            for i:=0; i<len(prods); i++{
+                if i == 0{
                     <tr id="date">
                         <td colspan="6">{prods[i].CreationTime.Time().Format("Monday Jan 2")}</td>
+
                     </tr>
-                } else if prods[i].CreationTime.Time().Day() != prods[i+1].CreationTime.Time().Day(){
+                } else if prods[i].CreationTime.Time().Day() != prods[i-1].CreationTime.Time().Day(){
                     <tr id="date">
                             <td colspan="6">{prods[i].CreationTime.Time().Format("Monday Jan 2")}</td>
                     </tr>
@@ -234,12 +235,13 @@ templ Production(prods []types.Production){
 
                     @iRow(prods[i])
 
-                if i > 0 && prods[i].CreationTime.Time().Day() != prods[i-1].CreationTime.Time().Day(){
-                    <tr id="break"><td colspan="6" ></td></tr>
-                } else if i == 0{
-                    <tr id="break"><td colspan="6" ></td></tr>
+                if i+1 < len(prods) && prods[i].CreationTime.Time().Day() != prods[i+1].CreationTime.Time().Day(){
+                    <tr id="break"><td  colspan="6" ></td></tr>
+                } else if i+1 == len(prods){
+                    <tr id="break"><td  colspan="6" ></td></tr>
                 }
             }
+     
         </table>
     </div>
 }

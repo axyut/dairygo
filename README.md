@@ -36,6 +36,16 @@ launch.bat
 pause
 ```
 
+### random screenshots
+
+![homePage](./assets/home.png)
+![popup](./assets/buyPage.png)
+![transactionPage](./assets/transPage.png)
+![buy](./assets/buy.png)
+![sell](./assets/sell.png)
+![rate](./assets/customRate.png)
+![produce](./assets/produce.png)
+
 <!--
 https://www.gomponents.com/
 https://github.com/maragudk/gomponents

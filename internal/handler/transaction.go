@@ -185,58 +185,8 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	// update audience to pay and to receive
-	if trans_type == string(types.Sold) {
-		if !payment_b {
-			// case when user has remaining ToPay to audience
-			if trans_aud.ToPay > 0 {
-				trans_aud.ToPay -= transaction.Price
-				fmt.Println("here sell 1", trans_aud.ToPay)
-				if trans_aud.ToPay < 0 {
-					trans_aud.ToReceive += math.Abs(trans_aud.ToPay) // convert to positive
-					trans_aud.ToPay = 0
-					fmt.Println("here sell 2", trans_aud.ToPay, trans_aud.ToReceive)
-				}
-			} else {
-				trans_aud.ToReceive += transaction.Price
-			}
-			fmt.Println("here sell", trans_aud.ToReceive)
-		}
-		if payment_b {
-			if trans_aud.ToPay > 0 {
-				trans_aud.ToPay -= transaction.Price
-				if trans_aud.ToPay < 0 {
-					trans_aud.ToReceive += math.Abs(trans_aud.ToPay) // convert to positive
-					trans_aud.ToPay = 0
-				}
-			}
-		}
-	} else if trans_type == string(types.Bought) {
-		if !payment_b {
-
-			// case when user has remaining ToReceive from audience
-			if trans_aud.ToReceive > 0 {
-				trans_aud.ToReceive -= transaction.Price
-				if trans_aud.ToReceive < 0 {
-					trans_aud.ToPay += math.Abs(trans_aud.ToReceive) // convert to positive
-					trans_aud.ToReceive = 0
-				}
-			} else {
-				trans_aud.ToPay += transaction.Price
-			}
-			fmt.Println("here buy", trans_aud.ToPay)
-		}
-		if payment_b {
-			if trans_aud.ToReceive > 0 {
-				trans_aud.ToReceive -= transaction.Price
-				if trans_aud.ToReceive < 0 {
-					trans_aud.ToPay += math.Abs(trans_aud.ToReceive) // convert to positive
-					trans_aud.ToReceive = 0
-				}
-			}
-		}
-	}
-	fmt.Println("final ", trans_aud.ToPay, trans_aud.ToReceive)
+	// update to pay and to receive
+	trans_aud.ToPay, trans_aud.ToReceive = utils.SetToPayToRecieve(trans_type, payment_b, totalPrice, trans_aud.ToPay, trans_aud.ToReceive)
 	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), trans_aud)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -347,23 +297,57 @@ func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Re
 		components.GeneralToastError("Update transaction audience service error.")
 		return
 	}
+
 	fmt.Println("before price:", transUpdated.Price, aud.Name, "toget:", aud.ToReceive, "topay", aud.ToPay)
 	if payment {
 		fmt.Println("payed")
 		if transUpdated.Type == types.Sold {
-			aud.ToReceive -= transUpdated.Price
+			if aud.ToPay > 0 {
+				aud.ToPay -= transUpdated.Price
+				if aud.ToPay < 0 {
+					aud.ToReceive += math.Abs(aud.ToPay) // convert to positive
+					aud.ToPay = 0
+				}
+			} else {
+				aud.ToReceive -= transUpdated.Price
+			}
 		} else if transUpdated.Type == types.Bought {
-			aud.ToPay -= transUpdated.Price
+			if aud.ToReceive > 0 {
+				aud.ToReceive -= transUpdated.Price
+				if aud.ToReceive < 0 {
+					aud.ToPay += math.Abs(aud.ToReceive) // convert to positive
+					aud.ToReceive = 0
+				}
+			} else {
+				aud.ToPay -= transUpdated.Price
+			}
 		}
 	} else if !payment {
 		fmt.Println("not payed")
 		if transUpdated.Type == types.Sold {
-			aud.ToReceive += transUpdated.Price
+			if aud.ToPay > 0 {
+				aud.ToPay -= transUpdated.Price
+				if aud.ToPay < 0 {
+					aud.ToReceive += math.Abs(aud.ToPay) // convert to positive
+					aud.ToPay = 0
+				}
+			} else {
+				aud.ToReceive += transUpdated.Price
+			}
 		} else if transUpdated.Type == types.Bought {
-			aud.ToPay += transUpdated.Price
+			if aud.ToReceive > 0 {
+				aud.ToReceive -= transUpdated.Price
+				if aud.ToReceive < 0 {
+					aud.ToPay += math.Abs(aud.ToReceive) // convert to positive
+					aud.ToReceive = 0
+				}
+			} else {
+				aud.ToPay += transUpdated.Price
+			}
 		}
 	}
 	fmt.Println("after price:", transUpdated.Price, aud.Name, "to recieve:", aud.ToReceive, "topay", aud.ToPay)
+
 	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), aud)
 	if err != nil {
 		w.WriteHeader(http.StatusNotAcceptable)
