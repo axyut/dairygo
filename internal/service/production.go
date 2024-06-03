@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"math"
 
 	"github.com/axyut/dairygo/internal/db"
 	"github.com/axyut/dairygo/internal/types"
@@ -17,19 +18,12 @@ type ProductionService struct {
 func (s *ProductionService) InsertProduction(ctx context.Context, production types.Production, userID primitive.ObjectID) (insertedProduction types.Production, err error) {
 	prod := *s.collection
 	insertedProduction = types.Production{}
-	res, err := prod.InsertOne(ctx, bson.M{
-		"changeGoodID":     production.ChangeGoodID,
-		"changeQuantity":   production.ChangeQuantity,
-		"changeGoodName":   production.ChangeGoodName,
-		"changeGoodUnit":   production.ChangeGoodUnit,
-		"producedGoodID":   production.ProducedGoodID,
-		"producedQuantity": production.ProducedQuantity,
-		"producedGoodName": production.ProducedGoodName,
-		"producedGoodUnit": production.ProducedGoodUnit,
-		"profit":           production.Profit,
-		"loss":             production.Loss,
-		"userID":           userID,
-	})
+	production.Profit = math.Abs(production.Profit)
+	production.Loss = math.Abs(production.Loss)
+	production.ProducedQuantity = math.Abs(production.ProducedQuantity)
+	production.ChangeQuantity = math.Abs(production.ChangeQuantity)
+
+	res, err := prod.InsertOne(ctx, production)
 	if err != nil {
 		s.service.logger.Error("Error while inserting new production", err)
 		return

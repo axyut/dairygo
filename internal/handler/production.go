@@ -8,6 +8,7 @@ import (
 	"github.com/axyut/dairygo/client/pages"
 	"github.com/axyut/dairygo/internal/service"
 	"github.com/axyut/dairygo/internal/types"
+	"github.com/axyut/dairygo/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -22,6 +23,7 @@ func (h *ProductionHandler) NewProduction(w http.ResponseWriter, r *http.Request
 	change_goodQuantity := r.FormValue("change_quantity")
 	prod_goodID := r.FormValue("prod_good_id")
 	prod_goodQuantity := r.FormValue("prod_quantity")
+	date := r.FormValue("date")
 
 	if change_goodID == "" || prod_goodID == "" || change_goodQuantity == "" || prod_goodQuantity == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -84,6 +86,7 @@ func (h *ProductionHandler) NewProduction(w http.ResponseWriter, r *http.Request
 	// }
 
 	insertProd := types.Production{
+		ID:               primitive.NewObjectID(),
 		ChangeGoodID:     Change_goodID,
 		ProducedGoodID:   Prod_goodID,
 		ChangeGoodName:   change_goodName,
@@ -95,6 +98,7 @@ func (h *ProductionHandler) NewProduction(w http.ResponseWriter, r *http.Request
 		Profit:           profit,
 		Loss:             loss,
 		UserID:           user.ID,
+		CreationTime:     utils.GetMongoTimeFromHTMLDate(date),
 	}
 
 	_, err := h.srv.InsertProduction(h.h.ctx, insertProd, user.ID)
@@ -105,11 +109,10 @@ func (h *ProductionHandler) NewProduction(w http.ResponseWriter, r *http.Request
 	}
 	// update both goods quantity value
 	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), user.ID, Cgood.ID, types.UpdateGood{
-		Name: Cgood.Name,
-		Unit: Cgood.Unit,
-		// KharidRate: Cgood.KharidRate,
-		// BikriRate:  Cgood.BikriRate,
-		Quantity: Cgood.Quantity - C_quantity,
+		Name:        Cgood.Name,
+		Unit:        Cgood.Unit,
+		SellingRate: Cgood.SellingRate,
+		Quantity:    Cgood.Quantity - C_quantity,
 	})
 
 	if err != nil {
@@ -119,11 +122,10 @@ func (h *ProductionHandler) NewProduction(w http.ResponseWriter, r *http.Request
 	}
 
 	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), user.ID, Pgood.ID, types.UpdateGood{
-		Name: Pgood.Name,
-		Unit: Pgood.Unit,
-		// KharidRate: Pgood.KharidRate,
-		// BikriRate:  Pgood.BikriRate,
-		Quantity: Pgood.Quantity + P_quantity,
+		Name:        Pgood.Name,
+		Unit:        Pgood.Unit,
+		SellingRate: Pgood.SellingRate,
+		Quantity:    Pgood.Quantity + P_quantity,
 	})
 
 	if err != nil {

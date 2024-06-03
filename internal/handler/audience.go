@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -89,7 +90,7 @@ func (h *AudienceHandler) UpdateAudience(w http.ResponseWriter, r *http.Request)
 			components.GeneralToastError("Couldn't parse Buying Rate.").Render(r.Context(), w)
 			return
 		}
-		aud.MapRates[goodID.Hex()] = buyingRate
+		aud.MapRates[goodID.Hex()] = math.Abs(buyingRate)
 
 	} else if name != "" && contact != "" {
 		aud.Name = name
@@ -102,16 +103,15 @@ func (h *AudienceHandler) UpdateAudience(w http.ResponseWriter, r *http.Request)
 		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
+	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), user.ID)
 	if good_id == "" && buying_rate == "" {
-		goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), user.ID)
 		allAuds, _ := h.srv.GetAllAudiences(r.Context(), user.ID)
 		w.WriteHeader(http.StatusOK)
 		components.AudTable(allAuds, true, goods).Render(r.Context(), w)
 		return
 	} else if good_id != "" && buying_rate != "" {
-		good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), user.ID, goodID)
 		w.WriteHeader(http.StatusOK)
-		components.BuyingRateforAudRow(aud, good, true).Render(r.Context(), w)
+		components.BuyingRateforAudRow(aud, goods, "Rate has been set to "+strconv.FormatFloat(aud.MapRates[goodID.Hex()], 'f', -1, 64)).Render(r.Context(), w)
 		return
 	} else {
 		w.WriteHeader(http.StatusOK)

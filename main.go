@@ -79,3 +79,5 @@ func main() {
 // add projection to all queries -> select only required fields
 // add search to all queries -> search by name, search by amount
 // pagination with htmx
+
+// feat: partial payment.

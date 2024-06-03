@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"math"
 
 	"github.com/axyut/dairygo/internal/db"
 	"github.com/axyut/dairygo/internal/types"
@@ -16,6 +17,8 @@ type TransactionService struct {
 
 func (s *TransactionService) InsertTransaction(ctx context.Context, trans types.Transaction) (insertedTrans types.Transaction, err error) {
 	transaction := *s.collection
+	trans.Price = math.Abs(trans.Price)
+	trans.Quantity = math.Abs(trans.Quantity)
 	res, err := transaction.InsertOne(ctx, trans)
 	if err != nil {
 		s.service.logger.Error("Error while inserting new transaction", err)

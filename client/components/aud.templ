@@ -14,18 +14,22 @@ templ Audiences(auds []types.Audience, goods []types.Good) {
         	hx-target="#aud_success"
           hx-indicator=".progress"
 		      hx-target-error="#error"
+          hx-swap="innerHTML"
         >🔃 Refresh </button>
         </div>
       </div>
     @insertAud()
+      <table class="simpleTable"  id="aud_success">
+
     @AudTable(auds, false, goods)
+    </table>
+
     </div>
   </div>
   
 }
 
 templ AudTable(auds []types.Audience, notify bool, goods []types.Good) {
-      <table class="simpleTable"  id="aud_success">
       <tr>
       <th>Transaction</th>
         <th>Name</th>
@@ -37,7 +41,6 @@ templ AudTable(auds []types.Audience, notify bool, goods []types.Good) {
       for _, aud := range auds {
         @audArray(aud, goods)
       }
-    </table>
     if notify {
       @SuccessToast("Fetching Audiences. Refreshed!")
     }
@@ -114,9 +117,19 @@ templ audArray(aud types.Audience, goods []types.Good) {
         <button class="open-button" onclick={OpenPopUp("popup_aud_rate_"+aud.ID.Hex())}>Set Rate</button>
 
       <div class="todaysInsert" id={"popup_aud_rate_"+aud.ID.Hex()}  hx-ext="response-targets">
-        <div class="content">
+        <div class="content" id="set_rate_success">
 
-        <button type="button" class="emojiBtn" onclick={ClosePopUp("popup_aud_rate_"+aud.ID.Hex())}>❌</button>
+        
+          @BuyingRateforAudRow(aud, goods, "")
+        </div>
+      </div>
+    </td>
+
+</tr>
+}
+
+templ BuyingRateforAudRow(aud types.Audience, goods []types.Good, msg string) {
+  <button type="button" class="emojiBtn" onclick={ClosePopUp("popup_aud_rate_"+aud.ID.Hex())}>❌</button>
 
                 <table class="simpleTable">
                   <tr>
@@ -125,24 +138,11 @@ templ audArray(aud types.Audience, goods []types.Good) {
                     <th>Action</th>
                   </tr>
                   for _, good := range goods {
-                    
-                      @BuyingRateforAudRow(aud, good, false)
-
-                  }
-                </table>
-          
-        </div>
-      </div>
-    </td>
-
-</tr>
-}
-
-templ BuyingRateforAudRow(aud types.Audience, good types.Good, notify bool) {
   <tr id={"aud_rate_"+aud.ID.Hex()+"_"+good.ID.Hex()}>
-      <form class="formContainer"
+                    
+                      <form class="formContainer"
         hx-patch={"/audience?id="+aud.ID.Hex()+"&good_id="+good.ID.Hex()}
-        hx-target={"#aud_rate_"+aud.ID.Hex()+"_"+good.ID.Hex()}
+        hx-target={"#set_rate_success"}
         hx-target-error="#error"
         hx-swap="innerHTML"
       >
@@ -162,12 +162,17 @@ templ BuyingRateforAudRow(aud types.Audience, good types.Good, notify bool) {
           type="submit"
           class="simpleButton"
         >Save</button>
+
       </td>
   </form>
 </tr>
-  if notify {
-    @SuccessToast("Rate for "+good.Name+" has been set to "+strconv.FormatFloat(aud.MapRates[good.ID.Hex()], 'f', -1, 64))
+
+                  }
+                </table>
+              if msg != "" {
+    @SuccessToast(msg)
   }
+  
 
 }
 

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"math"
 
 	"github.com/axyut/dairygo/internal/db"
 	"github.com/axyut/dairygo/internal/types"
@@ -27,6 +28,8 @@ func (s *GoodsService) GetGoodByID(ctx context.Context, userID primitive.ObjectI
 
 func (s *GoodsService) InsertGood(ctx context.Context, good types.Good) (insertedGood types.Good, err error) {
 	goods := *s.collection
+	good.SellingRate = math.Abs(good.SellingRate)
+	good.Quantity = math.Abs(good.Quantity)
 	res, err := goods.InsertOne(ctx, good)
 	if err != nil {
 		s.service.logger.Error("Error inserting good", "Error", err)
@@ -69,7 +72,13 @@ func (s *GoodsService) GetAllGoods(ctx context.Context, userID primitive.ObjectI
 func (s *GoodsService) UpdateGood(ctx context.Context, userID primitive.ObjectID, goodID primitive.ObjectID, update types.UpdateGood) (good types.Good, err error) {
 	goods := *s.collection
 	good = types.Good{}
-	err = goods.FindOneAndUpdate(ctx, bson.M{"_id": goodID, "userID": userID}, bson.M{"$set": update}).Decode(&good)
+	err = goods.FindOneAndUpdate(ctx, bson.M{"_id": goodID, "userID": userID}, bson.M{"$set": bson.M{
+		"name":        update.Name,
+		"unit":        update.Unit,
+		"sellingRate": update.SellingRate,
+		"quantity":    update.Quantity,
+	},
+	}).Decode(&good)
 	if err != nil {
 		s.service.logger.Error("Error while updating good", err)
 		return

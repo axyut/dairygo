@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -33,30 +34,46 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	trans_type := r.FormValue("type")
 	payment := r.FormValue("payment")
 	date := r.FormValue("date")
-	user_id := r.Context().Value("user_id")
+	user := h.h.UserHandler.GetUser(w, r)
+	buying_rate := r.FormValue("buying_rate")
+	unit := r.FormValue("unit")
+	good_name := r.FormValue("goodName")
 
+	var err error
 	var boughtFromID primitive.ObjectID
 	var boughtFrom string
 	var soldToID primitive.ObjectID
 	var soldTo string
 	var payment_b bool = false
+	var advanced bool = false
+	var trans_good types.Good
+	var good_change_quantity float64
+	var totalPrice float64
+	var goodUnit string
+	var buyingRate float64
+	var goodName string
+	var Rate float64
 
-	if goodID == "" || quantity == "" || audienceID == "" || trans_type == "" || user_id == "" {
+	if goodID == "" || quantity == "" || audienceID == "" || trans_type == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
-	// fmt.Println(goodID, quantity, price, audienceID, trans_type, payment, userID)
 
-	userID, Uerr := primitive.ObjectIDFromHex(fmt.Sprintf("%v", user_id))
-	good_id, Gerr := primitive.ObjectIDFromHex(goodID)
 	aud_id, Aerr := primitive.ObjectIDFromHex(audienceID)
-	quantity_f, ferr := strconv.ParseFloat(quantity, 64)
+	quanTity, ferr := strconv.ParseFloat(quantity, 64)
 
-	// fmt.Println(id, good_id, aud_id, quantity_f, price_f, payment_b)
-	if Uerr != nil || Gerr != nil || Aerr != nil || ferr != nil {
-		h.h.logger.Error("Error while Parsing in Handler.", Uerr, Gerr, Aerr, ferr)
+	if Aerr != nil || ferr != nil {
+		h.h.logger.Error("Error while Parsing in Handler.", Aerr, ferr)
 		components.GeneralToastError("Error while Parsing in Handler.").Render(r.Context(), w)
+		return
+	}
+	quanTity = math.Abs(quanTity)
+
+	trans_aud, errA := h.h.srv.AudienceService.GetAudienceByID(r.Context(), user.ID, aud_id)
+	if errA != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("That Audience Doesn't Exist!").Render(r.Context(), w)
 		return
 	}
 
@@ -66,54 +83,84 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var good_q float64
-	trans_good, err := h.h.srv.GoodsService.GetGoodByID(r.Context(), userID, good_id)
-	if err != nil {
-		w.WriteHeader(http.StatusNotAcceptable)
-		components.GeneralToastError("That Good Doesn't Exist!").Render(r.Context(), w)
-		return
+	if good_name == "" && unit == "" {
+		good_id, Gerr := primitive.ObjectIDFromHex(goodID)
+		if Gerr != nil {
+			w.WriteHeader(http.StatusNotAcceptable)
+			components.GeneralToastError("Invalid Good ID.").Render(r.Context(), w)
+			return
+		}
+		trans_good, err = h.h.srv.GoodsService.GetGoodByID(r.Context(), user.ID, good_id)
+		goodName = trans_good.Name
+		goodUnit = trans_good.Unit
+		if err != nil {
+			w.WriteHeader(http.StatusNotAcceptable)
+			components.GeneralToastError("That Good Doesn't Exist!").Render(r.Context(), w)
+			return
+		}
+	} else {
+		advanced = true
+		goodName = good_name
+		goodUnit = unit
 	}
 
-	trans_aud, err := h.h.srv.AudienceService.GetAudienceByID(r.Context(), userID, aud_id)
-	if err != nil {
-		w.WriteHeader(http.StatusNotAcceptable)
-		components.GeneralToastError("That Audience Doesn't Exist!").Render(r.Context(), w)
-		return
+	if buying_rate != "" {
+		buyingRate, err = strconv.ParseFloat(buying_rate, 64)
+		if err != nil {
+			w.WriteHeader(http.StatusNotAcceptable)
+			components.GeneralToastError("Invalid Buying Rate.").Render(r.Context(), w)
+			return
+		}
+		buyingRate = math.Abs(buyingRate)
+	} else {
+		buyingRate = trans_aud.MapRates[trans_good.ID.Hex()]
+		if buyingRate == 0 {
+			w.WriteHeader(http.StatusNotAcceptable)
+			components.GeneralToastError("Set Buying Rate for that Good First.").Render(r.Context(), w)
+			return
+		}
 	}
-	var trans_price float64
+
+	// increase decrease goods quantity
 	if trans_type == string(types.Bought) {
 		boughtFromID = trans_aud.ID
 		boughtFrom = trans_aud.Name
-		good_q = trans_good.Quantity + quantity_f
-		// trans_price = trans_good.KharidRate * quantity_f
+		Rate = buyingRate
+
+		good_change_quantity = trans_good.Quantity + quanTity
 	} else if trans_type == string(types.Sold) {
 		soldToID = trans_aud.ID
 		soldTo = trans_aud.Name
-		if quantity_f > trans_good.Quantity {
+		Rate = trans_good.SellingRate
+
+		if quanTity > trans_good.Quantity {
 			w.WriteHeader(http.StatusNotAcceptable)
 			components.GeneralToastError("Not Enough Quantity!").Render(r.Context(), w)
 			return
 		}
-		good_q = trans_good.Quantity - quantity_f
-		// trans_price = trans_good.BikriRate * quantity_f
+		good_change_quantity = trans_good.Quantity - quanTity
 	}
 
 	if payment == "on" {
 		payment_b = true
 	}
+	totalPrice = Rate * quanTity
 
+	fmt.Println("boughtFrom =", boughtFrom, "\nsoldTo =", soldTo, "\ngoodName =", goodName, "\ngoodUnit =", goodUnit, "\ngood_change_quantity =", good_change_quantity, "\ntotalPrice =", totalPrice, "\npayment_b =", payment_b, "\nquanTity =", quanTity, "\nbuyingRate =", buyingRate)
 	transaction := types.Transaction{
 		ID:           primitive.NewObjectIDFromTimestamp(time.Now()),
-		GoodID:       good_id,
-		Quantity:     quantity_f,
-		Price:        trans_price,
+		GoodID:       trans_good.ID,
+		GoodName:     goodName,
+		GoodUnit:     goodUnit,
+		Quantity:     quanTity,
+		Price:        totalPrice,
 		BoughtFrom:   boughtFrom,
 		BoughtFromID: boughtFromID,
 		SoldToID:     soldToID,
 		SoldTo:       soldTo,
 		Type:         types.TransactionType(trans_type),
 		Payment:      payment_b,
-		UserID:       userID,
+		UserID:       user.ID,
 		CreationTime: utils.GetMongoTimeFromHTMLDate(date),
 	}
 
@@ -123,24 +170,73 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		components.GeneralToastError("Error with transaction service.").Render(r.Context(), w)
 		return
 	}
-	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), userID, trans_good.ID, types.UpdateGood{
-		Name: trans_good.Name,
-		Unit: trans_good.Unit,
-		// KharidRate: trans_good.KharidRate,
-		// BikriRate:  trans_good.BikriRate,
-		Quantity: good_q,
-	})
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		components.GeneralToastError("Error with goods service.").Render(r.Context(), w)
-		return
+
+	if !advanced {
+		_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), user.ID, trans_good.ID, types.UpdateGood{
+			Name:        trans_good.Name,
+			Unit:        trans_good.Unit,
+			SellingRate: trans_good.SellingRate,
+			Quantity:    good_change_quantity,
+		})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			components.GeneralToastError("Error with goods service.").Render(r.Context(), w)
+			return
+		}
 	}
 
-	if !payment_b && trans_type == string(types.Sold) {
-		trans_aud.ToReceive += transaction.Price
-	} else if !payment_b && trans_type == string(types.Bought) {
-		trans_aud.ToPay += transaction.Price
+	// update audience to pay and to receive
+	if trans_type == string(types.Sold) {
+		if !payment_b {
+			// case when user has remaining ToPay to audience
+			if trans_aud.ToPay > 0 {
+				trans_aud.ToPay -= transaction.Price
+				fmt.Println("here sell 1", trans_aud.ToPay)
+				if trans_aud.ToPay < 0 {
+					trans_aud.ToReceive += math.Abs(trans_aud.ToPay) // convert to positive
+					trans_aud.ToPay = 0
+					fmt.Println("here sell 2", trans_aud.ToPay, trans_aud.ToReceive)
+				}
+			} else {
+				trans_aud.ToReceive += transaction.Price
+			}
+			fmt.Println("here sell", trans_aud.ToReceive)
+		}
+		if payment_b {
+			if trans_aud.ToPay > 0 {
+				trans_aud.ToPay -= transaction.Price
+				if trans_aud.ToPay < 0 {
+					trans_aud.ToReceive += math.Abs(trans_aud.ToPay) // convert to positive
+					trans_aud.ToPay = 0
+				}
+			}
+		}
+	} else if trans_type == string(types.Bought) {
+		if !payment_b {
+
+			// case when user has remaining ToReceive from audience
+			if trans_aud.ToReceive > 0 {
+				trans_aud.ToReceive -= transaction.Price
+				if trans_aud.ToReceive < 0 {
+					trans_aud.ToPay += math.Abs(trans_aud.ToReceive) // convert to positive
+					trans_aud.ToReceive = 0
+				}
+			} else {
+				trans_aud.ToPay += transaction.Price
+			}
+			fmt.Println("here buy", trans_aud.ToPay)
+		}
+		if payment_b {
+			if trans_aud.ToReceive > 0 {
+				trans_aud.ToReceive -= transaction.Price
+				if trans_aud.ToReceive < 0 {
+					trans_aud.ToPay += math.Abs(trans_aud.ToReceive) // convert to positive
+					trans_aud.ToReceive = 0
+				}
+			}
+		}
 	}
+	fmt.Println("final ", trans_aud.ToPay, trans_aud.ToReceive)
 	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), trans_aud)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

@@ -115,7 +115,7 @@ templ sRow(soldTrans types.Transaction){
         <td id={"payment_"+soldTrans.ID.Hex()}>
             @CheckboxTemplate(soldTrans.ID.Hex(), soldTrans.Payment)
         </td>
-        <td>{soldTrans.CreationTime.Time().Format("03:04 pm MST")}</td>
+        <td>{soldTrans.CreationTime.Time().Format("03:04 pm")}</td>
         <td>
             <button
                 if soldTrans.Payment{
@@ -224,17 +224,17 @@ templ Production(prods []types.Production){
             for i:=len(prods)-1; i>=0 ; i--{
                 if i == len(prods)-1{
                     <tr id="date">
-                        <td colspan="6">{prods[i].ID.Timestamp().Format("Monday Jan 2")}</td>
+                        <td colspan="6">{prods[i].CreationTime.Time().Format("Monday Jan 2")}</td>
                     </tr>
-                } else if prods[i].ID.Timestamp().Day() != prods[i+1].ID.Timestamp().Day(){
+                } else if prods[i].CreationTime.Time().Day() != prods[i+1].CreationTime.Time().Day(){
                     <tr id="date">
-                            <td colspan="6">{prods[i].ID.Timestamp().Format("Monday Jan 2")}</td>
+                            <td colspan="6">{prods[i].CreationTime.Time().Format("Monday Jan 2")}</td>
                     </tr>
                 }
 
                     @iRow(prods[i])
 
-                if i > 0 && prods[i].ID.Timestamp().Day() != prods[i-1].ID.Timestamp().Day(){
+                if i > 0 && prods[i].CreationTime.Time().Day() != prods[i-1].CreationTime.Time().Day(){
                     <tr id="break"><td colspan="6" ></td></tr>
                 } else if i == 0{
                     <tr id="break"><td colspan="6" ></td></tr>
@@ -250,7 +250,7 @@ templ iRow(prod types.Production){
         <td>{strconv.FormatFloat(prod.ChangeQuantity, 'f', 2, 64)} {prod.ChangeGoodUnit} of {prod.ChangeGoodName}</td>
         <td>Rs. {strconv.FormatFloat(prod.Profit, 'f', 2, 64)}</td>
         <td>Rs. {strconv.FormatFloat(prod.Loss, 'f', 2, 64)}</td>
-        <td>{prod.ID.Timestamp().Format("3:04 pm")}</td>
+        <td>{prod.CreationTime.Time().Format("3:04 pm")}</td>
         <td>
             <button
                 hx-confirm={"This production will be deleted. "}

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"math"
 
 	"github.com/axyut/dairygo/internal/db"
 	"github.com/axyut/dairygo/internal/types"
@@ -21,8 +22,8 @@ func (s *AudienceService) InsertAudience(ctx context.Context, aud types.Audience
 		"name":      aud.Name,
 		"contact":   aud.Contact,
 		"userID":    aud.UserID,
-		"toPay":     aud.ToPay,
-		"toReceive": aud.ToReceive,
+		"toPay":     math.Abs(aud.ToPay),
+		"toReceive": math.Abs(aud.ToReceive),
 		"mapRates":  make(map[string]float64),
 	})
 	if err != nil {
@@ -65,11 +66,19 @@ func (s *AudienceService) GetAllAudiences(ctx context.Context, userID primitive.
 func (s *AudienceService) UpdateAudience(ctx context.Context, update types.Audience) (aud types.Audience, err error) {
 	audience := *s.collection
 	aud = types.Audience{}
-	err = audience.FindOneAndUpdate(ctx, bson.M{"_id": update.ID}, bson.M{"$set": update}).Decode(&aud)
+	res, err := audience.UpdateOne(ctx, bson.M{"_id": update.ID}, bson.M{"$set": bson.M{
+		"name":      update.Name,
+		"contact":   update.Contact,
+		"toPay":     math.Abs(update.ToPay),
+		"toReceive": math.Abs(update.ToReceive),
+		"mapRates":  update.MapRates,
+		"userID":    update.UserID,
+	}})
 	if err != nil {
 		s.service.logger.Error("Error while updating audience", err)
 		return
 	}
+	audience.FindOne(ctx, bson.M{"_id": res.UpsertedID}).Decode(&aud)
 	return
 }
 

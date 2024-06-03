@@ -20,6 +20,5 @@ func GetMongoTimeFromHTMLDate(date string) (dateTime primitive.DateTime) {
 		timeP = timeP.Local()
 		dateTime = primitive.NewDateTimeFromTime(timeP)
 	}
-
 	return
 }
