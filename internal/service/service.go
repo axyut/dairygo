@@ -16,6 +16,7 @@ type Service struct {
 	GoodsService       *GoodsService
 	TransactionService *TransactionService
 	ProductionService  *ProductionService
+	ReportsService     *ReportsService
 }
 
 func NewService(ctx context.Context, mongo *db.Mongo, logger *slog.Logger) *Service {
@@ -32,6 +33,7 @@ func NewService(ctx context.Context, mongo *db.Mongo, logger *slog.Logger) *Serv
 	service.GoodsService = &GoodsService{service: service, collection: db.GetGoodsColl(ctx, mongo.DB)}
 	service.TransactionService = &TransactionService{service: service, collection: db.GetTransactionColl(ctx, mongo.DB)}
 	service.ProductionService = &ProductionService{service: service, collection: db.GetProductionColl(ctx, mongo.DB)}
+	service.ReportsService = &ReportsService{service: service}
 
 	return service
 }

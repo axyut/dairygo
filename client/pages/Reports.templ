@@ -1,7 +1,55 @@
 package pages
 
-templ ReportsPage(){
-	<div class="divContainer">
-		<h1> Monthly Reports</h1>
+import "github.com/axyut/dairygo/internal/types"
+
+templ ReportsPage(goods []types.Good) {
+	<div hx-ext="response-targets">
+
+        <form >
+        <div class="trans_nav">
+				<button class="open-button" 
+					type="submit"
+					hx-post="/reports/download"
+					hx-swap="innerHTML"
+					hx-target="#reports_here"
+					hx-indicator=".progress"
+				>Download</button>
+				<div>
+						<label>From</label>
+						<input class="simpleInput" id="date" type="date" name="date" />
+						<label>To</label>
+						<input class="simpleInput" id="date" type="date" name="date" />
+				</div>
+                <select name="type">
+                    <option value="transaction">Transaction</option>
+                    <option value="production">Production</option>
+                </select>
+	
+                <select id="good" name="goodID" required>
+					<option value="all">All Goods</option>
+                    for _, good := range goods {
+                        <option value={good.ID.Hex()}>
+								{good.Name}
+								// <input type="checkbox" name="goodID" value={good.ID.Hex()} />
+						</option>
+                    }
+                </select>
+                
+				<button class="open-button" 
+					type="submit"
+					hx-post="/reports/refresh"
+					hx-swap="innerHTML"
+					hx-target="#reports_here"
+					hx-indicator=".progress"
+				>Generate</button>
+					
+        </div>
+        </form>
+
+    </div>
+
+	<div id="reports_here" class="divContainer">
+	<h1> Generate Reports</h1>
 	</div>
+
 }

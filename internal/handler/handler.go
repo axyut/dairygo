@@ -64,6 +64,8 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 	router.HandleFunc("POST /transaction", h.TransactionHandler.NewTransaction)
 	router.HandleFunc("POST /transaction/refresh", h.RefreshTransaction)
 	router.HandleFunc("POST /production", h.ProductionHandler.NewProduction)
+	router.HandleFunc("POST /reports/refresh", h.ReportsHandler.GenerateReports)
+	router.HandleFunc("POST /reports/download", h.ReportsHandler.DownloadReports)
 
 	router.HandleFunc("DELETE /audience", h.AudienceHandler.DeleteAudience)
 	router.HandleFunc("DELETE /goods", h.GoodsHandler.DeleteGood)

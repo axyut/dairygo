@@ -59,16 +59,13 @@ func main() {
 	logger.Info("Server shutdown complete")
 }
 
-// when transaction deleted, update audience to pay and to receive?
+// when transaction deleted, update audience to pay and to receive? update goods quantity?
 
 // monthly report -> db? or calculate on the fly
 
-// paginated query for transactions  send only from this week
 // add pagination to all queries -> limit and skip
-// add filter to all queries -> filter by date, filter by type
 // add sort to all queries -> sort by date, sort by amount
-// add projection to all queries -> select only required fields
-// add search to all queries -> search by name, search by amount
+// add search to all queries -> search by name, search by amount, amount gt lt
 // pagination with htmx
 
 // feat: partial payment.

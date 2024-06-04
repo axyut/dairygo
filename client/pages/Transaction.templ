@@ -10,7 +10,7 @@ templ TransactionPage(soldTrans []types.Transaction){
     <div  hx-ext="response-targets">
             <form >
         <div class="trans_nav">
-                <input class="simpleInput" id="search" type="text" name="search" placeholder="Search" />
+                // <button class="open-button" onclick={downloadTrans()}>Download</button>
                 <select name="type">
                     <option value="sold">Sold</option>
                     <option value="bought">Bought</option>
@@ -139,20 +139,8 @@ templ sRow(soldTrans types.Transaction){
 
 templ pageStyles(){
     <style>
-        .trans_nav{
-            display: flex;
-            margin-top: 20px;
-            flex-direction: row;
-            justify-content: space-evenly;
-            align-items: center;
-        }
-        .trans_nav select{
-            padding: 5px;
-            border-radius: 5px;
-            border: solid 1px black;
-            width: 100%;
-            max-width: 150px;
-        }
+
+
         #search {
             padding: 5px;
             border-radius: 5px;
@@ -161,6 +149,21 @@ templ pageStyles(){
             max-width: 250px;
         }
     </style>
+}
+
+script downloadTrans(){
+        var doc = new jspdf.jsPDF('p', 'pt', 'a4');
+
+        doc.html(document.querySelector('#transaction_here'), {
+            callback: function (doc) {
+                doc.save('Transaction.pdf');
+            },
+            margin: [0, 0, 0, 0],
+            x: 32,
+            y: 32,
+        });
+        // doc.text("Hello world!", 10, 10);
+        // doc.save("a4.pdf");
 }
 
 templ bRow(boughtTrans types.Transaction){
