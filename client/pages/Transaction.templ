@@ -8,28 +8,31 @@ templ TransactionPage(soldTrans []types.Transaction){
     @pageStyles()
 
     <div  hx-ext="response-targets">
-    <div class="trans_nav">
-    <button class="open-button" 
-        hx-get="/sold"
-        hx-swap="innerHTML"
-        hx-target="#transaction_here"
-        hx-indicator=".progress"
-    >Sold</button>
+            <form >
+        <div class="trans_nav">
+                <input class="simpleInput" id="search" type="text" name="search" placeholder="Search" />
+                <select name="type">
+                    <option value="sold">Sold</option>
+                    <option value="bought">Bought</option>
+                    <option value="production">Production</option>
+                </select>
+                <select name="date">
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="lastweek">Last 7 Days</option>
+                    <option value="alltime">All time</option>
+                </select>
+                
+                <button class="open-button" 
+                    type="submit"
+                    hx-post="/transaction/refresh"
+                    hx-swap="innerHTML"
+                    hx-target="#transaction_here"
+                    hx-indicator=".progress"
+                >Search</button>
+        </div>
+            </form>
 
-    <button class="open-button" 
-        hx-get="/bought"
-        hx-swap="innerHTML"
-        hx-target="#transaction_here"
-        hx-indicator=".progress"
-    >Bought</button>
-
-    <button class="open-button" 
-        hx-get="/production"
-        hx-swap="innerHTML"
-        hx-indicator=".progress"
-        hx-target="#transaction_here"
-    >Production</button>
-    </div>
         <div id="transaction_here" class="divContainer">
            @Sold(soldTrans)
         </div>
@@ -139,8 +142,23 @@ templ pageStyles(){
         .trans_nav{
             display: flex;
             margin-top: 20px;
+            flex-direction: row;
             justify-content: space-evenly;
             align-items: center;
+        }
+        .trans_nav select{
+            padding: 5px;
+            border-radius: 5px;
+            border: solid 1px black;
+            width: 100%;
+            max-width: 150px;
+        }
+        #search {
+            padding: 5px;
+            border-radius: 5px;
+            border: solid 1px black;
+            width: 100%;
+            max-width: 250px;
         }
     </style>
 }

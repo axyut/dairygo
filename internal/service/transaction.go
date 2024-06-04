@@ -65,10 +65,11 @@ func (s *TransactionService) GetTransactionByID(ctx context.Context, transID pri
 func (s *TransactionService) GetSoldTransactions(ctx context.Context, userID primitive.ObjectID) (transactions []types.Transaction, err error) {
 	transactions = []types.Transaction{}
 	transaction := *s.collection
+	date, _ := ctx.Value(types.CtxDate).(string)
+	datetime := GetDateTime(date)
 
-	lastweek := primitive.NewDateTimeFromTime(time.Now().Local().AddDate(0, 0, -7))
 	options := options.Find().SetSort(bson.D{{Key: "creationTime", Value: -1}})
-	filter := bson.D{{Key: "userID", Value: userID}, {Key: "type", Value: types.Sold}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: lastweek}}}}
+	filter := bson.D{{Key: "userID", Value: userID}, {Key: "type", Value: types.Sold}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: datetime}}}}
 
 	cursor, err := transaction.Find(ctx, filter, options)
 	if err != nil {
@@ -87,10 +88,11 @@ func (s *TransactionService) GetSoldTransactions(ctx context.Context, userID pri
 func (s *TransactionService) GetBoughtTransactions(ctx context.Context, userID primitive.ObjectID) (transactions []types.Transaction, err error) {
 	transactions = []types.Transaction{}
 	transaction := *s.collection
+	date, _ := ctx.Value(types.CtxDate).(string)
+	datetime := GetDateTime(date)
 
-	lastweek := primitive.NewDateTimeFromTime(time.Now().Local().AddDate(0, 0, -7))
 	options := options.Find().SetSort(bson.D{{Key: "creationTime", Value: -1}})
-	filter := bson.D{{Key: "userID", Value: userID}, {Key: "type", Value: types.Bought}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: lastweek}}}}
+	filter := bson.D{{Key: "userID", Value: userID}, {Key: "type", Value: types.Bought}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: datetime}}}}
 
 	cursor, err := transaction.Find(ctx, filter, options)
 	if err != nil {
@@ -140,4 +142,18 @@ func (s *TransactionService) DeleteAllTransactions(ctx context.Context, userID p
 		s.service.logger.Error("Error deleting all transactions", err)
 	}
 	return nil
+}
+
+func GetDateTime(date string) (datetime primitive.DateTime) {
+	if date == "lastweek" {
+		datetime = primitive.NewDateTimeFromTime(time.Now().Local().AddDate(0, 0, -7))
+	} else if date == "alltime" {
+		datetime = primitive.NewDateTimeFromTime(time.UnixMicro(0))
+	} else if date == "yesterday" {
+		datetime = primitive.NewDateTimeFromTime(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day()-1, 0, 0, 0, 0, time.Now().Location()))
+	} else {
+		datetime = primitive.NewDateTimeFromTime(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.Now().Location()))
+	}
+
+	return
 }

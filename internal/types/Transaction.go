@@ -27,3 +27,10 @@ const (
 	Sold   TransactionType = "sold"
 	Bought TransactionType = "bought"
 )
+
+type CtxKeyString string
+
+const (
+	CtxDate CtxKeyString = "date"
+	CtxUser CtxKeyString = "user"
+)

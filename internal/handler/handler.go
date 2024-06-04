@@ -5,9 +5,11 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/axyut/dairygo/client/components"
 	"github.com/axyut/dairygo/internal/config"
 	m "github.com/axyut/dairygo/internal/middleware"
 	"github.com/axyut/dairygo/internal/service"
+	"github.com/axyut/dairygo/internal/types"
 )
 
 type Handler struct {
@@ -55,12 +57,12 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 	router.HandleFunc("GET /profile", h.UserHandler.GetProfile)
 	router.HandleFunc("GET /reports", h.ReportsHandler.GetReportsPage)
 	router.HandleFunc("GET /audience/refresh", h.AudienceHandler.RefreshAudience)
-	// router.HandleFunc("GET /audience/buying_rate", h.AudienceHandler.BuyingRate)
 	router.HandleFunc("GET /goods/refresh", h.GoodsHandler.RefreshGoods)
 
 	router.HandleFunc("POST /audience", h.AudienceHandler.NewAudience)
 	router.HandleFunc("POST /goods", h.GoodsHandler.NewGood)
 	router.HandleFunc("POST /transaction", h.TransactionHandler.NewTransaction)
+	router.HandleFunc("POST /transaction/refresh", h.RefreshTransaction)
 	router.HandleFunc("POST /production", h.ProductionHandler.NewProduction)
 
 	router.HandleFunc("DELETE /audience", h.AudienceHandler.DeleteAudience)
@@ -84,4 +86,35 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 		Handler: middleware(router),
 	}
 	return server
+}
+
+func (h *Handler) RefreshTransaction(w http.ResponseWriter, r *http.Request) {
+	trans_type := r.FormValue("type")
+	date := r.FormValue("date")
+	if trans_type == "" || date == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
+		return
+	}
+
+	h.UserHandler.GetUser(w, r)
+	if date != "today" && date != "yesterday" && date != "lastweek" && date != "alltime" {
+		w.WriteHeader(http.StatusBadRequest)
+		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), types.CtxDate, date))
+
+	if trans_type == "production" {
+		h.ProductionHandler.GetProductionPage(w, r)
+	} else if trans_type == "sold" {
+		h.TransactionHandler.GetSold(w, r)
+	} else if trans_type == "bought" {
+		h.TransactionHandler.GetBought(w, r)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
+		return
+	}
 }
