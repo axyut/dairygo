@@ -186,13 +186,18 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	}
 
 	// update to pay and to receive
-	trans_aud.ToPay, trans_aud.ToReceive = utils.SetToPayToRecieve(trans_type, payment_b, totalPrice, trans_aud.ToPay, trans_aud.ToReceive)
+	toPay := trans_aud.ToPay
+	toReceive := trans_aud.ToReceive
+	trans_aud.ToPay, trans_aud.ToReceive = utils.SetToPayToRecieve(trans_type, payment_b, totalPrice, toPay, toReceive)
 	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), trans_aud)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		components.GeneralToastError("Error with audience service.").Render(r.Context(), w)
 		return
 	}
+
+	transaction.ChangeToPay = toPay - trans_aud.ToPay
+	transaction.ChangeToReceive = toReceive - trans_aud.ToReceive
 
 	components.GeneralToastSuccess("Transaction Added Successfully!").Render(r.Context(), w)
 }
@@ -247,12 +252,59 @@ func (h *TransactionHandler) DeleteTransaction(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	trans, _ := h.srv.GetTransactionByID(r.Context(), transID, user.ID)
 	err = h.srv.DeleteTransaction(r.Context(), user.ID, transID)
 	if err != nil {
 		w.WriteHeader(http.StatusNotAcceptable)
 		components.GeneralToastError("Deletion unsuccessful. Service Failure.")
 		return
 	}
+
+	var audID primitive.ObjectID
+	good, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), user.ID, trans.GoodID)
+	if trans.Type == types.Sold {
+		good.Quantity += trans.Quantity
+		audID = trans.SoldToID
+	} else if trans.Type == types.Bought {
+		good.Quantity -= trans.Quantity
+		audID = trans.BoughtFromID
+	}
+
+	_, err = h.h.srv.GoodsService.UpdateGood(r.Context(), user.ID, good.ID, types.UpdateGood{
+		Name:        good.Name,
+		Unit:        good.Unit,
+		SellingRate: good.SellingRate,
+		Quantity:    good.Quantity,
+	})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		components.GeneralToastError("Error with goods service.")
+		return
+	}
+
+	trans_aud, _ := h.h.srv.AudienceService.GetAudienceByID(r.Context(), user.ID, audID)
+
+	// if paila ko change minus ma xa (toPay before was less than toPay after)
+	// teslai aile ko ma ghatayesi, paila jati thiyo teti aauxa
+	if trans.ChangeToPay < 0 {
+		trans_aud.ToPay -= math.Abs(trans.ChangeToPay)
+	} else {
+		trans_aud.ToPay += trans.ChangeToPay
+	}
+
+	if trans.ChangeToReceive < 0 {
+		trans_aud.ToReceive -= math.Abs(trans.ChangeToReceive)
+	} else {
+		trans_aud.ToReceive += trans.ChangeToReceive
+	}
+	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), trans_aud)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		components.GeneralToastError("Error with audience service.")
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Request) {

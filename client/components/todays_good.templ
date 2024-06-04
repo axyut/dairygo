@@ -114,7 +114,7 @@ templ GoodArray(good types.Good, goods []types.Good){
         Save
       </button>
       <button
-        hx-confirm={strconv.FormatFloat(good.Quantity, 'f', 2, 64)+" "+good.Unit+"s of "+good.Name+" will be deleted. "}
+        hx-confirm={strconv.FormatFloat(good.Quantity, 'f', -1, 64)+" "+good.Unit+"s of "+good.Name+" will be deleted. "}
         hx-delete={"/goods?id="+good.ID.Hex()}
         hx-target={"#good_"+good.ID.Hex()}
         hx-target-error="#error"

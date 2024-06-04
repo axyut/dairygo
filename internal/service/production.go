@@ -19,8 +19,8 @@ type ProductionService struct {
 func (s *ProductionService) InsertProduction(ctx context.Context, production types.Production, userID primitive.ObjectID) (insertedProduction types.Production, err error) {
 	prod := *s.collection
 	insertedProduction = types.Production{}
-	production.Profit = math.Abs(production.Profit)
-	production.Loss = math.Abs(production.Loss)
+	production.ChangePrice = math.Abs(production.ChangePrice)
+	production.ProducedPrice = math.Abs(production.ProducedPrice)
 	production.ProducedQuantity = math.Abs(production.ProducedQuantity)
 	production.ChangeQuantity = math.Abs(production.ChangeQuantity)
 

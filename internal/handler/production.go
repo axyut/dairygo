@@ -49,9 +49,6 @@ func (h *ProductionHandler) NewProduction(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var profit float64
-	var loss float64
-
 	Cgood, errCG := h.h.srv.GoodsService.GetGoodByID(r.Context(), user.ID, Change_goodID)
 	Pgood, errPG := h.h.srv.GoodsService.GetGoodByID(r.Context(), user.ID, Prod_goodID)
 	if errCG != nil || errPG != nil {
@@ -76,15 +73,6 @@ func (h *ProductionHandler) NewProduction(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// when kharid rate is later implemented according to bought transactions, this will be updated. idk how
-	// if (Cgood.KharidRate * C_quantity) < (Pgood.KharidRate * P_quantity) {
-	// 	profit = (Pgood.KharidRate * P_quantity) - (Cgood.KharidRate * C_quantity)
-	// 	loss = 0
-	// } else {
-	// 	loss = (Cgood.KharidRate * C_quantity) - (Pgood.KharidRate * P_quantity)
-	// 	profit = 0
-	// }
-
 	insertProd := types.Production{
 		ID:               primitive.NewObjectID(),
 		ChangeGoodID:     Change_goodID,
@@ -95,10 +83,11 @@ func (h *ProductionHandler) NewProduction(w http.ResponseWriter, r *http.Request
 		ChangeGoodUnit:   change_goodUnit,
 		ProducedGoodUnit: prod_goodUnit,
 		ProducedQuantity: P_quantity,
-		Profit:           profit,
-		Loss:             loss,
-		UserID:           user.ID,
-		CreationTime:     utils.GetMongoTimeFromHTMLDate(date),
+		// should change price be calculated based on buyingrate? if so need to track that from audience and transaction, is complicated.
+		ChangePrice:   Cgood.SellingRate * C_quantity,
+		ProducedPrice: Pgood.SellingRate * P_quantity,
+		UserID:        user.ID,
+		CreationTime:  utils.GetMongoTimeFromHTMLDate(date),
 	}
 
 	_, err := h.srv.InsertProduction(h.h.ctx, insertProd, user.ID)
@@ -143,13 +132,28 @@ func (h *ProductionHandler) DeleteProduction(w http.ResponseWriter, r *http.Requ
 	user := h.h.UserHandler.GetUser(w, r)
 
 	prodID, _ := primitive.ObjectIDFromHex(prod_id)
-
+	prod, _ := h.srv.GetProductionByID(r.Context(), prodID, user.ID)
 	err := h.srv.DeleteProduction(h.h.ctx, prodID, user.ID)
 	if err != nil {
 		w.WriteHeader(http.StatusExpectationFailed)
 		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
+	changedGood, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), user.ID, prod.ChangeGoodID)
+	h.h.srv.GoodsService.UpdateGood(r.Context(), user.ID, changedGood.ID, types.UpdateGood{
+		Name:        changedGood.Name,
+		Unit:        changedGood.Unit,
+		SellingRate: changedGood.SellingRate,
+		Quantity:    changedGood.Quantity + prod.ChangeQuantity,
+	})
+	producedGood, _ := h.h.srv.GoodsService.GetGoodByID(r.Context(), user.ID, prod.ProducedGoodID)
+	h.h.srv.GoodsService.UpdateGood(r.Context(), user.ID, producedGood.ID, types.UpdateGood{
+		Name:        producedGood.Name,
+		Unit:        producedGood.Unit,
+		SellingRate: producedGood.SellingRate,
+		Quantity:    producedGood.Quantity - prod.ProducedQuantity,
+	})
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *ProductionHandler) GetProductionPage(w http.ResponseWriter, r *http.Request) {
