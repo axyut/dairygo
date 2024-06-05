@@ -350,9 +350,9 @@ func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	fmt.Println("before price:", transUpdated.Price, aud.Name, "toget:", aud.ToReceive, "topay", aud.ToPay)
+	// fmt.Println("before price:", transUpdated.Price, aud.Name, "toget:", aud.ToReceive, "topay", aud.ToPay)
 	if payment {
-		fmt.Println("payed")
+		// fmt.Println("payed")
 		if transUpdated.Type == types.Sold {
 			if aud.ToPay > 0 {
 				aud.ToPay -= transUpdated.Price
@@ -375,7 +375,7 @@ func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Re
 			}
 		}
 	} else if !payment {
-		fmt.Println("not payed")
+		// fmt.Println("not payed")
 		if transUpdated.Type == types.Sold {
 			if aud.ToPay > 0 {
 				aud.ToPay -= transUpdated.Price
@@ -398,7 +398,7 @@ func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Re
 			}
 		}
 	}
-	fmt.Println("after price:", transUpdated.Price, aud.Name, "to recieve:", aud.ToReceive, "topay", aud.ToPay)
+	// fmt.Println("after price:", transUpdated.Price, aud.Name, "to recieve:", aud.ToReceive, "topay", aud.ToPay)
 
 	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), aud)
 	if err != nil {

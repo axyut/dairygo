@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,7 +28,8 @@ func (s *ReportsService) GetReportPerGood(ctx context.Context, userID primitive.
 	return
 }
 
-// database heavy operation, next function is better
+// database heavy operation, next function is better for small scale
+
 // func (s *ReportsService) GetProductionReportPerDate(ctx context.Context, userID primitive.ObjectID, goodID primitive.ObjectID, fromDate primitive.DateTime, toDate primitive.DateTime) (reports []types.ProductionReport, reportsPerGood []types.ProductionReportPerChangedGood, err error) {
 // 	prodColl := *s.service.Collections.Production
 
@@ -61,7 +61,7 @@ func (s *ReportsService) GetReportPerGood(ctx context.Context, userID primitive.
 
 // 		var report types.ProductionReport
 // 		var reportPerGood types.ProductionReportPerChangedGood
-// 		if goodID != primitive.NilObjectID {
+// 		if goodID == primitive.NilObjectID {
 // 			report, err = s.GetProductionReportAllGoods(startOfDay, productions)
 // 			reports = append(reports, report)
 // 		} else {
@@ -78,8 +78,11 @@ func (s *ReportsService) GetProductionReportPerDate(ctx context.Context, userID 
 
 	productions := []types.Production{}
 	goodsFilter := bson.E{}
+	var good types.Good
 	if goodID != primitive.NilObjectID {
 		goodsFilter = bson.E{Key: "changeGoodID", Value: goodID}
+		good, _ = s.service.GoodsService.GetGoodByID(ctx, userID, goodID)
+
 	}
 
 	startOfDate := primitive.NewDateTimeFromTime(time.Date(fromDate.Time().Year(), fromDate.Time().Month(), fromDate.Time().Day(), 0, 0, 0, 0, fromDate.Time().Location()))
@@ -99,8 +102,8 @@ func (s *ReportsService) GetProductionReportPerDate(ctx context.Context, userID 
 		s.service.logger.Error("Error while decoding sold productions", err)
 		return
 	}
-	for ofDate := fromDate.Time(); ofDate.Before(toDate.Time()); ofDate = ofDate.AddDate(0, 0, 1) {
-
+	for ofDate := fromDate.Time(); ofDate.Before(toDate.Time().Add(time.Hour * 24)); ofDate = ofDate.AddDate(0, 0, 1) {
+		// fmt.Println(ofDate)
 		var report types.ProductionReport
 		var reportPerGood types.ProductionReportPerChangedGood
 
@@ -112,16 +115,20 @@ func (s *ReportsService) GetProductionReportPerDate(ctx context.Context, userID 
 			}
 		}
 
-		if goodID != primitive.NilObjectID {
+		if goodID == primitive.NilObjectID {
 			report, err = s.GetProductionReportAllGoods(primitive.NewDateTimeFromTime(ofDate), prodsofDate)
 			reports = append(reports, report)
 		} else {
+
 			reportPerGood, err = s.GetProductionReportPerGood(primitive.NewDateTimeFromTime(ofDate), prodsofDate)
+			reportPerGood.ChangedGoodName = good.Name
+			reportPerGood.ChangedGoodUnit = good.Unit
+			// fmt.Println(good.Name, good.Unit, reportPerGood.ChangedGoodName, reportPerGood.ChangedGoodUnit)
 			reportsPerGood = append(reportsPerGood, reportPerGood)
 		}
 
 	}
-	fmt.Println(len(reports), len(reportsPerGood))
+	// fmt.Println(len(reports), len(reportsPerGood))
 	return
 }
 
@@ -136,8 +143,7 @@ func (s *ReportsService) GetProductionReportPerGood(ofDate primitive.DateTime, p
 	var totalChangePrice float64
 	var totalProducedPrice float64
 	for _, v := range productions {
-		// fmt.Println(i, v.ChangeGoodName, v.ChangeQuantity, v.ChangePrice, v.ProducedGoodName, v.ProducedQuantity, v.ProducedPrice)
-		// for each unique produced good, map it
+		// fmt.Println( v.ChangeGoodName, v.ChangeQuantity, v.ChangePrice, v.ProducedGoodName, v.ProducedQuantity, v.ProducedPrice)
 
 		report.ProducedGoods[string(v.ProducedGoodID.Hex())] = types.AGoodTotals{
 			Changed: types.Changed{
@@ -175,7 +181,7 @@ func (s *ReportsService) GetProductionReportAllGoods(ofDate primitive.DateTime, 
 		Goods:   make(map[string]types.AGoodTotals),
 	}
 	for _, v := range productions {
-		// fmt.Println(i, v.ChangeGoodName, v.ChangeQuantity, v.ChangePrice, v.ProducedGoodName, v.ProducedQuantity, v.ProducedPrice)
+		// fmt.Println(ofDate.Time().Day(), v.ChangeGoodName, v.ChangeQuantity, v.ChangePrice, v.ProducedGoodName, v.ProducedQuantity, v.ProducedPrice)
 
 		report.Goods[string(v.ProducedGoodID.Hex())] = types.AGoodTotals{
 			Changed: types.Changed{
@@ -194,5 +200,6 @@ func (s *ReportsService) GetProductionReportAllGoods(ofDate primitive.DateTime, 
 
 	}
 
+	// fmt.Println(report)
 	return
 }

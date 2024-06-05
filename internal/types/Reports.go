@@ -31,6 +31,8 @@ type ProductionReportPerChangedGood struct {
 	DayTime               primitive.DateTime     `json:"dayTime"`
 	TotalChangedQuantity  float64                `json:"changedQuantity"`
 	TotalChangePrice      float64                `json:"totalChangePrice"`
+	ChangedGoodName       string                 `json:"changedGoodName"`
+	ChangedGoodUnit       string                 `json:"changedGoodUnit"`
 	TotalProducedQuantity float64                `json:"totalQuantity"`
 	TotalProducedPrice    float64                `json:"totalProducedPrice"`
 	TotalProfit           float64                `json:"totalProfit"`

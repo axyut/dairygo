@@ -53,14 +53,27 @@ func (h *ReportsHandler) GenerateReports(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *ReportsHandler) GenerateProductionReports(w http.ResponseWriter, r *http.Request, goodID primitive.ObjectID, fromDate primitive.DateTime, toDate primitive.DateTime) {
-	_, _, err := h.srv.GetProductionReportPerDate(h.h.ctx, h.h.UserHandler.GetUser(w, r).ID, goodID, fromDate, toDate)
+	reports, reportsPerGood, err := h.srv.GetProductionReportPerDate(h.h.ctx, h.h.UserHandler.GetUser(w, r).ID, goodID, fromDate, toDate)
 	if err != nil {
 		w.WriteHeader(http.StatusExpectationFailed)
 		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
 	w.WriteHeader(http.StatusAccepted)
-	pages.ProdReport().Render(r.Context(), w)
+	if len(reports) == 0 && len(reportsPerGood) == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		components.GeneralToastError("No data found").Render(r.Context(), w)
+		return
+	}
+	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), h.h.UserHandler.GetUser(w, r).ID)
+	if len(reports) > 0 {
+		pages.ProdReportAll(reports, goods).Render(r.Context(), w)
+		return
+	} else if len(reportsPerGood) > 0 {
+		pages.ProdReportPerGood(reportsPerGood, goods).Render(r.Context(), w)
+		return
+	}
+
 }
 
 func (h *ReportsHandler) GenerateTransactionReports(w http.ResponseWriter, r *http.Request, goodID primitive.ObjectID, fromDate primitive.DateTime, toDate primitive.DateTime) {

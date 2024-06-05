@@ -39,11 +39,10 @@ pause
 ### random screenshots
 
 ![homePage](./assets/home.png)
-![popup](./assets/buyPage.png)
+![popup](./assets/popUpPage.png)
 ![transactionPage](./assets/transPage.png)
-![buy](./assets/buy.png)
+![reports page](./assets/reportsPage.png)
 ![sell](./assets/sell.png)
-![rate](./assets/customRate.png)
 ![produce](./assets/produce.png)
 
 <!--

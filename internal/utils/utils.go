@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"fmt"
 	"math"
+	"strconv"
 	"time"
 
 	"github.com/axyut/dairygo/internal/types"
@@ -34,16 +34,16 @@ func SetToPayToRecieve(trans_type string, payment bool, Price float64, ToPay flo
 			// case when user has remaining ToPay to audience
 			if ToPay > 0 {
 				ToPay -= Price
-				fmt.Println("here sell 1", ToPay)
+				// fmt.Println("here sell 1", ToPay)
 				if ToPay < 0 {
 					ToReceive += math.Abs(ToPay) // convert to positive
 					ToPay = 0
-					fmt.Println("here sell 2", ToPay, ToReceive)
+					// fmt.Println("here sell 2", ToPay, ToReceive)
 				}
 			} else {
 				ToReceive += Price
 			}
-			fmt.Println("here sell", ToReceive)
+			// fmt.Println("here sell", ToReceive)
 		}
 		if payment {
 			if ToPay > 0 {
@@ -67,7 +67,7 @@ func SetToPayToRecieve(trans_type string, payment bool, Price float64, ToPay flo
 			} else {
 				ToPay += Price
 			}
-			fmt.Println("here buy", ToPay)
+			// fmt.Println("here buy", ToPay)
 		}
 		if payment {
 			if ToReceive > 0 {
@@ -79,7 +79,14 @@ func SetToPayToRecieve(trans_type string, payment bool, Price float64, ToPay flo
 			}
 		}
 	}
-	fmt.Println("final ", ToPay, ToReceive)
+	// fmt.Println("final ", ToPay, ToReceive)
 
 	return ToPay, ToReceive
+}
+
+func Str(f float64) string {
+	if strconv.FormatFloat(f, 'f', -1, 64) == "0" {
+		return ""
+	}
+	return strconv.FormatFloat(f, 'f', -1, 64)
 }

@@ -29,7 +29,10 @@ func NewMongo(ctx context.Context, conf config.Config, logger *slog.Logger) (*Mo
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
+		client, err = reTryConnection(ctx, uri, logger)
+		if err != nil {
+			return nil, err
+		}
 	}
 	// Check the connection
 	if err := client.Ping(ctx, nil); err != nil {
@@ -76,4 +79,17 @@ func GetTransactionColl(ctx context.Context, m *mongo.Database) Collection {
 
 func GetProductionColl(ctx context.Context, m *mongo.Database) Collection {
 	return GetCollections(ctx, m).Production
+}
+
+func reTryConnection(ctx context.Context, uri string, logger *slog.Logger) (*mongo.Client, error) {
+	logger.Info("Retrying connection to MongoDB", slog.String("DB_URI", uri))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
+	}
+	// Check the connection
+	if err := client.Ping(ctx, nil); err != nil {
+		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
+	}
+	return client, nil
 }

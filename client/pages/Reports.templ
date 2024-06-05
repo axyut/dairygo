@@ -1,8 +1,10 @@
 package pages
 
 import "github.com/axyut/dairygo/internal/types"
+import u "github.com/axyut/dairygo/internal/utils"
 
 templ ReportsPage(goods []types.Good) {
+	@reportsStyles()
 	<div hx-ext="response-targets">
 
         <form >
@@ -28,7 +30,7 @@ templ ReportsPage(goods []types.Good) {
                 <select id="good" name="goodID" required>
                     for _, good := range goods {
                         <option value={good.ID.Hex()}>
-								{good.Name}
+								From {good.Name}
 						</option>
                     }
 					<option value="all">All Goods</option>
@@ -53,10 +55,70 @@ templ ReportsPage(goods []types.Good) {
 
 }
 
-templ ProdReport(){
-	<h1>Production Report</h1>
+templ ProdReportAll(prods []types.ProductionReport,goods []types.Good){
+	<div>
+		<table class="simpleTable">
+			<tr>
+				<th>Date</th>
+			</tr>
+			for _, v := range prods {
+				<tr>
+					<td>{v.DayTime.Time().Format("Jan 2")}</td>
+					
+						for _, v1 := range v.Goods{
+							<td>{u.Str(v1.Changed.Quantity)+" "+v1.Changed.Unit+"s of "+v1.Changed.Name+ "  ➡️  "+u.Str(v1.Produced.Quantity)+" "+v1.Produced.Unit+"s of "+v1.Produced.Name}</td>
+						}
+				</tr>
+
+			}
+						
+		</table>
+	</div>
+}
+
+templ ProdReportPerGood(prods []types.ProductionReportPerChangedGood,goods []types.Good){
+	<div>
+		<table class="simpleTable">
+			<tr>
+				<th>Date</th>
+				<th>From {prods[0].ChangedGoodName} Total</th>
+			</tr>
+			for _, v := range prods {
+				<tr>
+					<td>{v.DayTime.Time().Format("Jan 2")}</td>
+						if v.TotalChangedQuantity != 0 && v.TotalProducedQuantity != 0{
+							<td>
+								{
+									u.Str(v.TotalChangedQuantity)+" "+
+									v.ChangedGoodUnit+"s  ➡️  "+
+									u.Str(v.TotalProducedQuantity)
+								}
+							</td>
+						} else {
+							<td></td>
+						}
+						for _, v1 := range v.ProducedGoods{
+							if v1.Changed.Quantity != 0 && v1.Produced.Quantity != 0{
+								<td>{u.Str(v1.Changed.Quantity)+" "+v1.Changed.Unit+"s of "+v1.Changed.Name+ "  ➡️  "+u.Str(v1.Produced.Quantity)+" "+v1.Produced.Unit+"s of "+v1.Produced.Name}</td>
+							} else {
+								<td></td>
+							}
+						}
+				</tr>
+
+			}
+		</table>
+	</div>
 }
 
 templ TransReport(){
 	<h1> Transaction Report</h1>
+}
+
+templ reportsStyles(){
+	<style>
+		#reports_here {
+			padding: 10px;
+		}
+	</style>
 }
