@@ -7,18 +7,18 @@ templ ReportsPage(goods []types.Good) {
 
         <form >
         <div class="trans_nav">
-				<button class="open-button" 
-					type="submit"
-					hx-post="/reports/download"
-					hx-swap="innerHTML"
-					hx-target="#reports_here"
-					hx-indicator=".progress"
-				>Download</button>
+				// <button class="open-button" 
+				// 	type="submit"
+				// 	hx-post="/reports/download"
+				// 	hx-swap="innerHTML"
+				// 	hx-target="#reports_here"
+				// 	hx-indicator=".progress"
+				// >Download</button>
 				<div>
 						<label>From</label>
-						<input class="simpleInput" id="date" type="date" name="date" />
+						<input class="simpleInput" id="date" type="date" name="from_date" />
 						<label>To</label>
-						<input class="simpleInput" id="date" type="date" name="date" />
+						<input class="simpleInput" id="date" type="date" name="to_date" />
 				</div>
                 <select name="type">
                     <option value="transaction">Transaction</option>
@@ -26,13 +26,12 @@ templ ReportsPage(goods []types.Good) {
                 </select>
 	
                 <select id="good" name="goodID" required>
-					<option value="all">All Goods</option>
                     for _, good := range goods {
                         <option value={good.ID.Hex()}>
 								{good.Name}
-								// <input type="checkbox" name="goodID" value={good.ID.Hex()} />
 						</option>
                     }
+					<option value="all">All Goods</option>
                 </select>
                 
 				<button class="open-button" 
@@ -52,4 +51,12 @@ templ ReportsPage(goods []types.Good) {
 	<h1> Generate Reports</h1>
 	</div>
 
+}
+
+templ ProdReport(){
+	<h1>Production Report</h1>
+}
+
+templ TransReport(){
+	<h1> Transaction Report</h1>
 }

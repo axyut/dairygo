@@ -9,9 +9,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func GetMongoTimeFromHTMLDate(date string) (dateTime primitive.DateTime) {
+func GetMongoTimeFromHTMLDate(date string, defaultTime time.Time) (dateTime primitive.DateTime) {
 
-	dateTime = primitive.NewDateTimeFromTime(time.Now())
+	dateTime = primitive.NewDateTimeFromTime(defaultTime)
 	if date != "" {
 		timeP, err := time.Parse("2006-01-02", date)
 		if err != nil {

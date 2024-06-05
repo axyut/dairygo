@@ -32,9 +32,9 @@ func NewHandler(ctx context.Context, srv *service.Service, logger *slog.Logger) 
 	h.GoodsHandler = &GoodsHandler{h, srv.GoodsService}
 	h.TransactionHandler = &TransactionHandler{h, srv.TransactionService}
 	h.UserHandler = &UserHandler{h, srv.UserService}
-	h.HomeHandler = &HomeHandler{h}
-	h.ReportsHandler = &ReportsHandler{h}
+	h.ReportsHandler = &ReportsHandler{h, srv.ReportsService}
 	h.ProductionHandler = &ProductionHandler{h, srv.ProductionService}
+	h.HomeHandler = &HomeHandler{h}
 
 	return h
 }

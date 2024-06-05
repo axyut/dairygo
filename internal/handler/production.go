@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/axyut/dairygo/client/components"
 	"github.com/axyut/dairygo/client/pages"
@@ -87,7 +88,7 @@ func (h *ProductionHandler) NewProduction(w http.ResponseWriter, r *http.Request
 		ChangePrice:   Cgood.SellingRate * C_quantity,
 		ProducedPrice: Pgood.SellingRate * P_quantity,
 		UserID:        user.ID,
-		CreationTime:  utils.GetMongoTimeFromHTMLDate(date),
+		CreationTime:  utils.GetMongoTimeFromHTMLDate(date, time.Now()),
 	}
 
 	_, err := h.srv.InsertProduction(h.h.ctx, insertProd, user.ID)

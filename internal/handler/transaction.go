@@ -161,7 +161,7 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		Type:         types.TransactionType(trans_type),
 		Payment:      payment_b,
 		UserID:       user.ID,
-		CreationTime: utils.GetMongoTimeFromHTMLDate(date),
+		CreationTime: utils.GetMongoTimeFromHTMLDate(date, time.Now()),
 	}
 
 	_, err = h.srv.InsertTransaction(h.h.ctx, transaction)
