@@ -117,11 +117,10 @@ func (s *TransactionService) DeleteTransaction(ctx context.Context, userID primi
 	return nil
 }
 
-func (s *TransactionService) UpdateTransaction(ctx context.Context, userID primitive.ObjectID, transID primitive.ObjectID, payment bool) (types.Transaction, error) {
+func (s *TransactionService) UpdateTransaction(ctx context.Context, userID primitive.ObjectID, transID primitive.ObjectID, trans types.Transaction) (types.Transaction, error) {
 	transaction := *s.collection
-	trans := types.Transaction{}
 	err := transaction.FindOneAndUpdate(ctx, bson.M{"userID": userID, "_id": transID}, bson.M{
-		"$set": bson.M{"payment": payment},
+		"$set": trans,
 	}).Decode(&trans)
 	if err != nil {
 		s.service.logger.Error("Error updating transaction", err)

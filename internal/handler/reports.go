@@ -78,8 +78,19 @@ func (h *ReportsHandler) GenerateProductionReports(w http.ResponseWriter, r *htt
 
 func (h *ReportsHandler) GenerateTransactionReports(w http.ResponseWriter, r *http.Request, goodID primitive.ObjectID, fromDate primitive.DateTime, toDate primitive.DateTime) {
 	h.h.UserHandler.GetUser(w, r)
+	if goodID == primitive.NilObjectID {
+		w.WriteHeader(http.StatusExpectationFailed)
+		components.GeneralToastError("Only Productions can have all goods reports.").Render(r.Context(), w)
+		return
+	}
+	reports, err := h.srv.GetReportPerDate(h.h.ctx, h.h.UserHandler.GetUser(w, r).ID, goodID, fromDate, toDate)
+	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
+		return
+	}
 	w.WriteHeader(http.StatusAccepted)
-	components.GeneralToastError("Under Construction").Render(r.Context(), w)
+	pages.TransReport(reports).Render(r.Context(), w)
 }
 
 func (h *ReportsHandler) DownloadReports(w http.ResponseWriter, r *http.Request) {

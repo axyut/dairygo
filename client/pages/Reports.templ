@@ -9,13 +9,9 @@ templ ReportsPage(goods []types.Good) {
 
         <form >
         <div class="trans_nav">
-				// <button class="open-button" 
-				// 	type="submit"
-				// 	hx-post="/reports/download"
-				// 	hx-swap="innerHTML"
-				// 	hx-target="#reports_here"
-				// 	hx-indicator=".progress"
-				// >Download</button>
+				<button class="open-button" 
+					onclick="window.print()"
+				>Download</button>
 				<div>
 						<label>From</label>
 						<input class="simpleInput" id="date" type="date" name="from_date" />
@@ -41,6 +37,7 @@ templ ReportsPage(goods []types.Good) {
 					hx-post="/reports/refresh"
 					hx-swap="innerHTML"
 					hx-target="#reports_here"
+					hx-target-error="#error"
 					hx-indicator=".progress"
 				>Generate</button>
 					
@@ -111,8 +108,81 @@ templ ProdReportPerGood(prods []types.ProductionReportPerChangedGood,goods []typ
 	</div>
 }
 
-templ TransReport(){
-	<h1> Transaction Report</h1>
+templ TransReport(trans []types.TransactionReport){
+	<div>
+		<table class="simpleTable">
+			<tr>
+				<th>Date</th>
+				<th>{trans[0].GoodName} Transaction</th>
+				<th>Bought</th>
+				<th>Sold</th>
+				<th>Paid</th>
+				<th>Unpaid</th>
+				<th>To Pay</th>
+				<th>To Receive</th>
+				<th>Profit</th>
+				<th>Loss</th>
+			</tr>
+			for _, v := range trans {
+				<tr>
+					<td>{v.DayTime.Time().Format("Jan 2")}</td>
+					if v.TotalTransactionQuantity != 0 && v.TotalTransactionPrice != 0{
+						<td>{u.Str(v.TotalTransactionQuantity)+" "+v.GoodUnit+"s Rs. "+ u.Str(v.TotalTransactionPrice) }</td>
+					} else {
+						<td></td>
+					}
+					
+					if v.TotalBoughtQuantity != 0 && v.TotalBoughtPrice != 0{
+						<td>{u.Str(v.TotalBoughtQuantity)+" "+v.GoodUnit+"s Rs. "+ u.Str(v.TotalBoughtPrice) }</td>
+					} else {
+						<td></td>
+					}
+
+					if v.TotalSoldQuantity != 0 && v.TotalSoldPrice != 0{
+						<td>{u.Str(v.TotalSoldQuantity)+" "+v.GoodUnit+"s Rs. "+ u.Str(v.TotalSoldPrice) }</td>
+					} else {
+						<td></td>
+					}
+
+					if v.TotalPaidQuantity != 0 && v.TotalPaidPrice != 0{
+						<td>{u.Str(v.TotalPaidQuantity)+" "+v.GoodUnit+"s Rs. "+ u.Str(v.TotalPaidPrice) }</td>
+					} else {
+						<td></td>
+					}
+
+					if v.TotalUnpaidQuantity != 0 && v.TotalUnpaidPrice != 0{
+						<td>{u.Str(v.TotalUnpaidQuantity)+" "+v.GoodUnit+"s Rs. "+ u.Str(v.TotalUnpaidPrice) }</td>
+					} else {
+						<td></td>
+					}
+
+					if v.TotalToPay != 0{
+						<td>{"Rs. "+ u.Str(v.TotalToPay) }</td>
+					} else {
+						<td></td>
+					}
+
+					if v.TotalToReceive != 0{
+						<td>{"Rs. "+ u.Str(v.TotalToReceive) }</td>
+					} else {
+						<td></td>
+					}
+
+					if v.TotalProfit != 0{
+						<td>{"Rs. "+ u.Str(v.TotalProfit) }</td>
+					} else {
+						<td></td>
+					}
+
+					if v.TotalLoss != 0{
+						<td>{"Rs. "+ u.Str(v.TotalLoss) }</td>
+					} else {
+						<td></td>
+					}
+				</tr>
+			}
+		</table>
+	</div>
 }
 
 templ reportsStyles(){

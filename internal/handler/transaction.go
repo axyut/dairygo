@@ -146,22 +146,31 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 	}
 	totalPrice = Rate * quanTity
 
-	fmt.Println("boughtFrom =", boughtFrom, "\nsoldTo =", soldTo, "\ngoodName =", goodName, "\ngoodUnit =", goodUnit, "\ngood_change_quantity =", good_change_quantity, "\ntotalPrice =", totalPrice, "\npayment_b =", payment_b, "\nquanTity =", quanTity, "\nbuyingRate =", buyingRate)
+	// update to pay and to receive
+	toPay := trans_aud.ToPay
+	toReceive := trans_aud.ToReceive
+	trans_aud.ToPay, trans_aud.ToReceive = utils.SetToPayToRecieve(trans_type, payment_b, totalPrice, toPay, toReceive)
+
+	// fmt.Println("boughtFrom =", boughtFrom, "\nsoldTo =", soldTo, "\ngoodName =", goodName, "\ngoodUnit =", goodUnit, "\ngood_change_quantity =", good_change_quantity, "\ntotalPrice =", totalPrice, "\npayment_b =", payment_b, "\nquanTity =", quanTity, "\nbuyingRate =", buyingRate)
 	transaction := types.Transaction{
-		ID:           primitive.NewObjectIDFromTimestamp(time.Now()),
-		GoodID:       trans_good.ID,
-		GoodName:     goodName,
-		GoodUnit:     goodUnit,
-		Quantity:     quanTity,
-		Price:        totalPrice,
-		BoughtFrom:   boughtFrom,
-		BoughtFromID: boughtFromID,
-		SoldToID:     soldToID,
-		SoldTo:       soldTo,
-		Type:         types.TransactionType(trans_type),
-		Payment:      payment_b,
-		UserID:       user.ID,
-		CreationTime: utils.GetMongoTimeFromHTMLDate(date, time.Now()),
+		ID:              primitive.NewObjectIDFromTimestamp(time.Now()),
+		GoodID:          trans_good.ID,
+		GoodName:        goodName,
+		GoodUnit:        goodUnit,
+		Quantity:        quanTity,
+		Price:           totalPrice,
+		BoughtFrom:      boughtFrom,
+		BoughtFromID:    boughtFromID,
+		SoldToID:        soldToID,
+		SoldTo:          soldTo,
+		Type:            types.TransactionType(trans_type),
+		Payment:         payment_b,
+		ChangeToPay:     toPay - trans_aud.ToPay,
+		ChangeToReceive: toReceive - trans_aud.ToReceive,
+		AudToPay:        toPay,
+		AudToReceive:    toReceive,
+		UserID:          user.ID,
+		CreationTime:    utils.GetMongoTimeFromHTMLDate(date, time.Now()),
 	}
 
 	_, err = h.srv.InsertTransaction(h.h.ctx, transaction)
@@ -185,19 +194,12 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	// update to pay and to receive
-	toPay := trans_aud.ToPay
-	toReceive := trans_aud.ToReceive
-	trans_aud.ToPay, trans_aud.ToReceive = utils.SetToPayToRecieve(trans_type, payment_b, totalPrice, toPay, toReceive)
 	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), trans_aud)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		components.GeneralToastError("Error with audience service.").Render(r.Context(), w)
 		return
 	}
-
-	transaction.ChangeToPay = toPay - trans_aud.ToPay
-	transaction.ChangeToReceive = toReceive - trans_aud.ToReceive
 
 	components.GeneralToastSuccess("Transaction Added Successfully!").Render(r.Context(), w)
 }
@@ -331,17 +333,17 @@ func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	transUpdated, err := h.srv.UpdateTransaction(r.Context(), user.ID, transID, payment)
-	// fmt.Println("\nunedited:", payment_b, "recvieved:", payment, "updated:", transUpdated.Payment, "\n")
+	oneTrans, err := h.srv.GetTransactionByID(r.Context(), transID, user.ID)
 	if err != nil {
 		w.WriteHeader(http.StatusNotAcceptable)
 		components.GeneralToastError("Update transaction service error.")
 		return
 	}
+
 	// update audience
-	audID := transUpdated.SoldToID
-	if transUpdated.Type == types.Bought {
-		audID = transUpdated.BoughtFromID
+	audID := oneTrans.SoldToID
+	if oneTrans.Type == types.Bought {
+		audID = oneTrans.BoughtFromID
 	}
 	aud, err := h.h.srv.AudienceService.GetAudienceByID(r.Context(), user.ID, audID)
 	if err != nil {
@@ -350,55 +352,18 @@ func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// fmt.Println("before price:", transUpdated.Price, aud.Name, "toget:", aud.ToReceive, "topay", aud.ToPay)
-	if payment {
-		// fmt.Println("payed")
-		if transUpdated.Type == types.Sold {
-			if aud.ToPay > 0 {
-				aud.ToPay -= transUpdated.Price
-				if aud.ToPay < 0 {
-					aud.ToReceive += math.Abs(aud.ToPay) // convert to positive
-					aud.ToPay = 0
-				}
-			} else {
-				aud.ToReceive -= transUpdated.Price
-			}
-		} else if transUpdated.Type == types.Bought {
-			if aud.ToReceive > 0 {
-				aud.ToReceive -= transUpdated.Price
-				if aud.ToReceive < 0 {
-					aud.ToPay += math.Abs(aud.ToReceive) // convert to positive
-					aud.ToReceive = 0
-				}
-			} else {
-				aud.ToPay -= transUpdated.Price
-			}
-		}
-	} else if !payment {
-		// fmt.Println("not payed")
-		if transUpdated.Type == types.Sold {
-			if aud.ToPay > 0 {
-				aud.ToPay -= transUpdated.Price
-				if aud.ToPay < 0 {
-					aud.ToReceive += math.Abs(aud.ToPay) // convert to positive
-					aud.ToPay = 0
-				}
-			} else {
-				aud.ToReceive += transUpdated.Price
-			}
-		} else if transUpdated.Type == types.Bought {
-			if aud.ToReceive > 0 {
-				aud.ToReceive -= transUpdated.Price
-				if aud.ToReceive < 0 {
-					aud.ToPay += math.Abs(aud.ToReceive) // convert to positive
-					aud.ToReceive = 0
-				}
-			} else {
-				aud.ToPay += transUpdated.Price
-			}
-		}
+	updateToPayToRecieveOnPayment(&oneTrans, payment, &aud)
+	oneTrans.Payment = payment
+	oneTrans.AudToPay = aud.ToPay
+	oneTrans.AudToReceive = aud.ToReceive
+
+	// commit updates
+	_, err = h.srv.UpdateTransaction(r.Context(), user.ID, transID, oneTrans)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		components.GeneralToastError("Update transaction service error.")
+		return
 	}
-	// fmt.Println("after price:", transUpdated.Price, aud.Name, "to recieve:", aud.ToReceive, "topay", aud.ToPay)
 
 	_, err = h.h.srv.AudienceService.UpdateAudience(r.Context(), aud)
 	if err != nil {
@@ -407,7 +372,7 @@ func (h *TransactionHandler) UpdateTransaction(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	pages.CheckboxBoolPayment(transUpdated.ID.Hex(), transUpdated.Payment).Render(r.Context(), w)
+	pages.CheckboxBoolPayment(oneTrans.ID.Hex(), payment).Render(r.Context(), w)
 
 }
 
@@ -434,4 +399,56 @@ func (h *TransactionHandler) DeleteAllTransactions(w http.ResponseWriter, r *htt
 
 	w.WriteHeader(http.StatusOK)
 	components.GeneralToastSuccess("Deleted Successfully").Render(r.Context(), w)
+}
+
+func updateToPayToRecieveOnPayment(oneTrans *types.Transaction, payment bool, aud *types.Audience) {
+	// fmt.Println("before price:", oneTrans.Price, aud.Name, "toget:", aud.ToReceive, "topay", aud.ToPay)
+	if payment {
+		// fmt.Println("payed")
+		if oneTrans.Type == types.Sold {
+			if aud.ToPay > 0 {
+				aud.ToPay -= oneTrans.Price
+				if aud.ToPay < 0 {
+					aud.ToReceive += math.Abs(aud.ToPay) // convert to positive
+					aud.ToPay = 0
+				}
+			} else {
+				aud.ToReceive -= oneTrans.Price
+			}
+		} else if oneTrans.Type == types.Bought {
+			if aud.ToReceive > 0 {
+				aud.ToReceive -= oneTrans.Price
+				if aud.ToReceive < 0 {
+					aud.ToPay += math.Abs(aud.ToReceive) // convert to positive
+					aud.ToReceive = 0
+				}
+			} else {
+				aud.ToPay -= oneTrans.Price
+			}
+		}
+	} else if !payment {
+		// fmt.Println("not payed")
+		if oneTrans.Type == types.Sold {
+			if aud.ToPay > 0 {
+				aud.ToPay -= oneTrans.Price
+				if aud.ToPay < 0 {
+					aud.ToReceive += math.Abs(aud.ToPay) // convert to positive
+					aud.ToPay = 0
+				}
+			} else {
+				aud.ToReceive += oneTrans.Price
+			}
+		} else if oneTrans.Type == types.Bought {
+			if aud.ToReceive > 0 {
+				aud.ToReceive -= oneTrans.Price
+				if aud.ToReceive < 0 {
+					aud.ToPay += math.Abs(aud.ToReceive) // convert to positive
+					aud.ToReceive = 0
+				}
+			} else {
+				aud.ToPay += oneTrans.Price
+			}
+		}
+	}
+	// fmt.Println("after price:", transUpdated.Price, aud.Name, "to recieve:", aud.ToReceive, "topay", aud.ToPay)
 }
