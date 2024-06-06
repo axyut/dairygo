@@ -42,8 +42,6 @@ pause
 ![popup](./assets/popUpPage.png)
 ![transactionPage](./assets/transPage.png)
 ![reports page](./assets/reportsPage.png)
-![sell](./assets/sell.png)
-![produce](./assets/produce.png)
 
 <!--
 https://www.gomponents.com/
