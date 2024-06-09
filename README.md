@@ -1,6 +1,6 @@
 ## dairy management with htmx, golang, templ
 
-For a friend's dairy. Has a simple UI to add daily transactions and view monthly reports.
+For a client's dairy. Has a simple UI to add daily transactions and view monthly reports.
 
 ### used
 
