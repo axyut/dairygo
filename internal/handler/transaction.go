@@ -104,27 +104,27 @@ func (h *TransactionHandler) NewTransaction(w http.ResponseWriter, r *http.Reque
 		goodUnit = unit
 	}
 
-	if buying_rate != "" {
-		buyingRate, err = strconv.ParseFloat(buying_rate, 64)
-		if err != nil {
-			w.WriteHeader(http.StatusNotAcceptable)
-			components.GeneralToastError("Invalid Buying Rate.").Render(r.Context(), w)
-			return
-		}
-		buyingRate = math.Abs(buyingRate)
-	} else {
-		buyingRate = trans_aud.MapRates[trans_good.ID.Hex()]
-		if buyingRate == 0 {
-			w.WriteHeader(http.StatusNotAcceptable)
-			components.GeneralToastError("Set Buying Rate for that Good First.").Render(r.Context(), w)
-			return
-		}
-	}
-
 	// increase decrease goods quantity
 	if trans_type == string(types.Bought) {
 		boughtFromID = trans_aud.ID
 		boughtFrom = trans_aud.Name
+
+		if buying_rate != "" {
+			buyingRate, err = strconv.ParseFloat(buying_rate, 64)
+			if err != nil {
+				w.WriteHeader(http.StatusNotAcceptable)
+				components.GeneralToastError("Invalid Buying Rate.").Render(r.Context(), w)
+				return
+			}
+			buyingRate = math.Abs(buyingRate)
+		} else {
+			buyingRate = trans_aud.MapRates[trans_good.ID.Hex()]
+			if buyingRate == 0 {
+				w.WriteHeader(http.StatusNotAcceptable)
+				components.GeneralToastError("Set Buying Rate for that Good First.").Render(r.Context(), w)
+				return
+			}
+		}
 		Rate = buyingRate
 
 		good_change_quantity = trans_good.Quantity + quanTity

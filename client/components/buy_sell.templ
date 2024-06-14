@@ -15,7 +15,7 @@ templ Sell(goods []types.Good, aud types.Audience){
             hx-swap="afterbegin"
             hx-target="#sold"
             hx-trigger="submit"
-            hx-error="#error"
+            hx-target-error="#error"
             class="formContainer"
         >
             <select id="good" name="goodID" required>
@@ -55,7 +55,7 @@ templ Buy(goods []types.Good, aud types.Audience){
             hx-swap="afterbegin"
             hx-target="#bought"
             hx-trigger="submit"
-            hx-error="#error"
+            hx-target-error="#error"
             class="formContainer"
         >
             <div style="display:flex;justify-content:flex-start;align-items:center;font-family:'Lucida Console', 'Courier New', monospace;">

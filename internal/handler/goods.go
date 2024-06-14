@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/axyut/dairygo/client/components"
 	"github.com/axyut/dairygo/internal/service"
@@ -35,6 +36,7 @@ func (h *GoodsHandler) NewGood(w http.ResponseWriter, r *http.Request) {
 	}
 
 	good := types.Good{
+		ID:          primitive.NewObjectIDFromTimestamp(time.Now()),
 		Name:        name,
 		SellingRate: sellingRate,
 		Unit:        unit,

@@ -20,7 +20,7 @@ var Envs = initConfig()
 func initConfig() Config {
 	var DB_NAME, uri string = "dairyDB", "mongodb://localhost:27017/"
 	if err := godotenv.Load(); err != nil {
-		log.Println("Set your 'MONGODB_URI' environment variable. " + "No .env file found\nUsing the default 'mongodb://localhost:27017'")
+		log.Println("Set your 'MONGODB_URI' environment variable. " + "No .env file found\nUsing the default 'mongodb://localhost:27017/'")
 	}
 
 	conf := Config{
