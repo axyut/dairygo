@@ -93,20 +93,34 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 func (h *Handler) RefreshTransaction(w http.ResponseWriter, r *http.Request) {
 	trans_type := r.FormValue("type")
 	date := r.FormValue("date")
-	if trans_type == "" || date == "" {
+	payment := r.FormValue("payment")
+	audID := r.FormValue("aud_id_filter")
+	goodID := r.FormValue("good_id_filter")
+
+	if trans_type == "" || date == "" || payment == "" || audID == "" || goodID == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
 		return
 	}
 
 	h.UserHandler.GetUser(w, r)
-	if date != "today" && date != "yesterday" && date != "lastweek" && date != "alltime" {
+	if date != "today" && date != "yesterday" && date != "lastweek" && date != "alltime" && date != "thismonth" && date != "lastmonth" {
 		w.WriteHeader(http.StatusBadRequest)
-		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
+		components.GeneralToastError("Wrong Date. Empty Fields!").Render(r.Context(), w)
 		return
 	}
 
+	if payment != "paid" && payment != "unpaid" && payment != "all" {
+		w.WriteHeader(http.StatusBadRequest)
+		components.GeneralToastError("Wrong Payment. Empty Fields!").Render(r.Context(), w)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), types.CtxAudID, audID))
+	r = r.WithContext(context.WithValue(r.Context(), types.CtxGoodID, goodID))
+
 	r = r.WithContext(context.WithValue(r.Context(), types.CtxDate, date))
+	r = r.WithContext(context.WithValue(r.Context(), types.CtxPayment, payment))
 
 	if trans_type == "production" {
 		h.ProductionHandler.GetProductionPage(w, r)
@@ -116,7 +130,7 @@ func (h *Handler) RefreshTransaction(w http.ResponseWriter, r *http.Request) {
 		h.TransactionHandler.GetBought(w, r)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
-		components.GeneralToastError("Empty Fields!").Render(r.Context(), w)
+		components.GeneralToastError("Wrong Transaction Type. Empty Fields!").Render(r.Context(), w)
 		return
 	}
 }

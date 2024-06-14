@@ -4,32 +4,84 @@ import "github.com/axyut/dairygo/internal/types"
 import "strconv"
 import "github.com/axyut/dairygo/client/components"
 
-templ TransactionPage(soldTrans []types.Transaction){
+templ TransactionPage(soldTrans []types.Transaction, auds []types.Audience, goods []types.Good) {
     @pageStyles()
 
     <div  hx-ext="response-targets">
             <form >
         <div class="trans_nav">
                 // <button class="open-button" onclick={downloadTrans()}>Download</button>
-                <select name="type">
+                <select 
+                    name="type" 
+                    hx-trigger="change"
+                    hx-post="/transaction/refresh"
+                    hx-swap="innerHTML"
+                    hx-target="#transaction_here"
+                    hx-target-error="#error"
+                    hx-indicator=".progress"
+                >
                     <option value="sold">Sold</option>
                     <option value="bought">Bought</option>
                     <option value="production">Production</option>
                 </select>
-                <select name="date">
+                <select name="date"
+                    hx-trigger="change"
+                    hx-post="/transaction/refresh"
+                    hx-swap="innerHTML"
+                    hx-target-error="#error"
+                    hx-target="#transaction_here"
+                    hx-indicator=".progress"
+                >
                     <option value="today">Today</option>
                     <option value="yesterday">Yesterday</option>
                     <option value="lastweek">Last 7 Days</option>
+                    <option value="thismonth">This Month</option>
+                    <option value="lastmonth">Last Month</option>
                     <option value="alltime">All time</option>
                 </select>
+                <select name="aud_id_filter" 
+                        hx-trigger="change"
+                        hx-post="/transaction/refresh" 
+                        hx-swap="innerHTML" 
+                        hx-target="#transaction_here" 
+                        hx-indicator=".progress"
+                        hx-target-error="#error"
+                    >
+                        <option value="all">Peoples</option>
+                        @audIDSelect(auds)
+                </select>
+                <select name="good_id_filter" 
+                        hx-trigger="change"
+                        hx-post="/transaction/refresh" 
+                        hx-swap="innerHTML" 
+                        hx-target="#transaction_here" 
+                        hx-indicator=".progress"
+                        hx-target-error="#error"
+                    >
+                        <option value="all">Goods</option>
+                        @goodIDSelect(goods)
+                </select>
                 
-                <button class="open-button" 
-                    type="submit"
+                // <button class="open-button" 
+                //     type="submit"
+                //     hx-post="/transaction/refresh"
+                //     hx-swap="innerHTML"
+                //     hx-target="#transaction_here"
+                //     hx-indicator=".progress"
+                // >Search</button>
+
+                <select name="payment"
+                    hx-trigger="change"
                     hx-post="/transaction/refresh"
                     hx-swap="innerHTML"
                     hx-target="#transaction_here"
+                    hx-target-error="#error"
                     hx-indicator=".progress"
-                >Search</button>
+                >
+                    <option value="all">Payment</option>
+                    <option value="paid">Paid</option>
+                    <option value="unpaid">Pending</option>
+                </select>
         </div>
             </form>
 
@@ -72,6 +124,18 @@ templ Sold(soldTrans []types.Transaction){
             }
         </table>
     </div>
+}
+
+templ audIDSelect(auds []types.Audience){
+    for i:=0; i<len(auds); i++{
+        <option value={auds[i].ID.Hex()}>{auds[i].Name}</option>
+    }
+}
+
+templ goodIDSelect(goods []types.Good){
+    for i:=0; i<len(goods); i++{
+        <option value={goods[i].ID.Hex()}>{goods[i].Name}</option>
+    }
 }
 
 templ CheckboxTemplate(id string, payment bool){
@@ -231,7 +295,7 @@ templ Bought(boughtTrans []types.Transaction) {
 }
 
 
-templ Production(prods []types.Production){
+templ Production(prods []types.Production) {
     <div>
         <table class="simpleTable">
             <tr>

@@ -165,6 +165,7 @@ func (h *ProductionHandler) GetProductionPage(w http.ResponseWriter, r *http.Req
 		components.GeneralToastError("Couldn't fullfill your request.").Render(r.Context(), w)
 		return
 	}
+
 	pages.Production(prods).Render(r.Context(), w)
 }
 

@@ -41,10 +41,10 @@ func (s *ProductionService) GetAllProductions(ctx context.Context, userID primit
 	productions = []types.Production{}
 	prod := *s.collection
 	date, _ := ctx.Value(types.CtxDate).(string)
-	datetime := GetDateTime(date)
+	start, end := GetDateTime(date)
 
 	options := options.Find().SetSort(bson.D{{Key: "creationTime", Value: -1}})
-	filter := bson.D{{Key: "userID", Value: userID}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: datetime}}}}
+	filter := bson.D{{Key: "userID", Value: userID}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: start}, {Key: "$lt", Value: end}}}}
 
 	cursor, err := prod.Find(ctx, filter, options)
 	if err != nil {

@@ -37,6 +37,9 @@ const (
 type CtxKeyString string
 
 const (
-	CtxDate CtxKeyString = "date"
-	CtxUser CtxKeyString = "user"
+	CtxDate    CtxKeyString = "date"
+	CtxUser    CtxKeyString = "user"
+	CtxPayment CtxKeyString = "payment"
+	CtxGoodID  CtxKeyString = "goodID"
+	CtxAudID   CtxKeyString = "audID"
 )

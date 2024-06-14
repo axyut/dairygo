@@ -23,7 +23,9 @@ type TransactionHandler struct {
 
 func (h *TransactionHandler) GetTransactionPage(w http.ResponseWriter, r *http.Request) {
 	soldTrans := h.getSoldTransClient(w, r)
-	page := pages.TransactionPage(soldTrans)
+	auds, _ := h.h.srv.AudienceService.GetAllAudiences(r.Context(), h.h.UserHandler.GetUser(w, r).ID)
+	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), h.h.UserHandler.GetUser(w, r).ID)
+	page := pages.TransactionPage(soldTrans, auds, goods)
 	client.Layout(page, "Transactions").Render(r.Context(), w)
 }
 

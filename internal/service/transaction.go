@@ -66,10 +66,16 @@ func (s *TransactionService) GetSoldTransactions(ctx context.Context, userID pri
 	transactions = []types.Transaction{}
 	transaction := *s.collection
 	date, _ := ctx.Value(types.CtxDate).(string)
-	datetime := GetDateTime(date)
+	pay, _ := ctx.Value(types.CtxPayment).(string)
+	aud, _ := ctx.Value(types.CtxAudID).(string)
+	g, _ := ctx.Value(types.CtxGoodID).(string)
+	start, end := GetDateTime(date)
+	payment := GetPayment(pay)
+	audience := s.GetAudience(aud, userID, types.Sold)
+	good := s.GetGood(g, userID)
 
 	options := options.Find().SetSort(bson.D{{Key: "creationTime", Value: -1}})
-	filter := bson.D{{Key: "userID", Value: userID}, {Key: "type", Value: types.Sold}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: datetime}}}}
+	filter := bson.D{{Key: "userID", Value: userID}, {Key: "type", Value: types.Sold}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: start}, {Key: "$lt", Value: end}}}, payment, audience, good}
 
 	cursor, err := transaction.Find(ctx, filter, options)
 	if err != nil {
@@ -89,10 +95,16 @@ func (s *TransactionService) GetBoughtTransactions(ctx context.Context, userID p
 	transactions = []types.Transaction{}
 	transaction := *s.collection
 	date, _ := ctx.Value(types.CtxDate).(string)
-	datetime := GetDateTime(date)
+	pay, _ := ctx.Value(types.CtxPayment).(string)
+	aud, _ := ctx.Value(types.CtxAudID).(string)
+	g, _ := ctx.Value(types.CtxGoodID).(string)
+	start, end := GetDateTime(date)
+	payment := GetPayment(pay)
+	audience := s.GetAudience(aud, userID, types.Bought)
+	good := s.GetGood(g, userID)
 
 	options := options.Find().SetSort(bson.D{{Key: "creationTime", Value: -1}})
-	filter := bson.D{{Key: "userID", Value: userID}, {Key: "type", Value: types.Bought}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: datetime}}}}
+	filter := bson.D{{Key: "userID", Value: userID}, {Key: "type", Value: types.Bought}, {Key: "creationTime", Value: bson.D{{Key: "$gt", Value: start}, {Key: "$lt", Value: end}}}, payment, audience, good}
 
 	cursor, err := transaction.Find(ctx, filter, options)
 	if err != nil {
@@ -143,16 +155,70 @@ func (s *TransactionService) DeleteAllTransactions(ctx context.Context, userID p
 	return nil
 }
 
-func GetDateTime(date string) (datetime primitive.DateTime) {
-	if date == "lastweek" {
-		datetime = primitive.NewDateTimeFromTime(time.Now().Local().AddDate(0, 0, -7))
+func GetDateTime(date string) (start primitive.DateTime, end primitive.DateTime) {
+	end = primitive.NewDateTimeFromTime(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 23, 59, 59, 0, time.Now().Location()))
+	if date == "lastweek" { // last 7 days
+		start = primitive.NewDateTimeFromTime(time.Now().Local().AddDate(0, 0, -7))
 	} else if date == "alltime" {
-		datetime = primitive.NewDateTimeFromTime(time.UnixMicro(0))
+		start = primitive.NewDateTimeFromTime(time.UnixMicro(0))
 	} else if date == "yesterday" {
-		datetime = primitive.NewDateTimeFromTime(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day()-1, 0, 0, 0, 0, time.Now().Location()))
-	} else {
-		datetime = primitive.NewDateTimeFromTime(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.Now().Location()))
+		start = primitive.NewDateTimeFromTime(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day()-1, 0, 0, 0, 0, time.Now().Location()))
+		end = primitive.NewDateTimeFromTime(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day()-1, 23, 59, 59, 0, time.Now().Location()))
+	} else if date == "thismonth" {
+		start = primitive.NewDateTimeFromTime(time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.Now().Location()))
+	} else if date == "lastmonth" {
+		start = primitive.NewDateTimeFromTime(time.Date(time.Now().Year(), time.Now().Month()-1, 1, 0, 0, 0, 0, time.Now().Location()))
+		end = primitive.NewDateTimeFromTime(time.Date(time.Now().Year(), time.Now().Month()-1, 30, 23, 59, 59, 0, time.Now().Location()))
+	} else { // today
+		start = primitive.NewDateTimeFromTime(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.Now().Location()))
 	}
+	return
+}
 
+func GetPayment(payment string) (pay primitive.E) {
+	pay = primitive.E{}
+	if payment == "paid" {
+		pay = primitive.E{Key: "payment", Value: true}
+	} else if payment == "unpaid" {
+		pay = primitive.E{Key: "payment", Value: false}
+	}
+	return
+}
+
+func (s *TransactionService) GetAudience(audience string, userID primitive.ObjectID, typee types.TransactionType) (aud primitive.E) {
+	aud = primitive.E{}
+
+	audID, err := primitive.ObjectIDFromHex(audience)
+	if err != nil {
+		// s.service.logger.Error("Error while getting audience in refresh transaction", err)
+		return
+	}
+	audExists, err := s.service.AudienceService.GetAudienceByID(context.Background(), userID, audID)
+	if err != nil {
+		// s.service.logger.Error("Error while getting audience in refresh transaction", err)
+		return
+	}
+	if typee == types.Bought {
+		aud = primitive.E{Key: "boughtFromID", Value: audExists.ID}
+	} else if typee == types.Sold {
+		aud = primitive.E{Key: "soldToID", Value: audExists.ID}
+	}
+	return
+
+}
+
+func (s *TransactionService) GetGood(good string, userID primitive.ObjectID) (g primitive.E) {
+	g = primitive.E{}
+	goodID, err := primitive.ObjectIDFromHex(good)
+	if err != nil {
+		// s.service.logger.Error("Error while getting good in refresh transaction", err)
+		return
+	}
+	goodExists, err := s.service.GoodsService.GetGoodByID(context.Background(), userID, goodID)
+	if err != nil {
+		// s.service.logger.Error("Error while getting good in refresh transaction", err)
+		return
+	}
+	g = primitive.E{Key: "goodID", Value: goodExists.ID}
 	return
 }
