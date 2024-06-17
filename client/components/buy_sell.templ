@@ -60,9 +60,9 @@ templ Buy(goods []types.Good, aud types.Audience){
         >
             <div style="display:flex;justify-content:flex-start;align-items:center;font-family:'Lucida Console', 'Courier New', monospace;">
                 <label for="advancedOptions"> Advanced Options </label>
-                <input class="simpleInput" type="checkbox" name="advancedOptions" onchange={toggleAdvancedOptions()} />
+                <input class="simpleInput" type="checkbox" name="advancedOptions" onchange={toggleAdvancedOptions(aud.ID.Hex())} />
             </div>
-            <div id="advancedOptions">
+            <div class="advancedOptions" id={"advancedOptions_"+aud.ID.Hex()}>
                 <input class="simpleInput" type="date" name="date" />
                 <input class="simpleInput" type="text" name="goodName" placeholder="Good Name" />
                 <input class="simpleInput" type="text" name="unit" placeholder="Unit" />
@@ -91,8 +91,8 @@ templ Buy(goods []types.Good, aud types.Audience){
     </div>
 }
 
-script toggleAdvancedOptions(){
-    var advancedOptions = document.getElementById("advancedOptions");
+script toggleAdvancedOptions(str string){
+    var advancedOptions = document.getElementById("advancedOptions_"+str);
     if (advancedOptions.style.display === "flex") {
         advancedOptions.style.display = "none";
     } else {
@@ -102,7 +102,7 @@ script toggleAdvancedOptions(){
 
 templ buySellStyles(){
 <style>
-    #advancedOptions {
+    .advancedOptions {
         display: none;
         width: 100%;
         flex-direction: column;

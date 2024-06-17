@@ -34,7 +34,7 @@ func main() {
 		server.ListenAndServe()
 
 		if errors.Is(err, http.ErrServerClosed) {
-			logger.Info("Server shutdown complete")
+			logger.Info("Server shutdown complete!")
 		} else if err != nil {
 			logger.Error("Server error", slog.Any("err", err))
 			os.Exit(1)
@@ -56,10 +56,9 @@ func main() {
 		os.Exit(1)
 	}
 	// cancel()
+	os.Clearenv()
 	logger.Info("Server shutdown complete")
 }
-
-// monthly report -> db? or calculate on the fly
 
 // feat: partial payment.
 // feat: pin, search audience.
