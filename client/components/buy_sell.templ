@@ -23,7 +23,7 @@ templ Sell(goods []types.Good, aud types.Audience){
                     <option value={good.ID.Hex()}>{good.Name}</option>
                 }
             </select>
-            <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
+            <input class="simpleInput" type="text" name="quantity" placeholder="Quantity" required />
             <div style="display:flex;justify-content:center;align-items:center;font-family:'Lucida Console', 'Courier New', monospace;">
                 <input class="simpleInput" type="date" name="date" />
             </div>
@@ -73,7 +73,7 @@ templ Buy(goods []types.Good, aud types.Audience){
                         <option value={good.ID.Hex()}>{good.Name}</option>
                     }
                 </select>
-            <input class="simpleInput" type="number" name="quantity" placeholder="Quantity" required />
+            <input class="simpleInput" type="text" name="quantity" placeholder="Quantity" required />
             <div style="display:flex;justify-content:center;align-items:center;font-family:'Lucida Console', 'Courier New', monospace;">
                 <label for="payment">PAYMENT </label>
                 <input class="simpleInput" type="checkbox" name="payment" />
