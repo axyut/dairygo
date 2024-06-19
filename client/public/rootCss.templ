@@ -246,6 +246,41 @@ templ IndexCss() {
 			margin: 0;
 		}
 
+		.rTable {
+			display: table;
+			border-collapse: collapse;
+			font-family: Arial, Helvetica, sans-serif;
+			width: 100%;
+		}
+		.rTableRow {
+			display: table-row;
+		}
+
+		.rTable .rTableRow:nth-child(even){background-color: #ddd;}
+		.rTable .rTableRow:hover {background-color: white;}
+
+		.rTableCell, .rTableHead {
+			display: table-cell;
+			text-align: center;
+			padding: 3px 10px;
+			border: 1px solid #C0C0C0;
+		}
+		.rTableHead {
+			padding-top: 12px;
+			padding-bottom: 12px;
+			background-color: #555;
+			color: white;
+		}
+		.rTable input {
+			background-color: transparent;
+			padding: none;
+			margin: none;
+			border: none;
+			font-size: medium;
+			font-family: "Courier New", monospace;
+			width: 120px;
+		}
+
 		.simpleTable {
 			font-family: Arial, Helvetica, sans-serif;
 			border-collapse: collapse;
@@ -318,5 +353,7 @@ templ IndexCss() {
             width: 100%;
             max-width: 150px;
         }
+
+
 	</style>
 }

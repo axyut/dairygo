@@ -1,6 +1,9 @@
 templ:
 	@templ generate
 
+build: templ
+	@GOOS=linux GOARCH=amd64 go build -o bin/app.out .
+	@GOOS=windows GOARCH=amd64 go build -o bin/app.exe .
 build_linux: templ
 	@GOOS=linux GOARCH=amd64 go build -o bin/app.out .
 build_windows: templ
