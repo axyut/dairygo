@@ -44,7 +44,13 @@ func (user *UserHandler) NewUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	_, err := user.srv.InsertUser(user.h.ctx, username, email, password)
+	err := user.srv.GetUserByEmail(user.h.ctx, email)
+	if err == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		pages.RegisterError("Email already exists.").Render(r.Context(), w)
+		return
+	}
+	_, err = user.srv.InsertUser(user.h.ctx, username, email, password)
 	if err != nil {
 		user.h.logger.Error("UserHandler.CreateUser", "Error", err)
 		pages.RegisterError("Server Error.").Render(r.Context(), w)
@@ -135,7 +141,7 @@ func (user *UserHandler) GetUserRequest(w http.ResponseWriter, r *http.Request) 
 	}
 	sendUser := user.GetUser(w, r)
 	w.WriteHeader(http.StatusOK)
-	components.GetUserReq(sendUser).Render(r.Context(), w)
+	components.GetUserReq(sendUser, "nav").Render(r.Context(), w)
 }
 
 func (user *UserHandler) LogoutUser(w http.ResponseWriter, r *http.Request) {
@@ -168,4 +174,55 @@ func (user *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.LogoutUser(w, r)
+}
+
+func (user *UserHandler) UpdateUserDefaults(w http.ResponseWriter, r *http.Request) {
+	userData := user.GetUser(w, r)
+	good_id := r.FormValue("def_sell_good_id")
+	check := r.FormValue("def_sell_payment")
+
+	if good_id == "" {
+		w.WriteHeader(http.StatusExpectationFailed)
+		components.GeneralToastError("Send required fields").Render(r.Context(), w)
+		return
+	}
+
+	var payment bool
+	if check == "on" {
+		payment = true
+	} else if check == "off" {
+		payment = false
+	}
+
+	goodID, err := primitive.ObjectIDFromHex(good_id)
+
+	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		components.GeneralToastError("Invalid Good ID").Render(r.Context(), w)
+		return
+	}
+	good, err := user.h.srv.GoodsService.GetGoodByID(r.Context(), userData.ID, goodID)
+
+	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		components.GeneralToastError("Couldn't get the good from ID.").Render(r.Context(), w)
+		return
+	}
+
+	if userData.Default == nil {
+		userData.Default = make(map[types.UserDefault]string)
+	}
+	userData.Default[types.SellGood] = good.ID.Hex()
+	userData.Default[types.SellPayment] = fmt.Sprintf("%t", payment)
+
+	_, err = user.srv.UpdateUser(user.h.ctx, userData)
+
+	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		components.GeneralToastError("Couldn't update User's Default Values.").Render(r.Context(), w)
+		return
+	}
+	goods, _ := user.h.srv.GoodsService.GetAllGoods(r.Context(), userData.ID)
+	w.WriteHeader(http.StatusOK)
+	components.TransUnit(goods, good.Name+" set as default.", userData).Render(r.Context(), w)
 }

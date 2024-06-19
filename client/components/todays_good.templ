@@ -14,16 +14,16 @@ templ TodaysGoods(goods []types.Good, notify bool){
   
     <div  class="todaysTable"  id="todaysGoods" hx-ext="response-targets">
       <div class="todaysHeader"> 
-        <h1>Today's Goods</h1>
+        <h1>Goods You Have</h1>
         <div>
-        <button class="open-button" onclick={OpenPopUp("insertGood")}>Create ➕</button>
+        <button class="open-button" onclick={OpenPopUp("insertGood")}>➕ Create </button>
         <button class="open-button" 
           hx-get="/goods/refresh"
           hx-target="#good_success"
           hx-target-error="#error"
           hx-swap="innerHTML"
           hx-indicator=".progress"
-        >Refresh 🔃</button>
+        >🔃 Refresh </button>
         </div>
       </div>
       @insertGood()

@@ -45,8 +45,10 @@ templ Nav() {
 	</nav>
 }
 
-templ GetUserReq(user types.User){
-	<a href="/profile">{user.UserName}</a>
+templ GetUserReq(user types.User, area string){
+	if area == "nav" {
+		<a href="/profile">{user.UserName}</a>
+	}
 }
 
 templ navStyles(){

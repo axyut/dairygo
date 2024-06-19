@@ -42,6 +42,57 @@ templ Sell(goods []types.Good, aud types.Audience){
     </div>
 }
 
+templ TransUnit( goods []types.Good, msg string, user types.User){
+  <div class="content">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+            <h1> Default Values.</h1>
+            <button type="button" class="emojiBtn" onclick={ClosePopUp("aud_sell_def")}>❌</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:flex-start">
+            for _, good := range goods {
+                if good.ID.Hex() == user.Default[types.SellGood] {
+                    <label>Default Sell Good: {good.Name}</label>
+                }
+            }
+            <br />
+
+                <form
+                    hx-patch="/user/defaults"
+                    hx-swap="innerHTML"
+                    hx-target="#aud_sell_def"
+                    hx-target-error="#error"
+                    style="display:flex;flex-direction:column;"
+                >
+                    <div>
+                        <label>Sell Good: </label>
+                        <select name="def_sell_good_id" required style="width: 100px;margin: 0 4px;">
+                            for _, good := range goods {
+                                <option value={good.ID.Hex()}>{good.Name}</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label>PAYMENT: </label>
+                        if user.Default[types.SellPayment] == "true" {
+                            <input type="checkbox" name="def_sell_payment" checked />
+                        } else {
+                            <input type="checkbox" name="def_sell_payment" />
+                        }
+                    </div>
+                    <button
+                        type="submit"
+                        class="simpleButton"
+                    >Save</button>
+                </form>
+
+        </div>
+    </div>
+    if msg != "" {
+        @SuccessToast(msg)
+    }
+}
+
 templ Buy(goods []types.Good, aud types.Audience){
     @buySellStyles()
     <div class="todaysInsert" id={"aud_buy_"+aud.ID.Hex()}>

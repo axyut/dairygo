@@ -2,11 +2,11 @@ package components
 import "github.com/axyut/dairygo/internal/types"
 import "strconv"
 
-templ Audiences(auds []types.Audience, goods []types.Good) {
+templ Audiences(auds []types.Audience, goods []types.Good, user types.User) {
   <div class="todays"  hx-ext="response-targets">
     <div class="todaysTable">
       <div class="todaysHeader">
-        <h1>People you Know</h1>
+        <h1>People You Know</h1>
         <div>
         <button class="open-button" onclick={OpenPopUp("insertAud")}>➕ Create </button>
         <button class="open-button" 
@@ -21,7 +21,7 @@ templ Audiences(auds []types.Audience, goods []types.Good) {
     @insertAud()
       <table class="simpleTable"  id="aud_success">
 
-    @AudTable(auds, false, goods)
+    @AudTable(auds, false, goods, user)
     </table>
 
     </div>
@@ -29,9 +29,14 @@ templ Audiences(auds []types.Audience, goods []types.Good) {
   
 }
 
-templ AudTable(auds []types.Audience, notify bool, goods []types.Good) {
+templ AudTable(auds []types.Audience, notify bool, goods []types.Good, user types.User) {
       <tr>
-      <th>Transaction</th>
+      <th>Transaction
+        <button class="trans-button" onclick={OpenPopUp("aud_sell_def")}>🎛️</button>
+          <div class="todaysInsert" hx-ext="response-targets" id="aud_sell_def">
+            @TransUnit(goods, "", user)
+          </div>
+      </th>
         <th>Name</th>
         <th>Contact</th>
         <th>To Pay</th>
@@ -39,7 +44,7 @@ templ AudTable(auds []types.Audience, notify bool, goods []types.Good) {
         <th>Actions</th>
       </tr>
       for _, aud := range auds {
-        @audArray(aud, goods)
+        @audArray(aud, goods, user)
       }
     if notify {
       @SuccessToast("Fetching Audiences. Refreshed!")
@@ -74,19 +79,56 @@ templ AudienceInsertError(msg string) {
     @DangerToast("Audience Creation Error! " + msg)
 }
 
-templ AudienceInsertSuccess(aud types.Audience, goods []types.Good) {
-    @audArray(aud, goods)
+templ AudienceInsertSuccess(aud types.Audience, goods []types.Good, user types.User) {
+    @audArray(aud, goods, user)
     @SuccessToast(aud.Name+" Modification Successful!" )
 }
 
 
-templ audArray(aud types.Audience, goods []types.Good) {
+templ audArray(aud types.Audience, goods []types.Good, user types.User) {
 <tr id={"aud_"+aud.ID.Hex()}>
     <td>
         <button class="open-button" onclick={OpenPopUp("aud_buy_"+aud.ID.Hex())}>BUY</button>
         @Buy(goods, aud)
         <button class="open-button" onclick={OpenPopUp("aud_sell_"+aud.ID.Hex())}>SELL</button>
         @Sell(goods, aud)
+          <form 
+            style="display:inline-block;"
+            hx-target="#sold"
+            hx-swap="afterbegin"
+            hx-target-error="#error"
+            hx-post="/transaction"
+          >          
+            <input type="hidden" name="audienceID" value={aud.ID.Hex()} />
+            <input type="hidden" name="goodID" value={user.Default[types.SellGood]} />
+            <input type="hidden" name="type" value="sold" />
+            <input type="hidden" name="quantity" value="1" />
+            if user.Default[types.SellPayment] == "true" {
+              <input type="checkbox" name="payment" style="display:none" checked/>
+            } else {
+              <input type="checkbox" name="payment" style="display:none"/>
+            }
+            <button class="trans-button" type="submit">1.0</button>
+          </form>
+          <form 
+            style="display:inline-block;"
+            hx-target="#sold"
+            hx-swap="afterbegin"
+            hx-target-error="#error"
+            hx-post="/transaction"
+          >
+            <input type="hidden" name="audienceID" value={aud.ID.Hex()} />
+            <input type="hidden" name="goodID" value={user.Default[types.SellGood]} />
+            <input type="hidden" name="type" value="sold" />
+            <input type="hidden" name="quantity" value="0.5" />
+            if user.Default[types.SellPayment] == "true" {
+              <input type="checkbox" name="payment" style="display:none" checked/>
+            } else {
+              <input type="checkbox" name="payment" style="display:none"/>
+            }
+            <button class="trans-button" type="submit">0.5</button>
+          </form>
+ 
     </td>
     <td>
       <input class="tableInput" type="text" name={"aud_name_"+aud.ID.Hex()} value={aud.Name} />

@@ -40,7 +40,7 @@ func (h *AudienceHandler) NewAudience(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), user.ID)
-	components.AudienceInsertSuccess(inserted, goods).Render(r.Context(), w)
+	components.AudienceInsertSuccess(inserted, goods, user).Render(r.Context(), w)
 }
 
 func (h *AudienceHandler) DeleteAudience(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +107,7 @@ func (h *AudienceHandler) UpdateAudience(w http.ResponseWriter, r *http.Request)
 	if good_id == "" && buying_rate == "" {
 		allAuds, _ := h.srv.GetAllAudiences(r.Context(), user.ID)
 		w.WriteHeader(http.StatusOK)
-		components.AudTable(allAuds, true, goods).Render(r.Context(), w)
+		components.AudTable(allAuds, true, goods, user).Render(r.Context(), w)
 		return
 	} else if good_id != "" && buying_rate != "" {
 		w.WriteHeader(http.StatusOK)
@@ -130,7 +130,7 @@ func (h *AudienceHandler) RefreshAudience(w http.ResponseWriter, r *http.Request
 		return
 	}
 	goods, _ := h.h.srv.GoodsService.GetAllGoods(r.Context(), user.ID)
-	components.AudTable(allAuds, true, goods).Render(r.Context(), w)
+	components.AudTable(allAuds, true, goods, user).Render(r.Context(), w)
 }
 
 func (h *AudienceHandler) DeleteAllAudiences(w http.ResponseWriter, r *http.Request) {

@@ -26,8 +26,13 @@ type Collections struct {
 
 func NewMongo(ctx context.Context, conf config.Config, logger *slog.Logger) (*Mongo, error) {
 	var dbName, uri string = conf.DB_NAME, conf.DB_URI
+	bsonOpts := &options.BSONOptions{
+		//  UseJSONStructTags: true,
+		NilMapAsEmpty:   true,
+		NilSliceAsEmpty: true,
+	}
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri).SetBSONOptions(bsonOpts))
 	if err != nil {
 		client, err = reTryConnection(ctx, uri, logger)
 		if err != nil {

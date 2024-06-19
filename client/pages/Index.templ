@@ -4,9 +4,13 @@ import "github.com/axyut/dairygo/internal/types"
 import "github.com/axyut/dairygo/client/components"
 
 templ Index(user types.User, goods []types.Good, auds []types.Audience) {
-
+		@Log(user)
 		<div class="divContainer">
 			@components.TodaysGoodsRow(goods, false)
-			@components.Audiences(auds, goods)
+			@components.Audiences(auds, goods, user)
 		</div>
+}
+
+script Log(user types.User){
+	console.log({user})
 }

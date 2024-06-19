@@ -8,6 +8,7 @@ import (
 	"github.com/axyut/dairygo/internal/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -38,7 +39,8 @@ func (s *UserService) InsertUser(ctx context.Context, name string, email string,
 		s.service.logger.Error("Error creating user", "Error", err)
 		return User, err
 	}
-	user.FindOne(ctx, bson.M{"_id": result.InsertedID}).Decode(&newUser)
+	opts := options.FindOne().SetProjection(bson.D{{Key: "password", Value: 0}})
+	user.FindOne(ctx, bson.M{"_id": result.InsertedID}, opts).Decode(&newUser)
 	s.service.logger.Info("User Created")
 	return newUser, nil
 }
@@ -46,7 +48,8 @@ func (s *UserService) InsertUser(ctx context.Context, name string, email string,
 func (s *UserService) GetUserByEmail(ctx context.Context, email string) error {
 	user := *s.collection
 	var result types.User
-	err := user.FindOne(ctx, bson.M{"email": email}).Decode(&result)
+	opts := options.FindOne().SetProjection(bson.D{{Key: "password", Value: 0}})
+	err := user.FindOne(ctx, bson.M{"email": email}, opts).Decode(&result)
 	if err != nil {
 		s.service.logger.Error("User not found")
 		return err
@@ -58,7 +61,8 @@ func (s *UserService) GetUserByEmail(ctx context.Context, email string) error {
 func (s *UserService) GetUserByUsername(ctx context.Context, username string) (User types.User, error error) {
 	user := *s.collection
 	var result types.User
-	err := user.FindOne(ctx, bson.M{"username": username}).Decode(&result)
+	opts := options.FindOne().SetProjection(bson.D{{Key: "password", Value: 0}})
+	err := user.FindOne(ctx, bson.M{"username": username}, opts).Decode(&result)
 	if err != nil {
 		s.service.logger.Error("User not found")
 		return result, err
@@ -70,7 +74,8 @@ func (s *UserService) GetUserByUsername(ctx context.Context, username string) (U
 func (s *UserService) GetUserByID(ctx context.Context, id primitive.ObjectID) (User types.User, error error) {
 	user := *s.collection
 	var result types.User
-	err := user.FindOne(ctx, bson.M{"_id": id}).Decode(&result)
+	opts := options.FindOne().SetProjection(bson.D{{Key: "password", Value: 0}})
+	err := user.FindOne(ctx, bson.M{"_id": id}, opts).Decode(&result)
 	if err != nil {
 		s.service.logger.Error("User not found")
 		return result, err
@@ -95,21 +100,19 @@ func (s *UserService) LoginUser(ctx context.Context, email_username string, pass
 		s.service.logger.Error("Password not matched")
 		return result, err
 	}
+	result.Password = ""
 	return result, nil
 }
 
 func (s *UserService) UpdateUser(ctx context.Context, updateUser types.User) (User types.User, error error) {
 	user := *s.collection
-	res, err := user.UpdateOne(ctx, bson.M{"_id": updateUser.ID}, bson.M{"$set": bson.M{"username": updateUser.UserName, "email": updateUser.Email, "password": updateUser.Password}})
+	res, err := user.UpdateOne(ctx, bson.M{"_id": updateUser.ID}, bson.M{"$set": updateUser})
 	if err != nil {
 		s.service.logger.Error("Error updating user", "Error", err)
 		return User, err
 	}
-	if res.ModifiedCount == 0 {
-		s.service.logger.Error("User not found")
-		return User, fmt.Errorf("user not found")
-	}
-	user.FindOne(ctx, bson.M{"_id": res.UpsertedID}).Decode(&updateUser)
+	opts := options.FindOne().SetProjection(bson.D{{Key: "password", Value: 0}})
+	user.FindOne(ctx, bson.M{"_id": res.UpsertedID}, opts).Decode(&updateUser)
 	return updateUser, nil
 }
 

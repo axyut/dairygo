@@ -80,6 +80,7 @@ func RootHandler(ctx context.Context, conf config.Config, srv *service.Service, 
 	router.HandleFunc("PATCH /audience", h.AudienceHandler.UpdateAudience)
 	router.HandleFunc("PATCH /goods", h.GoodsHandler.UpdateGood)
 	router.HandleFunc("PATCH /transaction", h.TransactionHandler.UpdateTransaction)
+	router.HandleFunc("PATCH /user/defaults", h.UserHandler.UpdateUserDefaults)
 	// calculate
 	// unavailable all other routes
 
