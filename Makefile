@@ -1,28 +1,37 @@
+.DEFAULT_GOAL := dev
+NAME = daiygo
+OS = linux
+ARCH = amd64
+
 templ:
 	@templ generate
 
 build: templ
-	@GOOS=linux GOARCH=amd64 go build -o bin/app.out .
-	@GOOS=windows GOARCH=amd64 go build -o bin/app.exe .
-build_linux: templ
-	@GOOS=linux GOARCH=amd64 go build -o bin/app.out .
-build_windows: templ
-	@GOOS=windows GOARCH=amd64 go build -o bin/app.exe .
-build_darwin: templ
-	@GOOS=darwin GOARCH=amd64 go build -o bin/app .
+	@GOOS=linux GOARCH=amd64 go build -o bin/${NAME}-amd64-linux .
+	@GOOS=darwin GOARCH=amd64 go build -o bin/${NAME}-amd64-darwin .
+	@GOOS=windows GOARCH=amd64 go build -o bin/${NAME}-amd64-windows .
+
+build_arm:
+	GOOS=darwin GOARCH=arm64 go build -o bin/${NAME}-arm64-darwin .
+	GOOS=windows GOARCH=arm64 go build -o bin/${NAME}-arm64-windows .
+	GOOS=linux GOARCH=arm64 go build -o bin/${NAME}-arm64-linux .
+
+clean:
+	rm -rf bin
 
 test:
 	@go test -v ./...
 	
 dev:
-	air
+	@air
 
-run: templ
-	@go run .
+run: build
+	@bin/${NAME}-${ARCH}-${OS}
 
 install:
 	@go mod tidy
 
-
+lint:
+	golangci-lint run --enable-all
 
 

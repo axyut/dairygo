@@ -44,6 +44,11 @@ pause
 ![reports page](./assets/reportsPage.png)
 
 <!--
+go install github.com/melkeydev/go-blueprint@latest
+go-blueprint create --name dairy --framework standard-library --driver mongo --advanced --feature htmx --feature githubaction
+
+
+
 https://www.gomponents.com/
 https://github.com/maragudk/gomponents
 
